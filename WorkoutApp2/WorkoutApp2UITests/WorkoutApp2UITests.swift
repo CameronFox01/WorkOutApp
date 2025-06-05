@@ -1,13 +1,13 @@
 //
-//  WorkoutAppUITests.swift
-//  WorkoutAppUITests
+//  WorkoutApp2UITests.swift
+//  WorkoutApp2UITests
 //
-//  Created by Cameron Fox on 2/20/25.
+//  Created by Cameron Fox on 6/4/25.
 //
 
 import XCTest
 
-final class WorkoutAppUITests: XCTestCase {
+final class WorkoutApp2UITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -33,11 +33,9 @@ final class WorkoutAppUITests: XCTestCase {
 
     @MainActor
     func testLaunchPerformance() throws {
-        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
-            // This measures how long it takes to launch your application.
-            measure(metrics: [XCTApplicationLaunchMetric()]) {
-                XCUIApplication().launch()
-            }
+        // This measures how long it takes to launch your application.
+        measure(metrics: [XCTApplicationLaunchMetric()]) {
+            XCUIApplication().launch()
         }
     }
 }

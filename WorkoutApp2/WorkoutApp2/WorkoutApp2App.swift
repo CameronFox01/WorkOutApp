@@ -1,14 +1,14 @@
 //
-//  WorkoutAppApp.swift
-//  WorkoutApp
+//  WorkoutApp2App.swift
+//  WorkoutApp2
 //
-//  Created by Cameron Fox on 2/20/25.
+//  Created by Cameron Fox on 6/4/25.
 //
 
 import SwiftUI
 
 @main
-struct WorkoutAppApp: App {
+struct WorkoutApp2App: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

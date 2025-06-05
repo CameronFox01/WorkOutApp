@@ -1,13 +1,13 @@
 //
-//  WorkoutAppUITestsLaunchTests.swift
-//  WorkoutAppUITests
+//  WorkoutApp2UITestsLaunchTests.swift
+//  WorkoutApp2UITests
 //
-//  Created by Cameron Fox on 2/20/25.
+//  Created by Cameron Fox on 6/4/25.
 //
 
 import XCTest
 
-final class WorkoutAppUITestsLaunchTests: XCTestCase {
+final class WorkoutApp2UITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
