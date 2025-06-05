@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7E50E52F2DF16B720097DFF4 /* ReadMe.md in Resources */ = {isa = PBXBuildFile; fileRef = 7E50E52E2DF16B6C0097DFF4 /* ReadMe.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		7E85E7FF2DF0B803008E1909 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7E50E52E2DF16B6C0097DFF4 /* ReadMe.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ReadMe.md; sourceTree = "<group>"; };
 		7E85E7F12DF0B7FC008E1909 /* WorkoutApp2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutApp2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E85E7FE2DF0B803008E1909 /* WorkoutApp2Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutApp2Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E85E8082DF0B803008E1909 /* WorkoutApp2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutApp2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +80,7 @@
 		7E85E7E82DF0B7FC008E1909 = {
 			isa = PBXGroup;
 			children = (
+				7E50E52E2DF16B6C0097DFF4 /* ReadMe.md */,
 				7E85E7F32DF0B7FC008E1909 /* WorkoutApp2 */,
 				7E85E8012DF0B803008E1909 /* WorkoutApp2Tests */,
 				7E85E80B2DF0B803008E1909 /* WorkoutApp2UITests */,
@@ -212,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E50E52F2DF16B720097DFF4 /* ReadMe.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

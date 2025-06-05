@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("userName") private var name: String = ""
     var body: some View {
         TabView{
             HomeView()
