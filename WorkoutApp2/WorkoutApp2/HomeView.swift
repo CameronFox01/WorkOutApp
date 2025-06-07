@@ -12,17 +12,36 @@ struct HomeView: View {
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userHeight") private var height: String = ""
+    @AppStorage("userTargetWeight") private var targetWeight: String = ""
 
     var body: some View {
         NavigationView {
-            ZStack{
-                GroupBox (label: Text("Current Progress")){
+            VStack {
+                GroupBox(label: Text("Current Progress")) {
                     VStack(spacing: 10) {
-                        Text("Height: \(height) \(heightUnit)")
                         Text("Weight: \(weight) \(weightUnit)")
+                        if let difference = weightDifference {
+                            Text("Difference to target: \(difference, specifier: "%.1f") \(weightUnit)")
+                        } else {
+                            Text("Set your target weight to see difference")
+                                .foregroundColor(.gray)
+                                .italic()
+                        }
                     }
                     .padding()
-                    .navigationTitle("Home")
+                }
+                
+                Spacer()
+                
+                
+            }
+            .navigationTitle("Home")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: AccountView()) {
+                        Image(systemName: "person.circle")
+                            .font(.title)
+                    }
                 }
             }
         }
@@ -41,7 +60,16 @@ struct HomeView: View {
     var weightUnit: String {
         unitSystem == .metric ? "kg" : "lbs"
     }
+    
+    var weightDifference: Double? {
+            guard let current = Double(weight),
+                  let target = Double(targetWeight) else {
+                return nil
+            }
+            return abs(target - current)
+        }
 }
+
 #Preview {
     HomeView()
 }

@@ -14,42 +14,77 @@ struct AccountView: View {
     @AppStorage("userHeight") private var height: String = ""
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userBirthday") private var birthday = Date()
-    //@AppStorage("userAge") private var age: String = ""
+    @AppStorage("userGender") private var genderRaw: String = Gender.male.rawValue
 
-    var body: some View {
-        Form {
-            
-            TextField("Name", text: $name)
+    enum Gender: String, CaseIterable, Identifiable {
+        case male = "Male"
+        case female = "Female"
 
-            TextField(heightLabel, text: $height)
-                .keyboardType(.decimalPad)
-
-            TextField(weightLabel, text: $weight)
-                .keyboardType(.decimalPad)
-            DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
-
-            Picker("Unit System", selection: Binding<UnitSystem>(
-                get: {
-                    UnitSystem(rawValue: unitSystemRaw) ?? .metric
-                },
-                set: { newValue in
-                    let oldUnit = UnitSystem(rawValue: unitSystemRaw) ?? .metric
-                    if oldUnit != newValue {
-                        convertValues(from: oldUnit, to: newValue)
-                        unitSystemRaw = newValue.rawValue
+        var id: String { self.rawValue }
+    }
+    
+        var body: some View {
+            NavigationView {
+                    Form {
+                        
+                        Section(header: Text("Name")) {
+                            TextField("Name", text: $name)
+                        }
+                        
+                        Section(header: Text("Body Info")){
+                            TextField(heightLabel, text: $height)
+                                .keyboardType(.decimalPad)
+                            
+                            TextField(weightLabel, text: $weight)
+                                .keyboardType(.decimalPad)
+                        }
+                        Section(header: Text("Birthday")) {
+                            DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
+                        }
+                        
+                        Section(header: Text("Gender")) {
+                            Picker("Gender", selection: $genderRaw) {
+                                ForEach(Gender.allCases) { gender in
+                                    Text(gender.rawValue)
+                                }
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                        }
+                        
+                        Section(header: Text("Unit System")){
+                            Picker("Unit System", selection: Binding<UnitSystem>(
+                                get: {
+                                    UnitSystem(rawValue: unitSystemRaw) ?? .metric
+                                },
+                                set: { newValue in
+                                    let oldUnit = UnitSystem(rawValue: unitSystemRaw) ?? .metric
+                                    if oldUnit != newValue {
+                                        convertValues(from: oldUnit, to: newValue)
+                                        unitSystemRaw = newValue.rawValue
+                                    }
+                                }
+                            )) {
+                                ForEach(UnitSystem.allCases, id: \.self) { unit in
+                                    Text(unit.rawValue)
+                                }
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                        }
+                        
+                        //I think this will be deleted
+                        Text("Saved: \(name) \(height) \(heightUnit), \(weight) \(weightUnit) \(genderRaw)")
+                    }
+                    .navigationTitle("Account")
+                    
+                    .toolbar{
+                        ToolbarItem(placement: .navigationBarTrailing){
+                            NavigationLink(destination: GoalView()){
+                                Image(systemName: "trophy.circle")
+                                    .font(.title)
                     }
                 }
-            )) {
-                ForEach(UnitSystem.allCases, id: \.self) { unit in
-                    Text(unit.rawValue)
-                }
             }
-            .pickerStyle(SegmentedPickerStyle())
-            
-            //I think this will be deleted
-            Text("Saved: \(name) \(height) \(heightUnit), \(weight) \(weightUnit) \(age)")
         }
-        .navigationTitle("Account")
     }
 
     // MARK: - Labels

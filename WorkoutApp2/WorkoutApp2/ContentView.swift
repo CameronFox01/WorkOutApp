@@ -23,12 +23,6 @@ struct ContentView: View {
                 .tabItem{
                     Label("Camera", systemImage: "camera")
                 }
-            NavigationView {
-                           AccountView()
-            }
-                .tabItem {
-                    Label("Account", systemImage: "person")
-                }
         }
     }
 }
