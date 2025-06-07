@@ -35,6 +35,8 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
 }
 
 struct ImportView: View {
+    @EnvironmentObject var workoutData: WorkoutData
+    
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
 
     var weightUnit: String {
@@ -84,17 +86,34 @@ struct ImportView: View {
                 }
             }
             .navigationTitle("Import Workout")
-            .onAppear(perform: loadEntries)
+            .onAppear {
+                // Pre-fill selections with first workout for each category if not set
+                for category in WorkoutCategory.allCases {
+                    if selections[category] == nil {
+                        selections[category] = category.workouts.first ?? ""
+                    }
+                }
+                loadEntries()
+            }
         }
     }
 
     func saveEntry(for category: WorkoutCategory) {
-        guard let workout = selections[category],
-              let weight = weights[category],
-              let rep = reps[category],
-              !workout.isEmpty, !weight.isEmpty, !reps.isEmpty else {
+        guard let weight = weights[category], !weight.isEmpty else {
+            print("⛔️ Missing values for weight")
             return
         }
+
+        guard let rep = reps[category], !rep.isEmpty else {
+            print("⛔️ Missing values for rep")
+            return
+        }
+        
+        guard let workout = selections[category], !workout.isEmpty else {
+            print("⛔️ Missing values for workout")
+            return
+        }
+
 
         let newEntry = WorkoutEntry(
             workoutType: workout,
@@ -102,6 +121,7 @@ struct ImportView: View {
             reps: rep,
             date: Date()
         )
+        workoutData.add(entry: newEntry)
 
         entries.append(newEntry)
         saveEntriesToStorage()
@@ -115,7 +135,10 @@ struct ImportView: View {
     func saveEntriesToStorage() {
         if let encoded = try? JSONEncoder().encode(entries) {
             UserDefaults.standard.set(encoded, forKey: "workout_entries")
-        }
+            print("✅ Workout entries saved. Count: \(entries.count)")
+                } else {
+                    print("❌ Failed to encode entries.")
+                }
     }
 
     func loadEntries() {

@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct WorkoutApp2App: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
+    @StateObject private var workoutData = WorkoutData()
+
+        var body: some Scene {
+            WindowGroup {
+                ContentView()
+                    .environmentObject(workoutData)  // inject shared data
+            }
         }
-    }
 }

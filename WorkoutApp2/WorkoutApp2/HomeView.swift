@@ -8,32 +8,72 @@
 import SwiftUI
 
 struct HomeView: View {
+    @EnvironmentObject var workoutData: WorkoutData
+    
     @AppStorage("userName") private var name: String = ""
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userHeight") private var height: String = ""
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
-
+    
+    @State private var workoutLog: [WorkoutEntry] = {
+        if let data = UserDefaults.standard.data(forKey: "workout_entries"),
+           let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
+            return decoded
+        }
+        return []
+    }()
+    
+    init() {
+        if let data = UserDefaults.standard.data(forKey: "workoutLog"),
+           let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
+            print("Loaded workoutLog:")
+            for entry in decoded {
+                print("\(entry.workoutType) - \(entry.reps) reps - \(entry.weight) weight - \(entry.date)")
+            }
+        } else {
+            print("No workoutLog found in UserDefaults.")
+        }
+    }
     var body: some View {
         NavigationView {
-            VStack {
-                GroupBox(label: Text("Current Progress")) {
-                    VStack(spacing: 10) {
-                        Text("Weight: \(weight) \(weightUnit)")
-                        if let difference = weightDifference {
-                            Text("Difference to target: \(difference, specifier: "%.1f") \(weightUnit)")
-                        } else {
-                            Text("Set your target weight to see difference")
-                                .foregroundColor(.gray)
-                                .italic()
+            ScrollView {
+                VStack(alignment: .leading) {
+                    GroupBox(label: Text("Current Progress")) {
+                        VStack {
+                            Text("Weight: \(weight) \(weightUnit)")
+                            if let difference = weightDifference {
+                                Text("Difference to target: \(difference, specifier: "%.1f") \(weightUnit)")
+                            } else {
+                                Text("Set your target weight to see difference")
+                                    .foregroundColor(.gray)
+                            }
                         }
+                        .padding()
                     }
-                    .padding()
+
+                    Divider().padding(.vertical)
+
+                    Text("Recent Workouts")
+                        .font(.title2)
+                        .bold()
+                        .padding(.leading)
+
+                    ForEach(uniqueWorkoutEntries(from: workoutData.entries)) { entry in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(entry.workoutType)
+                                .font(.headline)
+                            Text("\(entry.reps) reps at \(entry.weight) \(weightUnit)")
+                                .foregroundColor(.gray)
+                            Text("Last done on \(entry.date.formatted(date: .abbreviated, time: .omitted))")
+                                .font(.subheadline)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                    }
                 }
-                
-                Spacer()
-                
-                
             }
             .navigationTitle("Home")
             .toolbar {
@@ -45,6 +85,10 @@ struct HomeView: View {
                 }
             }
         }
+    }
+
+    var groupedWorkouts: [WorkoutEntry] {
+        uniqueWorkoutEntries(from: workoutData.entries.sorted(by: { $0.date > $1.date }))
     }
 
     // MARK: - Computed properties
@@ -68,8 +112,25 @@ struct HomeView: View {
             }
             return abs(target - current)
         }
+    
+    func uniqueWorkoutEntries(from all: [WorkoutEntry]) -> [WorkoutEntry] {
+            var seen = Set<String>()
+            var unique: [WorkoutEntry] = []
+
+            for entry in all {
+                if !seen.contains(entry.workoutType) {
+                    seen.insert(entry.workoutType)
+                    unique.append(entry)
+                }
+            }
+            return unique
+        }
+
 }
 
-#Preview {
-    HomeView()
+struct HomeView_Previews: PreviewProvider {
+    static var previews: some View {
+        HomeView()
+            .environmentObject(WorkoutData())
+    }
 }

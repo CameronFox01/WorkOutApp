@@ -11,8 +11,15 @@ struct PhotoView: View {
     var body: some View {
         NavigationView{
             ZStack{
-                Color.yellow
-                Text("Photo")
+                HStack{
+                    Button("Import Picture"){
+                        print("Import Picture pressed")
+                    }
+                    
+                    Button("Take Photo"){
+                        print("Take Photo Pressed")
+                    }
+                }
             }
             .navigationTitle("Camera")
         }
