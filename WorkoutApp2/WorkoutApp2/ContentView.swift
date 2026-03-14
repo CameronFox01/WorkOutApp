@@ -28,33 +28,6 @@ struct ContentView: View {
                 .tabItem{
                     Label("Camera", systemImage: "camera")
                 }
-            NavigationView {
-                VStack(spacing: 16) {
-                    if workoutsList.isEmpty {
-                        ContentUnavailableView("No workouts yet", systemImage: "chart.xyaxis.line", description: Text("Log some sets to see progress here."))
-                            .padding()
-                    } else {
-                        Picker("Workout", selection: $selectedWorkout) {
-                            ForEach(workoutsList, id: \.self) { w in
-                                Text(w).tag(w)
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                        .padding(.horizontal)
-
-                        WorkoutProgressChart(
-                            workoutName: selectedWorkout,
-                            entries: entries,
-                            unitSystemRaw: unitSystemRaw
-                        )
-                    }
-                }
-                .navigationTitle("Progress")
-                .onAppear(perform: loadEntries)
-            }
-            .tabItem {
-                Label("Progress", systemImage: "chart.line.uptrend.xyaxis")
-            }
             AccountView()
                 .tabItem{
                     Label("Account", systemImage: "person")

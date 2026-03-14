@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import HealthKit
 
 struct HomeView: View {
     @EnvironmentObject var workoutData: WorkoutData
@@ -15,6 +16,14 @@ struct HomeView: View {
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userHeight") private var height: String = ""
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
+    
+    let healthStore = HKHealthStore()
+    @State private var steps: Double = 0
+    @State private var distanceMeters: Double = 0
+    
+    var distanceMiles: Double {
+        distanceMeters / 1609.34
+    }
     
     @State private var workoutLog: [WorkoutEntry] = {
         if let data = UserDefaults.standard.data(forKey: "workout_entries"),
@@ -51,28 +60,83 @@ struct HomeView: View {
                         }
                         .padding()
                     }
+                    //Section to get steps and distance
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ],
+                        spacing: 16
+                    ) {
 
-                    Divider().padding(.vertical)
+                        VStack(alignment: .leading) {
+                            Text("Steps Today")
+                                .font(.headline)
 
+                            Text("\(Int(steps))")
+                                .font(.title2)
+                                .bold()
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+
+                        VStack(alignment: .leading) {
+                            Text("Distance")
+                                .font(.headline)
+
+                            Text("\(distanceMiles, specifier: "%.2f") mi")
+                                .font(.title2)
+                                .bold()
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                    }
+                    .padding(.horizontal)
+                    //Divider().padding(.vertical)
+
+                    //Section for Pasted Worked Outs
                     Text("Recent Workouts")
                         .font(.title2)
                         .bold()
                         .padding(.leading)
+                    //Creating the boxs for the workouts to be clicked on and carry you to more info on that workout
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ],
+                        spacing: 16
+                    ) {
+                        ForEach(firstEntryPerWorkoutType(from: workoutData.entries)) { entry in
+                            NavigationLink(
+                                destination: WorkoutChartView(
+                                    workoutName: entry.workoutType,
+                                    entries: workoutData.entries
+                                )
+                            ) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(entry.workoutType)
+                                        .font(.headline)
 
-                    ForEach(uniqueWorkoutEntries(from: workoutData.entries)) { entry in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(entry.workoutType)
-                                .font(.headline)
-                            Text("\(entry.reps) reps at \(entry.weight) \(weightUnit)")
-                                .foregroundColor(.gray)
-                            Text("Last done on \(entry.date.formatted(date: .abbreviated, time: .omitted))")
-                                .font(.subheadline)
+                                    Text("\(entry.reps) reps at \(entry.weight) \(weightUnit)")
+                                        .foregroundColor(.gray)
+
+                                    Text(entry.date.formatted(date: .abbreviated, time: .omitted))
+                                        .font(.subheadline)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                        .padding(.horizontal)
                     }
+                    .padding(.horizontal)
                 }
             }
             .navigationTitle("Home")
@@ -84,6 +148,11 @@ struct HomeView: View {
                     }
                 }
             }
+           // .onAppear {
+               // Task{
+                 //   await loadHealthData()
+                //}
+            //}
         }
     }
 
@@ -125,6 +194,123 @@ struct HomeView: View {
             }
             return unique
         }
+    
+    func firstEntryPerWorkoutType(from entries: [WorkoutEntry]) -> [WorkoutEntry] {
+        var seen = Set<String>()
+
+        return entries.filter { entry in
+            if seen.contains(entry.workoutType) {
+                return false
+            } else {
+                seen.insert(entry.workoutType)
+                return true
+            }
+        }
+    }
+    
+    //Functions to get Health Data from iPhone
+    func requestHealthAccess() {
+        let steps = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+        let distance = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
+
+        let readTypes: Set = [steps, distance]
+
+        healthStore.requestAuthorization(toShare: [], read: readTypes) { success, error in
+            if success {
+                print("Health access granted")
+            }
+        }
+    }
+    //Function to get Step Count for the Day
+    func fetchStepsToday(completion: @escaping (Double) -> Void) {
+
+        let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+
+        let startOfDay = Calendar.current.startOfDay(for: Date())
+        let predicate = HKQuery.predicateForSamples(
+            withStart: startOfDay,
+            end: Date(),
+            options: .strictStartDate
+        )
+
+        let query = HKStatisticsQuery(
+            quantityType: stepType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, result, _ in
+
+            guard let sum = result?.sumQuantity() else {
+                completion(0)
+                return
+            }
+
+            let steps = sum.doubleValue(for: HKUnit.count())
+            completion(steps)
+        }
+
+        healthStore.execute(query)
+    }
+    
+    //Function to get Walking Distance from iPhone
+    func fetchDistanceToday(completion: @escaping (Double) -> Void) {
+
+        let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
+
+        let startOfDay = Calendar.current.startOfDay(for: Date())
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: startOfDay,
+            end: Date(),
+            options: .strictStartDate
+        )
+
+        let query = HKStatisticsQuery(
+            quantityType: distanceType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, result, _ in
+
+            guard let sum = result?.sumQuantity() else {
+                completion(0)
+                return
+            }
+
+            let meters = sum.doubleValue(for: HKUnit.meter())
+            completion(meters)
+        }
+
+        healthStore.execute(query)
+    }
+    
+    func loadHealthData() {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            print("Health data not available")
+            return
+        }
+
+        let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+        let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
+
+        let readTypes: Set = [stepType, distanceType]
+
+        healthStore.requestAuthorization(toShare: [], read: readTypes) { success, error in
+            if success {
+                fetchStepsToday { value in
+                    DispatchQueue.main.async {
+                        steps = value
+                    }
+                }
+
+                fetchDistanceToday { value in
+                    DispatchQueue.main.async {
+                        distanceMeters = value
+                    }
+                }
+            } else if let error = error {
+                print("HealthKit authorization error: \(error.localizedDescription)")
+            }
+        }
+    }
 
 }
 
