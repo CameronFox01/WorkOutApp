@@ -104,9 +104,6 @@ struct ImportView: View {
                     if selections[category] == nil {
                         selections[category] = category.workouts.first ?? ""
                     }
-                    if setsDict[category] == nil {
-                        setsDict[category] = "1"
-                    }
                 }
                 loadEntries()
             }
@@ -178,7 +175,7 @@ struct ImportView: View {
         }
         private var setsBinding: Binding<String> {
             Binding(
-                get: { sets[category] ?? "1" },
+                get: { sets[category] ?? "" },
                 set: { sets[category] = $0 }
             )
         }
@@ -300,7 +297,7 @@ struct ImportView: View {
             return
         }
 
-        let setsVal = setsDict[category] ?? "1"
+        let setsVal = setsDict[category] ?? ""
 
         let weightString: String = {
             if category.usesWeight { return weights[category] ?? "" }
@@ -323,7 +320,7 @@ struct ImportView: View {
         DispatchQueue.main.async {
             if category.usesWeight { weights[category] = "" }
             reps[category] = ""
-            setsDict[category] = "1"
+            setsDict[category] = ""
         }
 
         feedbackSuccess()
