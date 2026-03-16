@@ -9,7 +9,7 @@ import SwiftUI
 import Charts
 
 struct ContentView: View {
-    @EnvironmentObject var healthManager: HealthManager  // ✅ Add
+    @EnvironmentObject var healthManager: HealthManager 
     @EnvironmentObject var workoutData: WorkoutData
     
     @AppStorage("userName") private var name: String = ""

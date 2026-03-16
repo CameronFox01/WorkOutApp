@@ -98,3 +98,15 @@ enum GluteWorkout: String, CaseIterable, Identifiable, Hashable {
     var id: String { self.rawValue }
 }
 
+//Cardio workouts
+enum CardioWorkout: String, CaseIterable, Identifiable, Hashable {
+    case running = "Running"
+    case cycling = "Cycling"
+    case rowing = "Rowing"
+    case swimming = "Swimming"
+    case elliptical = "Elliptical"
+    case stairClimbing = "Stair Climbing"
+    
+    var id: String { self.rawValue }
+}
+

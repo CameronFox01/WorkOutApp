@@ -17,7 +17,7 @@ struct WorkoutEntry: Identifiable, Codable {
 }
 
 enum WorkoutCategory: String, CaseIterable, Identifiable {
-    case bodyweight, push, pull, leg, glute, bicep, tricep, abs
+    case bodyweight, push, pull, leg, glute, bicep, tricep, abs, cardio
 
     var id: String { rawValue }
 
@@ -33,6 +33,7 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
         case .bicep: return BicepWorkout.allCases.map(\.rawValue)
         case .tricep: return TricepWorkout.allCases.map(\.rawValue)
         case .abs: return AbsWorkout.allCases.map(\.rawValue)
+        case .cardio: return CardioWorkout.allCases.map(\.rawValue)
         }
     }
 
@@ -61,6 +62,7 @@ struct ImportView: View {
     @State private var weights: [WorkoutCategory: String] = [:]
     @State private var reps: [WorkoutCategory: String] = [:]
     @State private var setsDict: [WorkoutCategory: String] = [:]
+    @State private var distances: [WorkoutCategory: String] = [:]
 
     // UI feedback
     @State private var showSavedToast = false
@@ -77,6 +79,7 @@ struct ImportView: View {
                             weights: $weights,
                             reps: $reps,
                             sets: $setsDict,
+                            distances: $distances,
                             entries: $entries,
                             save: { saveEntry(for: category) },
                             increment: { dict, step in self.increment(&dict, for: category, by: step) },
@@ -120,6 +123,7 @@ struct ImportView: View {
         case .bicep: return "dumbbell"
         case .tricep: return "bolt.circle"
         case .abs: return "figure.core.training"
+        case .cardio: return "figure.run"
         }
     }
 
@@ -130,6 +134,7 @@ struct ImportView: View {
         @Binding var weights: [WorkoutCategory: String]
         @Binding var reps: [WorkoutCategory: String]
         @Binding var sets: [WorkoutCategory: String]
+        @Binding var distances: [WorkoutCategory: String]
         @Binding var entries: [WorkoutEntry]
 
         let save: () -> Void
@@ -179,6 +184,12 @@ struct ImportView: View {
                 set: { sets[category] = $0 }
             )
         }
+        private var distanceBinding: Binding<String> {
+            Binding(
+                get: { distances[category] ?? "" },
+                set: { distances[category] = $0 }
+            )
+        }
 
         @ViewBuilder private var card: some View {
             VStack(alignment: .leading, spacing: 12) {
@@ -192,7 +203,7 @@ struct ImportView: View {
                 .padding(.vertical, 10)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-                if category.usesWeight {
+                if category.usesWeight && category != .cardio {
                     HStack(spacing: 12) {
                         Image(systemName: "scalemass")
                             .foregroundStyle(.secondary)
@@ -210,21 +221,41 @@ struct ImportView: View {
                     .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
 
-                HStack(spacing: 12) {
-                    Image(systemName: "number")
-                        .foregroundStyle(.secondary)
-                    TextField("Reps", text: repsBinding)
-                        .keyboardType(.numberPad)
-                    Spacer()
-                    Stepper("", onIncrement: {
-                        increment(&reps, 1)
-                    }, onDecrement: {
-                        decrement(&reps, 1)
-                    })
-                    .labelsHidden()
+                if category == .cardio {
+                    HStack(spacing: 12) {
+                        Image(systemName: "ruler")
+                            .foregroundStyle(.secondary)
+                        TextField("Distance (\(UnitSystem(rawValue: unitSystemRaw) == .imperial ? "mi" : "km"))", text: distanceBinding)
+                            .keyboardType(.decimalPad)
+                        Spacer()
+                        Stepper("", onIncrement: {
+                            increment(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
+                        }, onDecrement: {
+                            decrement(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
+                        })
+                        .labelsHidden()
+                    }
+                    .padding(12)
+                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                .padding(12)
-                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                if category != .cardio {
+                    HStack(spacing: 12) {
+                        Image(systemName: "number")
+                            .foregroundStyle(.secondary)
+                        TextField("Reps", text: repsBinding)
+                            .keyboardType(.numberPad)
+                        Spacer()
+                        Stepper("", onIncrement: {
+                            increment(&reps, 1)
+                        }, onDecrement: {
+                            decrement(&reps, 1)
+                        })
+                        .labelsHidden()
+                    }
+                    .padding(12)
+                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
 
                 HStack(spacing: 12) {
                     Image(systemName: "square.grid.2x2")
@@ -284,11 +315,22 @@ struct ImportView: View {
                 return
             }
         }
+        
+        if category == .cardio {
+            guard let distance = distances[category], !distance.isEmpty else {
+                feedbackError()
+                print("⛔️ Missing values for distance")
+                return
+            }
+        }
 
-        guard let rep = reps[category], !rep.isEmpty else {
-            feedbackError()
-            print("⛔️ Missing values for rep")
-            return
+        let rep = reps[category] ?? ""
+        if category != .cardio {
+            guard !rep.isEmpty else {
+                feedbackError()
+                print("⛔️ Missing values for rep")
+                return
+            }
         }
 
         guard let workout = selections[category], !workout.isEmpty else {
@@ -300,6 +342,7 @@ struct ImportView: View {
         let setsVal = setsDict[category] ?? ""
 
         let weightString: String = {
+            if category == .cardio { return distances[category] ?? "" }
             if category.usesWeight { return weights[category] ?? "" }
             else { return "" }
         }()
@@ -319,6 +362,7 @@ struct ImportView: View {
         // Clear inputs for quick next set
         DispatchQueue.main.async {
             if category.usesWeight { weights[category] = "" }
+            if category == .cardio { distances[category] = "" }
             reps[category] = ""
             setsDict[category] = ""
         }

@@ -21,6 +21,7 @@ struct GoalView: View {
     @State private var selectedBicep: BicepWorkout = .bicepCurl
     @State private var selectedTricep: TricepWorkout = .tricepPushdown
     @State private var selectedAbs: AbsWorkout = .sitUps
+    @State private var selectedCardio: CardioWorkout = .running
     
     @State private var workoutTargetWeights: [String: String] = [:]
     
@@ -106,6 +107,13 @@ struct GoalView: View {
                 unit: nil
             )
 
+            WorkoutSection(
+                title: "Cardio Workouts",
+                selection: $selectedCardio,
+                allCases: CardioWorkout.allCases,
+                targetWeights: $workoutTargetWeights,
+                unit: nil
+                )
             Section {
                 Text("Using \(unitSystem.rawValue) units")
                     .font(.footnote)
