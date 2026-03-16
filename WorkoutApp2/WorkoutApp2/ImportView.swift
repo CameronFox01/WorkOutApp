@@ -63,6 +63,7 @@ struct ImportView: View {
     @State private var reps: [WorkoutCategory: String] = [:]
     @State private var setsDict: [WorkoutCategory: String] = [:]
     @State private var distances: [WorkoutCategory: String] = [:]
+    @State private var times: [WorkoutCategory: String] = [:]
 
     // UI feedback
     @State private var showSavedToast = false
@@ -80,6 +81,7 @@ struct ImportView: View {
                             reps: $reps,
                             sets: $setsDict,
                             distances: $distances,
+                            times: $times,
                             entries: $entries,
                             save: { saveEntry(for: category) },
                             increment: { dict, step in self.increment(&dict, for: category, by: step) },
@@ -135,6 +137,7 @@ struct ImportView: View {
         @Binding var reps: [WorkoutCategory: String]
         @Binding var sets: [WorkoutCategory: String]
         @Binding var distances: [WorkoutCategory: String]
+        @Binding var times: [WorkoutCategory: String]
         @Binding var entries: [WorkoutEntry]
 
         let save: () -> Void
@@ -188,6 +191,12 @@ struct ImportView: View {
             Binding(
                 get: { distances[category] ?? "" },
                 set: { distances[category] = $0 }
+            )
+        }
+        private var timeBinding: Binding<String> {
+            Binding(
+                get: { times[category] ?? "" },
+                set: { times[category] = $0 }
             )
         }
 
@@ -257,21 +266,41 @@ struct ImportView: View {
                     .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
 
-                HStack(spacing: 12) {
-                    Image(systemName: "square.grid.2x2")
-                        .foregroundStyle(.secondary)
-                    TextField("Sets", text: setsBinding)
-                        .keyboardType(.numberPad)
-                    Spacer()
-                    Stepper("", onIncrement: {
-                        increment(&sets, 1)
-                    }, onDecrement: {
-                        decrement(&sets, 1)
-                    })
-                    .labelsHidden()
+                if category != .cardio {
+                    HStack(spacing: 12) {
+                        Image(systemName: "square.grid.2x2")
+                            .foregroundStyle(.secondary)
+                        TextField("Sets", text: setsBinding)
+                            .keyboardType(.numberPad)
+                        Spacer()
+                        Stepper("", onIncrement: {
+                            increment(&sets, 1)
+                        }, onDecrement: {
+                            decrement(&sets, 1)
+                        })
+                        .labelsHidden()
+                    }
+                    .padding(12)
+                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                .padding(12)
-                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                if category == .cardio {
+                    HStack(spacing: 12) {
+                        Image(systemName: "clock")
+                            .foregroundStyle(.secondary)
+                        TextField("Time (min)", text: timeBinding)
+                            .keyboardType(.numberPad)
+                        Spacer()
+                        Stepper("", onIncrement: {
+                            increment(&times, 1)
+                        }, onDecrement: {
+                            decrement(&times, 1)
+                        })
+                        .labelsHidden()
+                    }
+                    .padding(12)
+                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
 
                 Button(action: save) {
                     HStack {
@@ -307,6 +336,7 @@ struct ImportView: View {
 
     // MARK: - Save / Storage
     func saveEntry(for category: WorkoutCategory) {
+        print("🔍 Saving category: \(category)")
         // Validation adapted to categories without weight
         if category.usesWeight {
             guard let weight = weights[category], !weight.isEmpty else {
@@ -320,6 +350,11 @@ struct ImportView: View {
             guard let distance = distances[category], !distance.isEmpty else {
                 feedbackError()
                 print("⛔️ Missing values for distance")
+                return
+            }
+            guard let time = times[category], !time.isEmpty else {
+                feedbackError()
+                print("⛔️ Missing values for time")
                 return
             }
         }
@@ -339,7 +374,10 @@ struct ImportView: View {
             return
         }
 
-        let setsVal = setsDict[category] ?? ""
+        let setsVal: String = {
+            if category == .cardio { return times[category] ?? "" }
+            else { return setsDict[category] ?? "" }
+        }()
 
         let weightString: String = {
             if category == .cardio { return distances[category] ?? "" }
@@ -363,6 +401,7 @@ struct ImportView: View {
         DispatchQueue.main.async {
             if category.usesWeight { weights[category] = "" }
             if category == .cardio { distances[category] = "" }
+            if category == .cardio { times[category] = "" }
             reps[category] = ""
             setsDict[category] = ""
         }

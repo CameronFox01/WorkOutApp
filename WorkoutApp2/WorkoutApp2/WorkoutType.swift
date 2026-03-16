@@ -109,4 +109,3 @@ enum CardioWorkout: String, CaseIterable, Identifiable, Hashable {
     
     var id: String { self.rawValue }
 }
-
