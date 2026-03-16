@@ -116,10 +116,12 @@ struct WorkoutChartView: View {
 
 #Preview {
     let sampleEntries: [WorkoutEntry] = [
-        WorkoutEntry(workoutType: "Bench Press", weight: "135", reps: "8", date: .now.addingTimeInterval(-86400 * 6)),
-        WorkoutEntry(workoutType: "Bench Press", weight: "145", reps: "8", date: .now.addingTimeInterval(-86400 * 4)),
-        WorkoutEntry(workoutType: "Bench Press", weight: "155", reps: "6", date: .now.addingTimeInterval(-86400 * 2)),
-        WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", date: .now)
+        WorkoutEntry(workoutType: "Bench Press", weight: "135", reps: "8", sets: "2", date: .now.addingTimeInterval(-86400 * 6)),
+        WorkoutEntry(workoutType: "Bench Press", weight: "145", reps: "8", sets: "3", date: .now.addingTimeInterval(-86400 * 4)),
+        WorkoutEntry(workoutType: "Bench Press", weight: "155", reps: "6", sets: "5", date: .now.addingTimeInterval(-86400 * 2)),
+        WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now)
     ]
-    return NavigationView { WorkoutChartView(workoutName: "Bench Press", entries: sampleEntries) }
+    NavigationView {
+        WorkoutChartView(workoutName: "Bench Press", entries: sampleEntries)
+    }
 }

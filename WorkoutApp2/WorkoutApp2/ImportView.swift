@@ -4,7 +4,7 @@
 //
 //  Created by Cameron Fox on 6/4/25.
 //
-// TODO: I need to get this not to show weights on certain workouts.
+
 import SwiftUI
 
 struct WorkoutEntry: Identifiable, Codable {
@@ -12,6 +12,7 @@ struct WorkoutEntry: Identifiable, Codable {
     var workoutType: String
     var weight: String
     var reps: String
+    var sets: String
     var date: Date
 }
 
@@ -59,6 +60,7 @@ struct ImportView: View {
     @State private var selections: [WorkoutCategory: String] = [:]
     @State private var weights: [WorkoutCategory: String] = [:]
     @State private var reps: [WorkoutCategory: String] = [:]
+    @State private var setsDict: [WorkoutCategory: String] = [:]
 
     // UI feedback
     @State private var showSavedToast = false
@@ -74,6 +76,7 @@ struct ImportView: View {
                             selections: $selections,
                             weights: $weights,
                             reps: $reps,
+                            sets: $setsDict,
                             entries: $entries,
                             save: { saveEntry(for: category) },
                             increment: { dict, step in self.increment(&dict, for: category, by: step) },
@@ -101,6 +104,9 @@ struct ImportView: View {
                     if selections[category] == nil {
                         selections[category] = category.workouts.first ?? ""
                     }
+                    if setsDict[category] == nil {
+                        setsDict[category] = "1"
+                    }
                 }
                 loadEntries()
             }
@@ -126,6 +132,7 @@ struct ImportView: View {
         @Binding var selections: [WorkoutCategory: String]
         @Binding var weights: [WorkoutCategory: String]
         @Binding var reps: [WorkoutCategory: String]
+        @Binding var sets: [WorkoutCategory: String]
         @Binding var entries: [WorkoutEntry]
 
         let save: () -> Void
@@ -169,6 +176,12 @@ struct ImportView: View {
                 set: { reps[category] = $0 }
             )
         }
+        private var setsBinding: Binding<String> {
+            Binding(
+                get: { sets[category] ?? "1" },
+                set: { sets[category] = $0 }
+            )
+        }
 
         @ViewBuilder private var card: some View {
             VStack(alignment: .leading, spacing: 12) {
@@ -210,6 +223,22 @@ struct ImportView: View {
                         increment(&reps, 1)
                     }, onDecrement: {
                         decrement(&reps, 1)
+                    })
+                    .labelsHidden()
+                }
+                .padding(12)
+                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                HStack(spacing: 12) {
+                    Image(systemName: "square.grid.2x2")
+                        .foregroundStyle(.secondary)
+                    TextField("Sets", text: setsBinding)
+                        .keyboardType(.numberPad)
+                    Spacer()
+                    Stepper("", onIncrement: {
+                        increment(&sets, 1)
+                    }, onDecrement: {
+                        decrement(&sets, 1)
                     })
                     .labelsHidden()
                 }
@@ -271,6 +300,8 @@ struct ImportView: View {
             return
         }
 
+        let setsVal = setsDict[category] ?? "1"
+
         let weightString: String = {
             if category.usesWeight { return weights[category] ?? "" }
             else { return "" }
@@ -280,6 +311,7 @@ struct ImportView: View {
             workoutType: workout,
             weight: weightString,
             reps: rep,
+            sets: setsVal,
             date: Date()
         )
         workoutData.add(entry: newEntry)
@@ -291,6 +323,7 @@ struct ImportView: View {
         DispatchQueue.main.async {
             if category.usesWeight { weights[category] = "" }
             reps[category] = ""
+            setsDict[category] = "1"
         }
 
         feedbackSuccess()

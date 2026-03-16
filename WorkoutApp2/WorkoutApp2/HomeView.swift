@@ -9,6 +9,7 @@ import SwiftUI
 import HealthKit
 
 struct HomeView: View {
+    @EnvironmentObject var Hmanager: HealthManager
     @EnvironmentObject var workoutData: WorkoutData
     
     @AppStorage("userName") private var name: String = ""
@@ -18,12 +19,6 @@ struct HomeView: View {
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
     
     let healthStore = HKHealthStore()
-    @State private var steps: Double = 0
-    @State private var distanceMeters: Double = 0
-    
-    var distanceMiles: Double {
-        distanceMeters / 1609.34
-    }
     
     @State private var workoutLog: [WorkoutEntry] = {
         if let data = UserDefaults.standard.data(forKey: "workout_entries"),
@@ -73,7 +68,7 @@ struct HomeView: View {
                             Text("Steps Today")
                                 .font(.headline)
 
-                            Text("\(Int(steps))")
+                            Text("\(Hmanager.steps)")
                                 .font(.title2)
                                 .bold()
                         }
@@ -85,8 +80,7 @@ struct HomeView: View {
                         VStack(alignment: .leading) {
                             Text("Distance")
                                 .font(.headline)
-
-                            Text("\(distanceMiles, specifier: "%.2f") mi")
+                            Text(formattedDistance)  // ✅ Replace Hmanager.distance with this
                                 .font(.title2)
                                 .bold()
                         }
@@ -148,11 +142,10 @@ struct HomeView: View {
                     }
                 }
             }
-           // .onAppear {
-               // Task{
-                 //   await loadHealthData()
-                //}
-            //}
+            .onAppear(){
+                Hmanager.fetchSteps()
+                Hmanager.fetchDistance()
+            }
         }
     }
 
@@ -208,107 +201,14 @@ struct HomeView: View {
         }
     }
     
-    //Functions to get Health Data from iPhone
-    func requestHealthAccess() {
-        let steps = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-        let distance = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
-
-        let readTypes: Set = [steps, distance]
-
-        healthStore.requestAuthorization(toShare: [], read: readTypes) { success, error in
-            if success {
-                print("Health access granted")
-            }
-        }
-    }
-    //Function to get Step Count for the Day
-    func fetchStepsToday(completion: @escaping (Double) -> Void) {
-
-        let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-
-        let startOfDay = Calendar.current.startOfDay(for: Date())
-        let predicate = HKQuery.predicateForSamples(
-            withStart: startOfDay,
-            end: Date(),
-            options: .strictStartDate
-        )
-
-        let query = HKStatisticsQuery(
-            quantityType: stepType,
-            quantitySamplePredicate: predicate,
-            options: .cumulativeSum
-        ) { _, result, _ in
-
-            guard let sum = result?.sumQuantity() else {
-                completion(0)
-                return
-            }
-
-            let steps = sum.doubleValue(for: HKUnit.count())
-            completion(steps)
-        }
-
-        healthStore.execute(query)
-    }
-    
-    //Function to get Walking Distance from iPhone
-    func fetchDistanceToday(completion: @escaping (Double) -> Void) {
-
-        let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
-
-        let startOfDay = Calendar.current.startOfDay(for: Date())
-
-        let predicate = HKQuery.predicateForSamples(
-            withStart: startOfDay,
-            end: Date(),
-            options: .strictStartDate
-        )
-
-        let query = HKStatisticsQuery(
-            quantityType: distanceType,
-            quantitySamplePredicate: predicate,
-            options: .cumulativeSum
-        ) { _, result, _ in
-
-            guard let sum = result?.sumQuantity() else {
-                completion(0)
-                return
-            }
-
-            let meters = sum.doubleValue(for: HKUnit.meter())
-            completion(meters)
-        }
-
-        healthStore.execute(query)
-    }
-    
-    func loadHealthData() {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            print("Health data not available")
-            return
-        }
-
-        let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-        let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
-
-        let readTypes: Set = [stepType, distanceType]
-
-        healthStore.requestAuthorization(toShare: [], read: readTypes) { success, error in
-            if success {
-                fetchStepsToday { value in
-                    DispatchQueue.main.async {
-                        steps = value
-                    }
-                }
-
-                fetchDistanceToday { value in
-                    DispatchQueue.main.async {
-                        distanceMeters = value
-                    }
-                }
-            } else if let error = error {
-                print("HealthKit authorization error: \(error.localizedDescription)")
-            }
+    // Section to formate the distance pulled from the health app.
+    var formattedDistance: String {
+        if unitSystem == .metric {
+            let km = Hmanager.distance / 1000
+            return String(format: "%.2f km", km)
+        } else {
+            let miles = Hmanager.distance / 1609.34
+            return String(format: "%.2f mi", miles)
         }
     }
 
@@ -318,5 +218,7 @@ struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         HomeView()
             .environmentObject(WorkoutData())
+            .environmentObject(HealthManager())
     }
 }
+

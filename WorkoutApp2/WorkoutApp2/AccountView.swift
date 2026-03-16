@@ -15,7 +15,8 @@ struct AccountView: View {
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userBirthday") private var birthday = Date()
     @AppStorage("userGender") private var genderRaw: String = Gender.male.rawValue
-
+    
+    
     enum Gender: String, CaseIterable, Identifiable {
         case male = "Male"
         case female = "Female"
@@ -107,7 +108,7 @@ struct AccountView: View {
     var weightUnit: String {
         unitSystem == .metric ? "kg" : "lbs"
     }
-
+    
     // MARK: - Conversion
     func convertValues(from oldUnit: UnitSystem, to newUnit: UnitSystem) {
         guard let heightValue = Double(height),
@@ -116,10 +117,10 @@ struct AccountView: View {
 
         switch (oldUnit, newUnit) {
         case (.metric, .imperial):
-            height = String(format: "%.1f", heightValue / 2.54)
+            height = String(format: "%.1f", heightValue / 2.54) //cm to inches
             weight = String(format: "%.1f", weightValue * 2.20462)
         case (.imperial, .metric):
-            height = String(format: "%.1f", heightValue * 2.54)
+            height = String(format: "%.1f", heightValue * 2.54) //inches to cm
             weight = String(format: "%.1f", weightValue / 2.20462)
         default:
             break

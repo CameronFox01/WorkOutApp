@@ -10,11 +10,13 @@ import SwiftUI
 @main
 struct WorkoutApp2App: App {
     @StateObject private var workoutData = WorkoutData()
+    @StateObject var healthManager = HealthManager()
 
-        var body: some Scene {
-            WindowGroup {
-                ContentView()
-                    .environmentObject(workoutData)  // inject shared data
-            }
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(workoutData)
+                .environmentObject(healthManager)  // ✅ Add this here
         }
+    }
 }

@@ -9,27 +9,38 @@ import SwiftUI
 import Charts
 
 struct ContentView: View {
+    @EnvironmentObject var healthManager: HealthManager  // ✅ Add
+    @EnvironmentObject var workoutData: WorkoutData
+    
     @AppStorage("userName") private var name: String = ""
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @State private var entries: [WorkoutEntry] = []
     @State private var selectedWorkout: String = ""
 
     var body: some View {
-        TabView{
+        TabView {
             HomeView()
+                .environmentObject(healthManager)  
+                .environmentObject(workoutData)
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }
             ImportView()
-                .tabItem{
+                .environmentObject(healthManager)
+                .environmentObject(workoutData)
+                .tabItem {
                     Label("Import", systemImage: "dumbbell")
                 }
             PhotoView()
-                .tabItem{
+                .environmentObject(healthManager)
+                .environmentObject(workoutData)
+                .tabItem {
                     Label("Camera", systemImage: "camera")
                 }
             AccountView()
-                .tabItem{
+                .environmentObject(healthManager)
+                .environmentObject(workoutData)
+                .tabItem {
                     Label("Account", systemImage: "person")
                 }
         }
@@ -57,5 +68,6 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
             .environmentObject(WorkoutData())
+            .environmentObject(HealthManager())  // ✅ Add this
     }
 }
