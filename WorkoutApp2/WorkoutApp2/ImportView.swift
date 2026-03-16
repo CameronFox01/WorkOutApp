@@ -118,7 +118,7 @@ struct ImportView: View {
         case .bodyweight: return "figure.walk"
         case .push: return "arrow.up.forward.circle"
         case .pull: return "arrow.down.backward.circle"
-        case .leg: return "figure.run"
+        case .leg: return "figure.strengthtraining.functional"
         case .glute: return "figure.strengthtraining.traditional"
         case .bicep: return "dumbbell"
         case .tricep: return "bolt.circle"
