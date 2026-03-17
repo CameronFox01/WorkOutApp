@@ -17,6 +17,7 @@ struct HomeView: View {
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userHeight") private var height: String = ""
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
+    @AppStorage("userAccountFirstSaved") private var accountFirstSaved: Date = .distantPast
     
     let healthStore = HKHealthStore()
     
@@ -27,6 +28,8 @@ struct HomeView: View {
         }
         return []
     }()
+    @State private var isPresentingWeightSheet = false
+    @State private var newWeightInput: String = ""
     
     init() {
         if let data = UserDefaults.standard.data(forKey: "workoutLog"),
@@ -44,16 +47,20 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading) {
                     GroupBox(label: Text("Current Progress")) {
-                        VStack {
-                            Text("Weight: \(weight) \(weightUnit)")
-                            if let difference = weightDifference {
-                                Text("Difference to target: \(difference, specifier: "%.1f") \(weightUnit)")
-                            } else {
-                                Text("Set your target weight to see difference")
-                                    .foregroundColor(.gray)
+                        Button { isPresentingWeightSheet = true; newWeightInput = weight } label: {
+                            VStack {
+                                Text("Weight: \(weight) \(weightUnit)")
+                                if let difference = weightDifference {
+                                    Text("Difference to target: \(difference, specifier: "%.1f") \(weightUnit)")
+                                } else {
+                                    Text("Set your target weight to see difference")
+                                        .foregroundColor(.gray)
+                                }
                             }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(.primary)
                         }
-                        .padding()
                     }
                     //Section to get steps and distance
                     LazyVGrid(
@@ -142,9 +149,48 @@ struct HomeView: View {
                     }
                 }
             }
+            .sheet(isPresented: $isPresentingWeightSheet) {
+                WeightUpdateSheet(
+                    unitSystem: unitSystem,
+                    weightUnit: weightUnit,
+                    currentWeight: $weight,
+                    newWeightInput: $newWeightInput,
+                    entries: workoutData.entries,
+                    onSave: { valueString in
+                        // Update AppStorage so Account and others reflect immediately
+                        weight = valueString
+                        // Append a new WorkoutEntry of type "Body Weight"
+                        let entry = WorkoutEntry(
+                            workoutType: "Body Weight",
+                            weight: valueString,
+                            reps: "",
+                            sets: "",
+                            date: Date()
+                        )
+                        workoutData.add(entry: entry)
+                    },
+                    unitSystemRaw: unitSystemRaw
+                )
+            }
             .onAppear(){
                 Hmanager.fetchSteps()
                 Hmanager.fetchDistance()
+                // Seed initial Body Weight entry if none exists, using the first time account info was saved
+                let hasBodyWeight = workoutData.entries.contains { $0.workoutType == "Body Weight" }
+                if !hasBodyWeight, let w = Double(weight), !weight.isEmpty {
+                    // If we don't yet have a recorded first-saved date, set it now
+                    if accountFirstSaved == .distantPast {
+                        accountFirstSaved = Date()
+                    }
+                    let seed = WorkoutEntry(
+                        workoutType: "Body Weight",
+                        weight: String(w),
+                        reps: "",
+                        sets: "",
+                        date: accountFirstSaved
+                    )
+                    workoutData.add(entry: seed)
+                }
             }
         }
     }
@@ -212,6 +258,76 @@ struct HomeView: View {
         }
     }
 
+}
+
+private struct WeightUpdateSheet: View {
+    let unitSystem: UnitSystem
+    let weightUnit: String
+    @Binding var currentWeight: String
+    @Binding var newWeightInput: String
+    var entries: [WorkoutEntry]
+    let onSave: (String) -> Void
+    let unitSystemRaw: String
+
+    @Environment(\.dismiss) private var dismiss
+
+    private var bodyWeightEntries: [WorkoutEntry] {
+        entries.filter { $0.workoutType == "Body Weight" }
+            .sorted { $0.date < $1.date }
+    }
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 16) {
+                // Mini chart using existing WorkoutProgressChart for consistency
+                WorkoutProgressChart(
+                    workoutName: "Body Weight",
+                    entries: entries,
+                    unitSystemRaw: unitSystemRaw
+                )
+                .frame(height: 220)
+                .padding(.horizontal)
+                .padding(.top)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Enter new weight (") + Text(weightUnit).bold() + Text(")")
+                    HStack(spacing: 12) {
+                        TextField("e.g. 180", text: $newWeightInput)
+                            .keyboardType(.decimalPad)
+                            .textFieldStyle(.roundedBorder)
+                        Stepper("", onIncrement: {
+                            let current = Double(newWeightInput) ?? Double(currentWeight) ?? 0
+                            newWeightInput = String(format: "%.1f", current + (unitSystem == .imperial ? 1.0 : 0.5))
+                        }, onDecrement: {
+                            let current = Double(newWeightInput) ?? Double(currentWeight) ?? 0
+                            let next = max(0, current - (unitSystem == .imperial ? 1.0 : 0.5))
+                            newWeightInput = String(format: "%.1f", next)
+                        })
+                        .labelsHidden()
+                    }
+                }
+                .padding(.horizontal)
+
+                Spacer()
+            }
+            .navigationTitle("Update Weight")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        let trimmed = newWeightInput.trimmingCharacters(in: .whitespaces)
+                        guard !trimmed.isEmpty, Double(trimmed) != nil else { return }
+                        onSave(trimmed)
+                        currentWeight = trimmed
+                        dismiss()
+                    }
+                    .disabled(Double(newWeightInput) == nil)
+                }
+            }
+        }
+    }
 }
 
 struct HomeView_Previews: PreviewProvider {
