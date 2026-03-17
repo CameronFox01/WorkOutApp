@@ -23,6 +23,18 @@ struct WorkoutProgressChart: View {
         return nil
     }
 
+    // Additional target weight for Body Weight workout from UserDefaults key "userTargetWeight"
+    private var targetBodyWeight: Double? {
+        guard workoutName == "Body Weight",
+              let str = UserDefaults.standard.string(forKey: "userTargetWeight"),
+              let raw = Double(str) else { return nil }
+        let displayImperial = UnitSystem(rawValue: unitSystemRaw) == .imperial
+        // Normalize to kg then convert to display
+        let kg = displayImperial ? (raw / 2.20462) : raw
+        let displayValue = displayImperial ? (kg * 2.20462) : kg
+        return displayValue
+    }
+
     private var unitLabel: String {
         // If any entry for this workout has non-empty weight, treat as weight-based; else reps
         let isWeightBased = entriesForWorkout.contains { !$0.weight.isEmpty }
@@ -41,9 +53,16 @@ struct WorkoutProgressChart: View {
     }
 
     private var points: [WorkoutDataPoint] {
-        entriesForWorkout.compactMap { entry in
-            if let weightVal = Double(entry.weight), !entry.weight.isEmpty {
-                return WorkoutDataPoint(date: entry.date, value: weightVal)
+        let isWeightBased = entriesForWorkout.contains { !$0.weight.isEmpty }
+        let displayImperial = UnitSystem(rawValue: unitSystemRaw) == .imperial
+        return entriesForWorkout.compactMap { entry in
+            if isWeightBased, let raw = Double(entry.weight), !entry.weight.isEmpty {
+                // Normalize to kg first: we don't know the unit the entry was saved in, but we will assume it was saved in the unit active at that time.
+                // Since we don't persist per-entry unit, we approximate by converting all values from the CURRENT unit to kg, then back to display unit.
+                // This keeps the chart consistent when toggling units.
+                let kgFromCurrent: Double = displayImperial ? (raw / 2.20462) : raw
+                let displayValue: Double = displayImperial ? (kgFromCurrent * 2.20462) : kgFromCurrent
+                return WorkoutDataPoint(date: entry.date, value: displayValue)
             } else if let repsVal = Double(entry.reps), !entry.reps.isEmpty {
                 return WorkoutDataPoint(date: entry.date, value: repsVal)
             } else {
@@ -87,8 +106,8 @@ struct WorkoutProgressChart: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("\(format(latest.value)) \(unitLabel)")
                                     .font(.caption).bold()
-                                if let goal = goalValue {
-                                    let delta = latest.value - goal
+                                if let ref = (goalValue ?? targetBodyWeight) {
+                                    let delta = latest.value - ref
                                     Text(deltaText(delta))
                                         .font(.caption2)
                                         .foregroundStyle(delta >= 0 ? .green : .secondary)
@@ -108,11 +127,15 @@ struct WorkoutProgressChart: View {
                 .overlay(alignment: .trailing) {
                     if let goal = goalValue {
                         goalBadge(goal: goal)
+                    } else if let t = targetBodyWeight {
+                        goalBadge(goal: t)
                     }
                 }
                 .overlay {
                     if let goal = goalValue {
                         goalLine(goal: goal)
+                    } else if let t = targetBodyWeight {
+                        goalLine(goal: t)
                     }
                 }
             }
@@ -125,7 +148,7 @@ struct WorkoutProgressChart: View {
     private var yDomain: ClosedRange<Double>? {
         guard !points.isEmpty else { return nil }
         let minVal = points.map(\.value).min() ?? 0
-        let maxVal = max(points.map(\.value).max() ?? 0, goalValue ?? 0)
+        let maxVal = max(points.map(\.value).max() ?? 0, max(goalValue ?? 0, targetBodyWeight ?? 0))
         if minVal == maxVal { return (minVal - 1)...(maxVal + 1) }
         return (minVal * 0.9)...(maxVal * 1.1)
     }
@@ -135,7 +158,7 @@ struct WorkoutProgressChart: View {
         // Fallback: compute from points or default
         let values = points.map(\.value)
         let minVal = values.min() ?? 0
-        let maxVal = max(values.max() ?? 1, goalValue ?? 0)
+        let maxVal = max(values.max() ?? 1, max(goalValue ?? 0, targetBodyWeight ?? 0))
         if minVal == maxVal { return (minVal - 1)...(maxVal + 1) }
         return (minVal * 0.9)...(maxVal * 1.1)
     }
@@ -182,5 +205,4 @@ struct WorkoutProgressChart: View {
         }
     }
 }
-
 
