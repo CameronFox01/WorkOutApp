@@ -71,21 +71,25 @@ struct HomeView: View {
                         spacing: 16
                     ) {
 
-                        VStack(alignment: .leading) {
-                            Text("Steps Today")
-                                .font(.headline)
+                        NavigationLink(destination: DistanceDetailView(unitSystem: unitSystem)
+                                        .environmentObject(Hmanager)) {
+                            VStack(alignment: .leading) {
+                                Text("Steps Today")
+                                    .font(.headline)
 
-                            Text("\(Hmanager.steps)")
-                                .font(.title2)
-                                .bold()
+                                Text("\(Hmanager.steps)")
+                                    .font(.title2)
+                                    .bold()
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(10)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
+                        .buttonStyle(.plain)
 
                         VStack(alignment: .leading) {
-                            Text("Distance")
+                            Text("Calendar")
                                 .font(.headline)
                             Text(formattedDistance)  // ✅ Replace Hmanager.distance with this
                                 .font(.title2)
@@ -326,6 +330,52 @@ private struct WeightUpdateSheet: View {
                     .disabled(Double(newWeightInput) == nil)
                 }
             }
+        }
+    }
+}
+
+private struct DistanceDetailView: View {
+    @EnvironmentObject var Hmanager: HealthManager
+    let unitSystem: UnitSystem
+
+    var formattedDistance: String {
+        if unitSystem == .metric {
+            let km = Hmanager.distance / 1000
+            return String(format: "%.2f km", km)
+        } else {
+            let miles = Hmanager.distance / 1609.34
+            return String(format: "%.2f mi", miles)
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 16) {
+            GroupBox(label: Text("Today")) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Steps")
+                            .font(.headline)
+                        Text("\(Hmanager.steps)")
+                            .font(.title2).bold()
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 8) {
+                        Text("Distance")
+                            .font(.headline)
+                        Text(formattedDistance)
+                            .font(.title2).bold()
+                    }
+                }
+                .padding()
+            }
+
+            Spacer()
+        }
+        .padding()
+        .navigationTitle("Activity")
+        .onAppear {
+            Hmanager.fetchSteps()
+            Hmanager.fetchDistance()
         }
     }
 }
