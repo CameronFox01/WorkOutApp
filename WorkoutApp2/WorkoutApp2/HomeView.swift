@@ -82,23 +82,25 @@ struct HomeView: View {
                                     .bold()
                             }
                             .padding()
-                            .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+                            .frame(maxWidth: .infinity, minHeight: 147, alignment: .topLeading)
                             .background(Color(.systemGray6))
                             .cornerRadius(10)
                         }
                         .buttonStyle(.plain)
 
-                        VStack(alignment: .leading) {
-                            Text("Calendar")
-                                .font(.headline)
-                            Text(formattedDistance)  // ✅ Replace Hmanager.distance with this
-                                .font(.title2)
-                                .bold()
+                        NavigationLink(destination: WorkoutCalendarView(entries: workoutData.entries)) {
+                            VStack(alignment: .leading) {
+                                Text("Calendar")
+                                    .font(.headline)
+                                WorkoutHeatMapView(entries: workoutData.entries)
+                                    .frame(height: 80)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(10)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
+                        .buttonStyle(.plain)
                     }
                     .padding(.horizontal)
                     //Divider().padding(.vertical)
@@ -377,6 +379,131 @@ private struct DistanceDetailView: View {
             Hmanager.fetchSteps()
             Hmanager.fetchDistance()
         }
+    }
+}
+
+private struct WorkoutHeatMapView: View {
+    let entries: [WorkoutEntry]
+
+    private var countsByDay: [Date: Int] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: entries) { e in calendar.startOfDay(for: e.date) }
+        return grouped.mapValues { $0.count }
+    }
+
+    private var last7Days: [Date] {  // ✅ Changed from 30 to 7
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        return (0..<7).compactMap { cal.date(byAdding: .day, value: -$0, to: today) }.reversed()
+    }
+
+    private func color(for count: Int) -> Color {
+        switch count {
+        case 0: return Color.gray.opacity(0.15)
+        case 1: return Color.green.opacity(0.4)
+        case 2...3: return Color.green.opacity(0.7)
+        default: return Color.green
+        }
+    }
+
+    var body: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 4) {
+            ForEach(last7Days, id: \.self) { day in
+                let c = countsByDay[day] ?? 0
+                VStack(spacing: 2) {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(color(for: c))
+                        .frame(height: 30)
+                    Text(day.formatted(.dateTime.weekday(.narrow)))
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+}
+
+private struct WorkoutCalendarView: View {
+    let entries: [WorkoutEntry]
+    @State private var currentMonthOffset: Int = 0
+
+    private var calendar: Calendar { Calendar.current }
+
+    private var monthStart: Date {
+        let base = calendar.date(byAdding: .month, value: currentMonthOffset, to: Date()) ?? Date()
+        let comps = calendar.dateComponents([.year, .month], from: base)
+        return calendar.date(from: comps) ?? Date()
+    }
+
+    private var daysInMonth: [Date] {
+        guard let range = calendar.range(of: .day, in: .month, for: monthStart) else { return [] }
+        return range.compactMap { day -> Date? in
+            var comps = calendar.dateComponents([.year, .month], from: monthStart)
+            comps.day = day
+            return calendar.date(from: comps)
+        }
+    }
+
+    private var countsByDay: [Date: Int] {
+        let grouped = Dictionary(grouping: entries) { e in calendar.startOfDay(for: e.date) }
+        return grouped.mapValues { $0.count }
+    }
+
+    private func color(for count: Int) -> Color {
+        switch count {
+        case 0: return Color.gray.opacity(0.15)
+        case 1: return Color.green.opacity(0.4)
+        case 2...3: return Color.green.opacity(0.7)
+        default: return Color.green
+        }
+    }
+
+    private var monthTitle: String {
+        monthStart.formatted(.dateTime.year().month(.wide))
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Button(action: { currentMonthOffset -= 1 }) { Image(systemName: "chevron.left") }
+                Spacer()
+                Text(monthTitle).font(.headline)
+                Spacer()
+                Button(action: { currentMonthOffset += 1 }) { Image(systemName: "chevron.right") }
+            }
+            .padding(.horizontal)
+
+            let firstWeekday = calendar.component(.weekday, from: monthStart)
+            let leadingBlanks = (firstWeekday + 5) % 7 // make Monday=1 alignment
+
+            let cells: [Date?] = Array(repeating: nil, count: leadingBlanks) + daysInMonth
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+                ForEach(cells.indices, id: \.self) { idx in
+                    if let day = cells[idx] {
+                        let key = calendar.startOfDay(for: day)
+                        let count = countsByDay[key] ?? 0
+                        VStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(color(for: count))
+                                .frame(height: 32)
+                                .overlay(
+                                    Text("\(calendar.component(.day, from: day))")
+                                        .font(.caption2)
+                                        .foregroundColor(.primary)
+                                )
+                        }
+                    } else {
+                        Color.clear.frame(height: 32)
+                    }
+                }
+            }
+            .padding(.horizontal)
+
+            Spacer()
+        }
+        .navigationTitle("Workout Calendar")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
