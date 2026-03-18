@@ -15,15 +15,15 @@ struct GoalView: View {
     
     
     
-    @State private var selectedBodyWeight: BodyweightWorkout = .pushUps
+    @State private var selectedBodyWeight: BodyweightWorkout = .airSquats
     @State private var selectedPush: PushWorkout = .benchPress
-    @State private var selectedPull: PullWorkout = .deadlift
-    @State private var selectedLeg: LegWorkout = .squat
-    @State private var selectedGlute: GluteWorkout = .hipThrust
-    @State private var selectedBicep: BicepWorkout = .bicepCurl
-    @State private var selectedTricep: TricepWorkout = .tricepPushdown
-    @State private var selectedAbs: AbsWorkout = .sitUps
-    @State private var selectedCardio: CardioWorkout = .running
+    @State private var selectedPull: PullWorkout = .barbellRow
+    @State private var selectedLeg: LegWorkout = .calfRaises
+    @State private var selectedGlute: GluteWorkout = .bandWalks
+    @State private var selectedBicep: BicepWorkout = .barbellCurl
+    @State private var selectedTricep: TricepWorkout = .cableKickback
+    @State private var selectedAbs: AbsWorkout = .burpees
+    @State private var selectedCardio: CardioWorkout = .cycling
     @State private var selectedSports: SportsWorkout = .badminton
     @State private var selectedStretch: StretchRoutine = .catCow
     
@@ -125,13 +125,14 @@ struct GoalView: View {
                 // Bodyweight (no weight)
                 CollapsibleGoalCard(
                     title: "Bodyweight",
-                    systemImage: "figure.strengthtraining.functional",
+                    systemImage: "figure.cross.training",
                     selection: $selectedBodyWeight,
                     allCases: BodyweightWorkout.allCases,
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: false
+                    usesWeight: false,
+                    symbolColor: primaryBlue
                 )
                 
                 // Push
@@ -143,7 +144,8 @@ struct GoalView: View {
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: true
+                    usesWeight: true,
+                    symbolColor: primaryBlue
                 )
                 
                 // Pull
@@ -155,7 +157,8 @@ struct GoalView: View {
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: true
+                    usesWeight: true,
+                    symbolColor: primaryBlue
                 )
                 
                 // Leg
@@ -167,7 +170,8 @@ struct GoalView: View {
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: true
+                    usesWeight: true,
+                    symbolColor: primaryBlue
                 )
                 
                 // Glute
@@ -179,7 +183,8 @@ struct GoalView: View {
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: true
+                    usesWeight: true,
+                    symbolColor: primaryBlue
                 )
                 
                 // Bicep
@@ -191,7 +196,8 @@ struct GoalView: View {
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: true
+                    usesWeight: true,
+                    symbolColor: primaryBlue
                 )
                 
                 // Tricep
@@ -203,7 +209,8 @@ struct GoalView: View {
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: true
+                    usesWeight: true,
+                    symbolColor: primaryBlue
                 )
                 
                 // Abs (no weight)
@@ -215,7 +222,8 @@ struct GoalView: View {
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: false
+                    usesWeight: false,
+                    symbolColor: primaryBlue
                 )
                 
                 // Cardio (distance goal)
@@ -228,7 +236,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: false,
-                    isCardio: true
+                    isCardio: true,
+                    symbolColor: primaryBlue
                 )
                 
                 // Sports (no weight)
@@ -240,7 +249,8 @@ struct GoalView: View {
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: false
+                    usesWeight: false,
+                    symbolColor: primaryBlue
                 )
                 
                 // Stretch (no weight)
@@ -252,7 +262,8 @@ struct GoalView: View {
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
-                    usesWeight: false
+                    usesWeight: false,
+                    symbolColor: primaryBlue
                 )
             }
         }
@@ -378,7 +389,8 @@ struct GoalView: View {
         @Binding var targetWeights: [String: String]
         let usesWeight: Bool
         var isCardio: Bool = false
-        
+        let symbolColor: Color // ✅ now a parameter
+
         @State private var isExpanded: Bool = false
         
         private var weightUnit: String { unitSystem == .metric ? "kg" : "lbs" }
@@ -388,8 +400,11 @@ struct GoalView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Button { withAnimation(.spring()) { isExpanded.toggle() } } label: {
                     HStack {
-                        Label(title, systemImage: systemImage)
-                            .font(.headline)
+                        Image(systemName: systemImage)
+                                 .foregroundColor(symbolColor) // 👈 only icon
+                             Text(title)
+                                 .font(.headline)
+                                 .foregroundColor(.primary) // keep text color normal
                         Spacer()
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                             .foregroundColor(.secondary)

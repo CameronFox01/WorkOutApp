@@ -119,7 +119,7 @@ struct ImportView: View {
 
     private func icon(for category: WorkoutCategory) -> String {
         switch category {
-        case .bodyweight: return "figure.walk"
+        case .bodyweight: return "figure.cross.training"
         case .push: return "arrow.up.forward.circle"
         case .pull: return "arrow.down.backward.circle"
         case .leg: return "figure.strengthtraining.functional"
@@ -128,7 +128,7 @@ struct ImportView: View {
         case .tricep: return "bolt.circle"
         case .abs: return "figure.core.training"
         case .cardio: return "figure.run"
-        case .sports: return "figure.badminton"
+        case .sports: return "sportscourt"
         case .stretch: return "figure.yoga"
         }
     }
