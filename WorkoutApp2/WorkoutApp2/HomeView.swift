@@ -426,6 +426,7 @@ private struct WorkoutHeatMapView: View {
 private struct WorkoutCalendarView: View {
     let entries: [WorkoutEntry]
     @State private var currentMonthOffset: Int = 0
+    @State private var selectedDate: Date = Calendar.current.startOfDay(for: Date())
 
     private var calendar: Calendar { Calendar.current }
 
@@ -447,6 +448,22 @@ private struct WorkoutCalendarView: View {
     private var countsByDay: [Date: Int] {
         let grouped = Dictionary(grouping: entries) { e in calendar.startOfDay(for: e.date) }
         return grouped.mapValues { $0.count }
+    }
+    
+    private var entriesByDay: [Date: [WorkoutEntry]] {
+        Dictionary(grouping: entries) { calendar.startOfDay(for: $0.date) }
+    }
+
+    private func entries(for day: Date) -> [WorkoutEntry] {
+        let key = calendar.startOfDay(for: day)
+        return (entriesByDay[key] ?? []).sorted { $0.date < $1.date }
+    }
+
+    private var lastStoredBodyWeightEntry: WorkoutEntry? {
+        entries
+            .filter { $0.workoutType == "Body Weight" }
+            .sorted { $0.date > $1.date }
+            .first
     }
 
     private func color(for count: Int) -> Color {
@@ -484,17 +501,58 @@ private struct WorkoutCalendarView: View {
                         let key = calendar.startOfDay(for: day)
                         let count = countsByDay[key] ?? 0
                         VStack {
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(color(for: count))
-                                .frame(height: 32)
-                                .overlay(
-                                    Text("\(calendar.component(.day, from: day))")
-                                        .font(.caption2)
-                                        .foregroundColor(.primary)
-                                )
+                            Button {
+                                selectedDate = calendar.startOfDay(for: day)
+                            } label: {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(color(for: count))
+                                    .frame(height: 32)
+                                    .overlay(
+                                        Text("\(calendar.component(.day, from: day))")
+                                            .font(.caption2)
+                                            .foregroundColor(.primary)
+                                    )
+                            }
+                            .buttonStyle(.plain)
                         }
                     } else {
                         Color.clear.frame(height: 32)
+                    }
+                }
+            }
+            .padding(.horizontal)
+            
+            // Details for selected day
+            VStack(alignment: .leading, spacing: 8) {
+                let dayEntries = entries(for: selectedDate)
+                let bodyWeightForDay = dayEntries.first(where: { $0.workoutType == "Body Weight" && !$0.weight.isEmpty })?.weight
+                let fallbackWeight = lastStoredBodyWeightEntry?.weight
+
+                HStack {
+                    Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
+                        .font(.headline)
+                    Spacer()
+                    if let w = bodyWeightForDay ?? fallbackWeight {
+                        Text("Weight: \(w)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                if dayEntries.isEmpty {
+                    ContentUnavailableView("No workouts", systemImage: "calendar", description: Text("No workouts logged for this day."))
+                } else {
+                    ForEach(dayEntries) { e in
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
+                            Text(e.workoutType)
+                                .font(.subheadline).bold()
+                            Spacer()
+                            if !e.weight.isEmpty { Text(e.weight) }
+                            if !e.reps.isEmpty { Text("\(e.reps) reps") }
+                            if !e.sets.isEmpty { Text("\(e.sets) sets") }
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.vertical, 2)
                     }
                 }
             }
