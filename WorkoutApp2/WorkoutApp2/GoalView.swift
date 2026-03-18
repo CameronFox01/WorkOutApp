@@ -22,6 +22,8 @@ struct GoalView: View {
     @State private var selectedTricep: TricepWorkout = .tricepPushdown
     @State private var selectedAbs: AbsWorkout = .sitUps
     @State private var selectedCardio: CardioWorkout = .running
+    @State private var selectedSports: SportsWorkout = .badminton
+    @State private var selectedStretch: StretchRoutine = .catCow
     
     @State private var workoutTargetWeights: [String: String] = [:]
     
@@ -95,6 +97,13 @@ struct GoalView: View {
             
             WorkoutSection(title: "Cardio Workouts", selection: $selectedCardio,
                            allCases: CardioWorkout.allCases, targetWeights: $workoutTargetWeights,
+                           unitSystemRaw: $unitSystemRaw, usesWeight: false)
+            WorkoutSection(title: "Sports", selection: $selectedSports, allCases:
+                            SportsWorkout.allCases, targetWeights: $workoutTargetWeights,
+                           unitSystemRaw: $unitSystemRaw, usesWeight: false)
+            
+            WorkoutSection(title: "Stretch", selection: $selectedStretch, allCases:
+                            StretchRoutine.allCases, targetWeights: $workoutTargetWeights,
                            unitSystemRaw: $unitSystemRaw, usesWeight: false)
             
             Section {

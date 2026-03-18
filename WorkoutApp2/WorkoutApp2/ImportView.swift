@@ -17,7 +17,7 @@ struct WorkoutEntry: Identifiable, Codable {
 }
 
 enum WorkoutCategory: String, CaseIterable, Identifiable {
-    case bodyweight, push, pull, leg, glute, bicep, tricep, abs, cardio
+    case bodyweight, push, pull, leg, glute, bicep, tricep, abs, cardio, sports, stretch
 
     var id: String { rawValue }
 
@@ -25,22 +25,24 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
 
     var workouts: [String] {
         switch self {
+        case .abs: return AbsWorkout.allCases.map(\.rawValue)
+        case .bicep: return BicepWorkout.allCases.map(\.rawValue)
         case .bodyweight: return BodyweightWorkout.allCases.map(\.rawValue)
         case .push: return PushWorkout.allCases.map(\.rawValue)
         case .pull: return PullWorkout.allCases.map(\.rawValue)
         case .leg: return LegWorkout.allCases.map(\.rawValue)
         case .glute: return GluteWorkout.allCases.map(\.rawValue)
-        case .bicep: return BicepWorkout.allCases.map(\.rawValue)
         case .tricep: return TricepWorkout.allCases.map(\.rawValue)
-        case .abs: return AbsWorkout.allCases.map(\.rawValue)
         case .cardio: return CardioWorkout.allCases.map(\.rawValue)
+        case .sports: return SportsWorkout.allCases.map(\.rawValue)
+        case .stretch: return StretchRoutine.allCases.map(\.rawValue)
         }
     }
 
     // Categories where weight is typically not entered
     var usesWeight: Bool {
         switch self {
-        case .bodyweight, .abs: return false
+        case .bodyweight, .abs, .stretch, .sports, .cardio: return false
         default: return true
         }
     }
@@ -126,6 +128,8 @@ struct ImportView: View {
         case .tricep: return "bolt.circle"
         case .abs: return "figure.core.training"
         case .cardio: return "figure.run"
+        case .sports: return "figure.badminton"
+        case .stretch: return "figure.yoga"
         }
     }
 
