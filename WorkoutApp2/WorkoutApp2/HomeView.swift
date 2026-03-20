@@ -18,6 +18,7 @@ struct HomeView: View {
     @AppStorage("userHeight") private var height: String = ""
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
     @AppStorage("userAccountFirstSaved") private var accountFirstSaved: Date = .distantPast
+    @AppStorage("userOriginalWeight") private var originalWeight: String = ""
     
     let healthStore = HKHealthStore()
     
@@ -48,18 +49,42 @@ struct HomeView: View {
                 VStack(alignment: .leading) {
                     GroupBox(label: Text("Current Progress")) {
                         Button { isPresentingWeightSheet = true; newWeightInput = weight } label: {
-                            VStack {
-                                Text("Weight: \(weight) \(weightUnit)")
-                                if let difference = weightDifference {
-                                    Text("Difference to target: \(difference, specifier: "%.1f") \(weightUnit)")
+                            VStack(alignment: .leading, spacing: 8) {
+                                // Current weight prominent
+                                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                    Text(weight.isEmpty ? "—" : weight)
+                                        .font(.system(size: 34, weight: .bold))
+                                    Text(weightUnit)
+                                        .font(.headline)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                // Target
+                                HStack(spacing: 6) {
+                                    Image(systemName: "target")
+                                        .foregroundStyle(.secondary)
+                                    Text("Target: \(targetWeight.isEmpty ? "—" : targetWeight) \(weightUnit)")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                // Progress percentage from original weight
+                                if let pct = progressPercentText, let color = progressColor {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "chart.line.uptrend.xyaxis")
+                                            .foregroundStyle(color)
+                                        Text(pct)
+                                            .font(.subheadline).bold()
+                                            .foregroundStyle(color)
+                                    }
                                 } else {
-                                    Text("Set your target weight to see difference")
-                                        .foregroundColor(.gray)
+                                    Text("Set target weight to see progress")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
                                 }
                             }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .foregroundColor(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 4)
                         }
                     }
                     //Section to get steps and distance
@@ -197,6 +222,10 @@ struct HomeView: View {
                     )
                     workoutData.add(entry: seed)
                 }
+                // Seed original weight if not set
+                if originalWeight.isEmpty, !weight.isEmpty, Double(weight) != nil {
+                    originalWeight = weight
+                }
             }
         }
     }
@@ -262,6 +291,46 @@ struct HomeView: View {
             let miles = Hmanager.distance / 1609.34
             return String(format: "%.2f mi", miles)
         }
+    }
+    
+    private var currentWeightValue: Double? { Double(weight) }
+    private var targetWeightValue: Double? { Double(targetWeight) }
+    private var originalWeightValue: Double? { Double(originalWeight) }
+
+    // Percentage progress from original toward target. Positive = closer, negative = farther.
+    private var progressPercent: Double? {
+        guard let orig = originalWeightValue,
+              let curr = currentWeightValue,
+              let tgt = targetWeightValue,
+              orig != tgt else { return nil }
+        
+        let total = abs(tgt - orig)
+        if total == 0 { return nil }
+        
+        let remaining = abs(tgt - curr)
+        // ✅ Don't clamp — allow negative progress (moved away from target)
+        let progressed = total - remaining
+        return (progressed / total) * 100.0
+    }
+
+    private var progressPercentText: String? {
+        guard let pct = progressPercent else { return nil }
+        // ✅ Use the actual sign from the number itself
+        if pct >= 0 {
+            return String(format: "Progress: +%.0f%%", pct)
+        } else {
+            return String(format: "Progress: %.0f%%", pct)  // already has minus sign
+        }
+    }
+
+    private var progressMovedDirectionPositive: Bool? {
+        guard let pct = progressPercent else { return nil }
+        return pct >= 0
+    }
+
+    private var progressColor: Color? {
+        guard let positive = progressMovedDirectionPositive else { return nil }
+        return positive ? .green : .red
     }
 
 }
