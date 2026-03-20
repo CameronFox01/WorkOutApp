@@ -631,6 +631,13 @@ private struct WorkoutCalendarView: View {
         }
         .navigationTitle("Workout Calendar")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(destination: PlannedWorkoutsView()) {
+                    Image(systemName: "calendar.badge.plus")
+                }
+            }
+        }
     }
 }
 
