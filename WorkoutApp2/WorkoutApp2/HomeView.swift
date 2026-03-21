@@ -98,18 +98,35 @@ struct HomeView: View {
 
                         NavigationLink(destination: DistanceDetailView(unitSystem: unitSystem)
                                         .environmentObject(Hmanager)) {
-                            VStack(alignment: .leading) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text("Steps Today")
                                     .font(.headline)
 
                                 Text("\(Hmanager.steps)")
                                     .font(.title2)
                                     .bold()
+
+                                // 5-day mini bar chart
+                                if !lastFiveDaysSteps.isEmpty {
+                                    FiveDayStepsBarChart(data: lastFiveDaysSteps)
+                                        .frame(height: 60)
+                                        .padding(.top, 4)
+
+                                    HStack {
+                                        Text("5-day avg:")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text("\(fiveDayAverageSteps)")
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundStyle(.secondary)
+                                    }
+                                } else {
+                                    Text("5-day history unavailable")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
-                            .padding()
-                            .frame(maxWidth: .infinity, minHeight: 147, alignment: .topLeading)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(10)
                         }
                         .buttonStyle(.plain)
 
@@ -203,9 +220,11 @@ struct HomeView: View {
                     unitSystemRaw: unitSystemRaw
                 )
             }
-            .onAppear(){
+            .onAppear {
                 Hmanager.fetchSteps()
                 Hmanager.fetchDistance()
+                Hmanager.fetchLastFiveDaysSteps()
+
                 // Seed initial Body Weight entry if none exists, using the first time account info was saved
                 let hasBodyWeight = workoutData.entries.contains { $0.workoutType == "Body Weight" }
                 if !hasBodyWeight, let w = Double(weight), !weight.isEmpty {
@@ -293,6 +312,15 @@ struct HomeView: View {
         }
     }
     
+    private var lastFiveDaysSteps: [(date: Date, steps: Int)] {
+        Hmanager.lastFiveDaysSteps
+    }
+    
+    private var fiveDayAverageSteps: Int {
+        let total = lastFiveDaysSteps.reduce(0) { $0 + $1.steps }
+        return lastFiveDaysSteps.isEmpty ? 0 : total / lastFiveDaysSteps.count
+    }
+    
     private var currentWeightValue: Double? { Double(weight) }
     private var targetWeightValue: Double? { Double(targetWeight) }
     private var originalWeightValue: Double? { Double(originalWeight) }
@@ -333,6 +361,41 @@ struct HomeView: View {
         return positive ? .green : .red
     }
 
+}
+
+private struct FiveDayStepsBarChart: View {
+    let data: [(date: Date, steps: Int)]
+
+    private var maxSteps: Double {
+        max(Double(data.map { $0.steps }.max() ?? 1), 1)
+    }
+
+    private var weekdayFormatter: DateFormatter {
+        let df = DateFormatter()
+        df.dateFormat = "E"
+        return df
+    }
+
+    var body: some View {
+        HStack(alignment: .bottom, spacing: 8) {
+            ForEach(Array(data.enumerated()), id: \.offset) { idx, item in
+                VStack(spacing: 4) {
+                    GeometryReader { geo in
+                        let heightRatio = CGFloat(Double(item.steps) / maxSteps)
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.accentColor.opacity(0.6))
+                            .frame(height: max(4, geo.size.height * heightRatio))
+                            .frame(maxHeight: .infinity, alignment: .bottom)
+                    }
+                    .frame(width: 16)
+
+                    Text(weekdayFormatter.string(from: item.date))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
 }
 
 private struct WeightUpdateSheet: View {

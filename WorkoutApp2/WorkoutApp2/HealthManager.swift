@@ -9,6 +9,8 @@ import Foundation
 import HealthKit
 
 class HealthManager: ObservableObject {
+    // In HealthManager
+    @Published var lastFiveDaysSteps: [(date: Date, steps: Int)] = []
     
     let healthStore = HKHealthStore()
     
@@ -68,5 +70,34 @@ class HealthManager: ObservableObject {
             }
         }
         healthStore.execute(query)
+    }
+
+    func fetchLastFiveDaysSteps() {
+        let stepsType = HKQuantityType(.stepCount)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        var results: [(date: Date, steps: Int)] = []
+        let group = DispatchGroup()
+
+        for dayOffset in (0..<5).reversed() {
+            guard let day = calendar.date(byAdding: .day, value: -dayOffset, to: today),
+                  let endOfDay = calendar.date(byAdding: .day, value: 1, to: day) else { continue }
+
+            let predicate = HKQuery.predicateForSamples(withStart: day, end: endOfDay, options: .strictStartDate)
+
+            group.enter()
+            let query = HKStatisticsQuery(quantityType: stepsType, quantitySamplePredicate: predicate) { _, result, _ in
+                let count = Int(result?.sumQuantity()?.doubleValue(for: .count()) ?? 0)
+                results.append((date: day, steps: count))
+                group.leave()
+            }
+            healthStore.execute(query)
+        }
+
+        group.notify(queue: .main) {
+            // Sort by date since queries may return out of order
+            self.lastFiveDaysSteps = results.sorted { $0.date < $1.date }
+        }
     }
 }
