@@ -405,7 +405,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage for taking progress photo's";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "The app will track and display your steps and how far you have travelled.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Permission to access photos from gallery to be used in the app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -434,7 +436,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage for taking progress photo's";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "The app will track and display your steps and how far you have travelled.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Permission to access photos from gallery to be used in the app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
