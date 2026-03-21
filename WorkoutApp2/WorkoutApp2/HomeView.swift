@@ -377,24 +377,94 @@ private struct FiveDayStepsBarChart: View {
     }
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 8) {
-            ForEach(Array(data.enumerated()), id: \.offset) { idx, item in
-                VStack(spacing: 4) {
-                    GeometryReader { geo in
-                        let heightRatio = CGFloat(Double(item.steps) / maxSteps)
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color.accentColor.opacity(0.6))
-                            .frame(height: max(4, geo.size.height * heightRatio))
-                            .frame(maxHeight: .infinity, alignment: .bottom)
-                    }
-                    .frame(width: 16)
+        GeometryReader { geo in
+            let spacing: CGFloat = 8
+            let totalSpacing = spacing * CGFloat(data.count - 1)
+            let barWidth = (geo.size.width - totalSpacing) / CGFloat(data.count)  // ✅ Uses full geo width
+            let chartHeight = geo.size.height - 20  // leave room for labels
 
-                    Text(weekdayFormatter.string(from: item.date))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+            HStack(alignment: .bottom, spacing: spacing) {
+                ForEach(Array(data.enumerated()), id: \.offset) { idx, item in
+                    VStack(spacing: 4) {
+                        ZStack(alignment: .bottom) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.gray.opacity(0.15))
+                                .frame(width: barWidth, height: chartHeight)
+
+                            let heightRatio = CGFloat(Double(item.steps) / maxSteps)
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.accentColor.opacity(0.7))
+                                .frame(width: barWidth, height: max(4, chartHeight * heightRatio))
+                        }
+
+                        Text(weekdayFormatter.string(from: item.date))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(width: barWidth)
+                    }
                 }
             }
+            .frame(width: geo.size.width)  // ✅ Force HStack to use full GeometryReader width
         }
+        .frame(maxWidth: .infinity)  // ✅ Tell GeometryReader to take full width
+    }
+}
+
+private struct FiveDayStepsBarChartWithValues: View {
+    let data: [(date: Date, steps: Int)]
+
+    private var maxSteps: Double {
+        max(Double(data.map { $0.steps }.max() ?? 1), 1)
+    }
+
+    private var weekdayFormatter: DateFormatter {
+        let df = DateFormatter()
+        df.dateFormat = "E"
+        return df
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let spacing: CGFloat = 8
+            let totalSpacing = spacing * CGFloat(data.count - 1)
+            let barWidth = (geo.size.width - totalSpacing) / CGFloat(data.count)
+            let chartHeight = geo.size.height - 40  // room for label + step count
+
+            HStack(alignment: .bottom, spacing: spacing) {
+                ForEach(Array(data.enumerated()), id: \.offset) { _, item in
+                    let heightRatio = CGFloat(Double(item.steps) / maxSteps)
+                    let barHeight = max(4, chartHeight * heightRatio)
+
+                    VStack(spacing: 2) {
+                        // ✅ Step count sits just above the bar
+                        Text("\(item.steps)")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: barWidth)
+
+                        ZStack(alignment: .bottom) {
+                            // Background track
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.gray.opacity(0.15))
+                                .frame(width: barWidth, height: chartHeight)
+
+                            // Filled bar
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.accentColor.opacity(0.7))
+                                .frame(width: barWidth, height: barHeight)
+                        }
+
+                        // ✅ Day label sits below the bar
+                        Text(weekdayFormatter.string(from: item.date))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(width: barWidth)
+                    }
+                }
+            }
+            .frame(width: geo.size.width)
+        }
+        .frame(maxWidth: .infinity, minHeight: 200)
     }
 }
 
@@ -471,7 +541,15 @@ private struct WeightUpdateSheet: View {
 private struct DistanceDetailView: View {
     @EnvironmentObject var Hmanager: HealthManager
     let unitSystem: UnitSystem
-
+    
+    @AppStorage("dailyStepsGoal") private var dailyStepsGoal: Int = 10000
+    
+    private var lastFiveDaysSteps: [(date: Date, steps: Int)] { Hmanager.lastFiveDaysSteps }
+    private var fiveDayAverageSteps: Int {
+        let total = lastFiveDaysSteps.reduce(0) { $0 + $1.steps }
+        return lastFiveDaysSteps.isEmpty ? 0 : total / lastFiveDaysSteps.count
+    }
+    
     var formattedDistance: String {
         if unitSystem == .metric {
             let km = Hmanager.distance / 1000
@@ -483,33 +561,92 @@ private struct DistanceDetailView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            GroupBox(label: Text("Today")) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Steps")
-                            .font(.headline)
-                        Text("\(Hmanager.steps)")
-                            .font(.title2).bold()
+        ScrollView {
+            VStack(spacing: 16) {
+                GroupBox(label: Text("Today")) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Steps")
+                                .font(.headline)
+                            Text("\(Hmanager.steps)")
+                                .font(.title2).bold()
+                            Text("Goal: \(dailyStepsGoal)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 8) {
+                            Text("Distance")
+                                .font(.headline)
+                            Text(formattedDistance)
+                                .font(.title2).bold()
+                        }
                     }
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Text("Distance")
-                            .font(.headline)
-                        Text(formattedDistance)
-                            .font(.title2).bold()
-                    }
+                    .padding()
                 }
-                .padding()
-            }
 
-            Spacer()
+                GroupBox(label: Text("Last 5 Days")) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if !lastFiveDaysSteps.isEmpty {
+                            FiveDayStepsBarChartWithValues(data: lastFiveDaysSteps)
+                              
+                                .frame(maxWidth: .infinity, minHeight: 200)
+                                .padding(.top, 4)
+
+                            HStack {
+                                Text("5-day avg:")
+                                    .font(.body)
+                                    .foregroundStyle(.secondary)
+                                Text("\(fiveDayAverageSteps)")
+                                    .font(.body)
+                                    .bold()
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                            }
+                            
+                            // Move goal status below the chart and avg row
+                            if let latest = lastFiveDaysSteps.last {
+                                let met = latest.steps >= dailyStepsGoal
+                                HStack {
+                                    Label(met ? "Goal met" : "Goal not met", systemImage: met ? "checkmark.circle" : "xmark.circle")
+                                        .font(.headline)
+                                        .foregroundStyle(met ? .green : .red)
+                                    Spacer()
+                                }
+                            }
+                        } else {
+                            Text("5-day history unavailable")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                }
+
+                GroupBox(label: Text("Daily Step Goal")) {
+                    HStack(spacing: 12) {
+                        Stepper(value: $dailyStepsGoal, in: 1000...50000, step: 500) {
+                            Text("Goal: \(dailyStepsGoal) steps")
+                                .font(.subheadline)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    Text("This goal applies per day and is shown above when comparing recent days.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
+                        .padding(.bottom, 8)
+                }
+            }
+            .padding()
         }
-        .padding()
         .navigationTitle("Activity")
         .onAppear {
             Hmanager.fetchSteps()
             Hmanager.fetchDistance()
+            Hmanager.fetchLastFiveDaysSteps()
         }
     }
 }
