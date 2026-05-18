@@ -511,9 +511,10 @@ private struct WeightUpdateSheet: View {
                 )
                 .frame(height: 220)
                 .padding(.horizontal)
-                .padding(.top)
+                .padding(.top, 25)
+                .padding(.bottom, 25)
 
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 25) {
                     Text("Enter new weight (") + Text(weightUnit).bold() + Text(")")
                     HStack(spacing: 12) {
                         TextField("e.g. 180", text: $newWeightInput)
