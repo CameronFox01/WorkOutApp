@@ -160,7 +160,7 @@ struct HomeView: View {
                         ],
                         spacing: 16
                     ) {
-                        ForEach(firstEntryPerWorkoutType(from: workoutData.entries)) { entry in
+                        ForEach(lastEntryPerWorkoutType(from: workoutData.entries)) { entry in
                             NavigationLink(
                                 destination: WorkoutChartView(
                                     workoutName: entry.workoutType,
@@ -299,6 +299,22 @@ struct HomeView: View {
                 return true
             }
         }
+    }
+    
+    func lastEntryPerWorkoutType(from entries: [WorkoutEntry]) -> [WorkoutEntry] {
+        let sortedEntries = entries.sorted { $0.date > $1.date }
+
+           var seen = Set<String>()
+           var result: [WorkoutEntry] = []
+
+           for entry in sortedEntries {
+               if !seen.contains(entry.workoutType) {
+                   seen.insert(entry.workoutType)
+                   result.append(entry)
+               }
+           }
+
+           return result
     }
     
     // Section to formate the distance pulled from the health app.
