@@ -94,6 +94,7 @@ enum GluteWorkout: String, CaseIterable, Identifiable, Hashable {
     case donkeyKicks = "Donkey Kicks"
     case gluteBridge = "Glute Bridge"
     case hipThrust = "Hip Thrust"
+    case sissySquat = "Sissy Squat"
 
     var id: String { self.rawValue }
 }

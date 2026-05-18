@@ -8,41 +8,57 @@
 import SwiftUI
 import Charts
 
+import SwiftUI
+
 struct ContentView: View {
-    @EnvironmentObject var healthManager: HealthManager 
+    @EnvironmentObject var healthManager: HealthManager
     @EnvironmentObject var workoutData: WorkoutData
-    
-    @AppStorage("userName") private var name: String = ""
-    @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
+
+    @AppStorage("hasCompletedSetup") private var hasCompletedSetup = false
+
     @State private var entries: [WorkoutEntry] = []
     @State private var selectedWorkout: String = ""
 
     var body: some View {
-        TabView {
-            HomeView()
-                .environmentObject(healthManager)  
-                .environmentObject(workoutData)
-                .tabItem {
-                    Label("Home", systemImage: "house")
-                }
-            ImportView()
+
+        if hasCompletedSetup {
+
+            TabView {
+
+                HomeView()
+                    .environmentObject(healthManager)
+                    .environmentObject(workoutData)
+                    .tabItem {
+                        Label("Home", systemImage: "house")
+                    }
+
+                ImportView()
+                    .environmentObject(healthManager)
+                    .environmentObject(workoutData)
+                    .tabItem {
+                        Label("Import", systemImage: "dumbbell")
+                    }
+
+                PhotoView()
+                    .environmentObject(healthManager)
+                    .environmentObject(workoutData)
+                    .tabItem {
+                        Label("Camera", systemImage: "camera")
+                    }
+                GoalView()
+                    .environmentObject(healthManager)
+                    .environmentObject(workoutData)
+                    .tabItem{
+                    Label("Goal", systemImage: "trophy")
+                    }
+                
+            }
+
+        } else {
+
+            StartUpView()
                 .environmentObject(healthManager)
                 .environmentObject(workoutData)
-                .tabItem {
-                    Label("Import", systemImage: "dumbbell")
-                }
-            PhotoView()
-                .environmentObject(healthManager)
-                .environmentObject(workoutData)
-                .tabItem {
-                    Label("Camera", systemImage: "camera")
-                }
-            AccountView()
-                .environmentObject(healthManager)
-                .environmentObject(workoutData)
-                .tabItem {
-                    Label("Account", systemImage: "person")
-                }
         }
     }
 
@@ -53,10 +69,16 @@ struct ContentView: View {
     private func loadEntries() {
         if let data = UserDefaults.standard.data(forKey: "workout_entries"),
            let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
+
             entries = decoded
-            if selectedWorkout.isEmpty, let first = workoutsList.first {
+
+            if selectedWorkout.isEmpty,
+               let first = workoutsList.first {
+
                 selectedWorkout = first
+
             } else if !workoutsList.contains(selectedWorkout) {
+
                 selectedWorkout = workoutsList.first ?? ""
             }
         }
