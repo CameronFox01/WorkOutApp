@@ -27,6 +27,8 @@ struct PlannedWorkoutsView: View {
     }
 
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
+    
+    @FocusState private var isEditing: Bool
 
     @State private var selectedDay: Weekday = .mon
     @State private var plannedCount: String = ""
@@ -49,6 +51,10 @@ struct PlannedWorkoutsView: View {
                     .padding(.horizontal)
                     .padding(.top, 8)
                     .padding(.bottom, 24)
+                }
+                .scrollDismissesKeyboard(.interactively)
+                .onTapGesture {
+                    isEditing = false
                 }
             }
             .navigationTitle("Planned Workouts")
@@ -107,7 +113,7 @@ struct PlannedWorkoutsView: View {
                 Text("Number of workouts")
                     .font(.subheadline)
                 Spacer()
-                pillField(text: $plannedCount, placeholder: "3")
+                pillField(text: $plannedCount, placeholder: "3", focus: $isEditing)
             }
         }
         .padding(16)

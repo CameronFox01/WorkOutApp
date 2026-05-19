@@ -25,32 +25,41 @@ struct ContentView: View {
 
             TabView {
 
-                HomeView()
-                    .environmentObject(healthManager)
-                    .environmentObject(workoutData)
-                    .tabItem {
-                        Label("Home", systemImage: "house")
-                    }
+                NavigationStack{
+                    HomeView()
+                        .environmentObject(healthManager)
+                        .environmentObject(workoutData)
+                }
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                }
 
-                ImportView()
-                    .environmentObject(healthManager)
-                    .environmentObject(workoutData)
-                    .tabItem {
-                        Label("Import", systemImage: "dumbbell")
-                    }
-
-                PhotoView()
-                    .environmentObject(healthManager)
-                    .environmentObject(workoutData)
-                    .tabItem {
-                        Label("Camera", systemImage: "camera")
-                    }
-                GoalView()
-                    .environmentObject(healthManager)
-                    .environmentObject(workoutData)
-                    .tabItem{
+                NavigationStack{
+                    ImportView()
+                        .environmentObject(healthManager)
+                        .environmentObject(workoutData)
+                }
+                .tabItem {
+                    Label("Import", systemImage: "dumbbell")
+                }
+                
+                NavigationStack{
+                    PhotoView()
+                        .environmentObject(healthManager)
+                        .environmentObject(workoutData)
+                }
+                .tabItem {
+                    Label("Camera", systemImage: "camera")
+                }
+                
+                NavigationStack{
+                    GoalView()
+                        .environmentObject(healthManager)
+                        .environmentObject(workoutData)
+                }
+                .tabItem{
                     Label("Goal", systemImage: "trophy")
-                    }
+                }
                 
             }
 

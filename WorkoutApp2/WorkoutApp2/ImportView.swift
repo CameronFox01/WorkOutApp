@@ -66,9 +66,18 @@ struct ImportView: View {
     @State private var setsDict: [WorkoutCategory: String] = [:]
     @State private var distances: [WorkoutCategory: String] = [:]
     @State private var times: [WorkoutCategory: String] = [:]
+    
+    // Weight Stuff
+    @AppStorage("userWeight") private var currentWeight: String = ""
+
+    @State private var newWeightInput: String = ""
 
     // UI feedback
     @State private var showSavedToast = false
+    
+    private var unitSystem: UnitSystem {
+        UnitSystem(rawValue: unitSystemRaw) ?? .metric
+    }
 
     var body: some View {
         NavigationView {

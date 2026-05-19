@@ -36,9 +36,9 @@ class HealthManager: ObservableObject {
         let steps = HKQuantityType(.stepCount)
         
         let startOfDay = Calendar.current.startOfDay(for: Date())
-        let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: Date(), options: .strictStartDate)
+        let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: Date())
           
-        let query = HKStatisticsQuery(quantityType: steps, quantitySamplePredicate: predicate) { _, result, error in
+        let query = HKStatisticsQuery(quantityType: steps, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
             guard let quantity = result?.sumQuantity(), error == nil else {
                 print("Error fetching steps for today")
                 return
@@ -58,9 +58,9 @@ class HealthManager: ObservableObject {
     func fetchDistance() {
         let distance = HKQuantityType(.distanceWalkingRunning)
         let startOfDay = Calendar.current.startOfDay(for: Date())
-        let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: Date(), options: .strictStartDate)
+        let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: Date())
         
-        let query = HKStatisticsQuery(quantityType: distance, quantitySamplePredicate: predicate) { _, result, error in
+        let query = HKStatisticsQuery(quantityType: distance, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
             guard let quantity = result?.sumQuantity(), error == nil else {
                 print("Error fetching distance for today")
                 return
@@ -81,10 +81,12 @@ class HealthManager: ObservableObject {
         let group = DispatchGroup()
 
         for dayOffset in (0..<5).reversed() {
-            guard let day = calendar.date(byAdding: .day, value: -dayOffset, to: today),
-                  let endOfDay = calendar.date(byAdding: .day, value: 1, to: day) else { continue }
+            guard let day = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
 
-            let predicate = HKQuery.predicateForSamples(withStart: day, end: endOfDay, options: .strictStartDate)
+            let isToday = dayOffset == 0
+            let endOfDay = isToday ? Date() : (calendar.date(byAdding: .day, value: 1, to: day) ?? day)
+
+            let predicate = HKQuery.predicateForSamples(withStart: day, end: endOfDay)
 
             group.enter()
             let query = HKStatisticsQuery(quantityType: stepsType, quantitySamplePredicate: predicate) { _, result, _ in
@@ -96,7 +98,6 @@ class HealthManager: ObservableObject {
         }
 
         group.notify(queue: .main) {
-            // Sort by date since queries may return out of order
             self.lastFiveDaysSteps = results.sorted { $0.date < $1.date }
         }
     }

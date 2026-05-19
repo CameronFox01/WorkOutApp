@@ -40,8 +40,8 @@ struct PhotoView: View {
                             .background(Color(.systemGray6))
                             .clipShape(Capsule())
                     }
-                    .onChange(of: leftSelectedItem) { newItem in
-                        guard let newItem = newItem else { return }
+                    .onChange(of: leftSelectedItem, initial: false) { oldValue, newValue in
+                        guard let newItem = newValue else { return }
                         Task {
                             if let data = try? await newItem.loadTransferable(type: Data.self),
                                let image = UIImage(data: data) {
@@ -58,8 +58,8 @@ struct PhotoView: View {
                             .background(Color(.systemGray6))
                             .clipShape(Capsule())
                     }
-                    .onChange(of: rightSelectedItem) { newItem in
-                        guard let newItem = newItem else { return }
+                    .onChange(of: rightSelectedItem, initial: false) { oldValue, newValue in
+                        guard let newItem = newValue else { return }
                         Task {
                             if let data = try? await newItem.loadTransferable(type: Data.self),
                                let image = UIImage(data: data) {

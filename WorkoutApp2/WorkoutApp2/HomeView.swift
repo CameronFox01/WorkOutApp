@@ -20,6 +20,14 @@ struct HomeView: View {
     @AppStorage("userAccountFirstSaved") private var accountFirstSaved: Date = .distantPast
     @AppStorage("userOriginalWeight") private var originalWeight: String = ""
     
+    //Profil Image Saved here
+    @AppStorage("profileImageData") private var profileImageData: Data?
+    
+    private var profileImage: UIImage? { //This is setting what the image needs to be.
+        guard let data = profileImageData else { return nil }
+        return UIImage(data: data)
+    }
+    
     let healthStore = HKHealthStore()
     
     @State private var workoutLog: [WorkoutEntry] = {
@@ -192,8 +200,16 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: AccountView()) {
-                        Image(systemName: "person.circle")
-                            .font(.title)
+                        if let uiImage = profileImage {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 50, height: 50)
+                                .clipShape(Circle())
+                        } else {
+                            Image(systemName: "person.circle")
+                                .font(.title)
+                        }
                     }
                 }
             }

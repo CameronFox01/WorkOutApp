@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct GoalView: View {
+    @FocusState private var isEditing: Bool
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
@@ -16,16 +17,16 @@ struct GoalView: View {
     
     
     @State private var selectedBodyWeight: BodyweightWorkout = .airSquats
-    @State private var selectedPush: PushWorkout = .benchPress
-    @State private var selectedPull: PullWorkout = .barbellRow
-    @State private var selectedLeg: LegWorkout = .calfRaises
-    @State private var selectedGlute: GluteWorkout = .bandWalks
-    @State private var selectedBicep: BicepWorkout = .barbellCurl
-    @State private var selectedTricep: TricepWorkout = .cableKickback
-    @State private var selectedAbs: AbsWorkout = .burpees
-    @State private var selectedCardio: CardioWorkout = .cycling
-    @State private var selectedSports: SportsWorkout = .badminton
-    @State private var selectedStretch: StretchRoutine = .catCow
+    @State private var selectedPush: PushWorkout = .ArnoldPress
+    @State private var selectedPull: PullWorkout = .alternatingDumbbellRow
+    @State private var selectedLeg: LegWorkout = .barbellHipThrust
+    @State private var selectedGlute: GluteWorkout = .backwardLunge
+    @State private var selectedBicep: BicepWorkout = .alternatingDumbbellCurl
+    @State private var selectedTricep: TricepWorkout = .bandedPushdown
+    @State private var selectedAbs: AbsWorkout = .abdominalVacuum
+    @State private var selectedCardio: CardioWorkout = .battleRopes
+    @State private var selectedSports: SportsWorkout = .archery
+    @State private var selectedStretch: StretchRoutine = .ankleCircles
     
     @State private var workoutTargetWeights: [String: String] = [:]
     
@@ -59,7 +60,10 @@ struct GoalView: View {
                     loadWorkoutGoals()
                 }
             }
-            
+            .scrollDismissesKeyboard(.interactively)
+            .onTapGesture {
+                isEditing = false
+            }
         }
     }
     
@@ -83,8 +87,12 @@ struct GoalView: View {
                     
                     Spacer()
                     
-                    pillField(text: $targetWeight, placeholder: unitSystem == .metric ? "82" : "180", suffix: weightUnit)
-                }
+                    pillField(text: $targetWeight,
+                              placeholder: unitSystem == .metric ? "82" : "180",
+                              suffix: weightUnit,
+                              focus: $isEditing
+                            )
+                        }
                 
                 // Workouts per Week row
                 HStack(spacing: 12) {
@@ -100,7 +108,9 @@ struct GoalView: View {
                     
                     pillField(
                         text: $targetDaysOfWorkout,
-                        placeholder: "4"
+                        placeholder: "4",
+                        suffix: "",
+                        focus: $isEditing
                     )
                 }
             }
@@ -132,7 +142,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: false,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Push
@@ -145,7 +156,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: true,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Pull
@@ -158,7 +170,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: true,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Leg
@@ -171,7 +184,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: true,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Glute
@@ -184,7 +198,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: true,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Bicep
@@ -197,7 +212,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: true,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Tricep
@@ -210,7 +226,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: true,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Abs (no weight)
@@ -223,7 +240,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: false,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Cardio (distance goal)
@@ -237,7 +255,8 @@ struct GoalView: View {
                     targetWeights: $workoutTargetWeights,
                     usesWeight: false,
                     isCardio: true,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Sports (no weight)
@@ -250,7 +269,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: false,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
                 
                 // Stretch (no weight)
@@ -263,7 +283,8 @@ struct GoalView: View {
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: false,
-                    symbolColor: primaryBlue
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
                 )
             }
         }
@@ -390,6 +411,7 @@ struct GoalView: View {
         let usesWeight: Bool
         var isCardio: Bool = false
         let symbolColor: Color // ✅ now a parameter
+        let focus: FocusState<Bool>.Binding
 
         @State private var isExpanded: Bool = false
         
@@ -433,17 +455,27 @@ struct GoalView: View {
                                 pillField(text: Binding<String>(
                                     get: { targetWeights[selection.rawValue] ?? "" },
                                     set: { targetWeights[selection.rawValue] = $0 }
-                                ), placeholder: unitSystem == .imperial ? "3" : "5", suffix: distanceUnit)
+                                ), placeholder: unitSystem == .imperial ? "3" : "5",
+                                          suffix: distanceUnit,
+                                          focus: focus
+                                )
+                                        
                             } else if usesWeight {
                                 pillField(text: Binding<String>(
                                     get: { targetWeights[selection.rawValue] ?? "" },
                                     set: { targetWeights[selection.rawValue] = $0 }
-                                ), placeholder: unitSystem == .metric ? "50" : "110", suffix: weightUnit)
+                                ), placeholder: unitSystem == .metric ? "50" : "110",
+                                          suffix: weightUnit,
+                                          focus: focus
+                                )
                             } else {
                                 pillField(text: Binding<String>(
                                     get: { targetWeights[selection.rawValue] ?? "" },
                                     set: { targetWeights[selection.rawValue] = $0 }
-                                ), placeholder: "10")
+                                ), placeholder: "10",
+                                          suffix: "",
+                                          focus: focus
+                                )
                             }
                             Spacer(minLength: 0)
                         }
@@ -495,25 +527,17 @@ fileprivate extension Color {
 func pillField(
     text: Binding<String>,
     placeholder: String,
-    suffix: String? = nil
+    suffix: String? = nil,
+    focus: FocusState<Bool>.Binding
 ) -> some View {
-    ZStack { // Full-size tap target
-        // Invisible overlay to capture taps anywhere in the capsule and focus the field
-        Color.clear
-            .contentShape(Capsule())
-            .onTapGesture {
-                // No-op: tap will still allow the TextField to become first responder
-            }
-
-        HStack(spacing: 8) {
-            // Expand the TextField to take all available width
+    HStack(spacing: 8) {
             TextField(placeholder, text: text)
+                .focused(focus)
                 .keyboardType(.decimalPad)
                 .padding(.vertical, 10)
                 .padding(.leading, 14)
                 .padding(.trailing, suffix == nil ? 14 : 4)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.clear)
 
             if let suffix {
                 Text(suffix)
@@ -522,10 +546,8 @@ func pillField(
                     .padding(.trailing, 12)
             }
         }
-    }
-    .background(Color(.systemGray6), in: Capsule())
-    .contentShape(Capsule())
-    .padding(.vertical, 0) // keep outer spacing controlled by parent
+        .background(Color(.systemGray6), in: Capsule())
+        .contentShape(Capsule())
 }
 
 func gradientButton(
