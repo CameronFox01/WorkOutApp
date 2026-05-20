@@ -11,17 +11,20 @@ import HealthKit
 class HealthManager: ObservableObject {
     // In HealthManager
     @Published var lastFiveDaysSteps: [(date: Date, steps: Int)] = []
+    @Published var lastFiveDaysActiveCalories: [(date: Date, calories: Int)] = []
     
     let healthStore = HKHealthStore()
     
     @Published var steps: Int = 0  // ✅ Add this published property
     @Published var distance: Double = 0
+    @Published var activeCalories: Double = 0
     
     init(){
         let steps = HKQuantityType(.stepCount)
         let distance = HKQuantityType(.distanceWalkingRunning)
+        let activeEnergy = HKQuantityType(.activeEnergyBurned)
         
-        let healthTypes: Set = [steps, distance]
+        let healthTypes: Set = [steps, distance, activeEnergy]
         
         Task{
             do{
@@ -101,4 +104,66 @@ class HealthManager: ObservableObject {
             self.lastFiveDaysSteps = results.sorted { $0.date < $1.date }
         }
     }
+    
+    func fetchLastFiveDaysActiveCalories() {
+        let calorieType = HKQuantityType(.activeEnergyBurned)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        var results: [(date: Date, calories: Int)] = []
+        let group = DispatchGroup()
+
+        for dayOffset in (0..<5).reversed() {
+            guard let day = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
+
+            let isToday = dayOffset == 0
+            let endOfDay = isToday ? Date() : (calendar.date(byAdding: .day, value: 1, to: day) ?? day)
+
+            let predicate = HKQuery.predicateForSamples(withStart: day, end: endOfDay)
+
+            group.enter()
+            let query = HKStatisticsQuery(quantityType: calorieType, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, _ in
+                let kcal = Int(result?.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0)
+                results.append((date: day, calories: kcal))
+                group.leave()
+            }
+            healthStore.execute(query)
+        }
+
+        group.notify(queue: .main) {
+            self.lastFiveDaysActiveCalories = results.sorted { $0.date < $1.date }
+        }
+    }
+    
+    func fetchActiveCalories() {
+        guard let calorieType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) else {
+            return
+        }
+
+        let startOfDay = Calendar.current.startOfDay(for: Date())
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: startOfDay,
+            end: Date(),
+            options: .strictStartDate
+        )
+
+        let query = HKStatisticsQuery(
+            quantityType: calorieType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, result, _ in
+
+            guard let quantity = result?.sumQuantity() else { return }
+
+            let calories = quantity.doubleValue(for: .kilocalorie())
+
+            DispatchQueue.main.async {
+                self.activeCalories = calories
+            }
+        }
+
+        healthStore.execute(query)
+    }
 }
+

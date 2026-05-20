@@ -23,6 +23,9 @@ struct HomeView: View {
     //Profil Image Saved here
     @AppStorage("profileImageData") private var profileImageData: Data?
     
+    //Calorie
+    @State private var activeCalories: Double = 0
+    
     private var profileImage: UIImage? { //This is setting what the image needs to be.
         guard let data = profileImageData else { return nil }
         return UIImage(data: data)
@@ -55,46 +58,90 @@ struct HomeView: View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading) {
-                    GroupBox(label: Text("Current Progress")) {
-                        Button { isPresentingWeightSheet = true; newWeightInput = weight } label: {
-                            VStack(alignment: .leading, spacing: 8) {
-                                // Current weight prominent
-                                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                    Text(weight.isEmpty ? "—" : weight)
-                                        .font(.system(size: 34, weight: .bold))
-                                    Text(weightUnit)
-                                        .font(.headline)
-                                        .foregroundStyle(.secondary)
-                                }
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ],
+                        spacing: 16
+                            
+                    ){
+                        // Weight Section
+                        GroupBox(label: Text("Weight")) {
+                            Button { isPresentingWeightSheet = true; newWeightInput = weight } label: {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    // Current weight prominent
+                                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                        Text(weight.isEmpty ? "—" : weight)
+                                            .font(.system(size: 34, weight: .bold))
+                                        Text(weightUnit)
+                                            .font(.headline)
+                                            .foregroundStyle(.secondary)
+                                    }
 
-                                // Target
-                                HStack(spacing: 6) {
-                                    Image(systemName: "target")
-                                        .foregroundStyle(.secondary)
-                                    Text("Target: \(targetWeight.isEmpty ? "—" : targetWeight) \(weightUnit)")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                // Progress percentage from original weight
-                                if let pct = progressPercentText, let color = progressColor {
+                                    // Target
                                     HStack(spacing: 6) {
-                                        Image(systemName: "chart.line.uptrend.xyaxis")
-                                            .foregroundStyle(color)
-                                        Text(pct)
-                                            .font(.subheadline).bold()
-                                            .foregroundStyle(color)
+                                        Image(systemName: "target")
+                                            .foregroundStyle(.secondary)
+                                        Text("Target: \(targetWeight.isEmpty ? "—" : targetWeight) \(weightUnit)")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    // Progress percentage from original weight
+                                    if let pct = progressPercentText, let color = progressColor {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "chart.line.uptrend.xyaxis")
+                                                .foregroundStyle(color)
+                                            Text(pct)
+                                                .font(.subheadline).bold()
+                                                .foregroundStyle(color)
+                                        }
+                                    } else {
+                                        Text("Set target weight to see progress")
+                                            .font(.footnote)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 4)
+                            }
+                        }
+                        // Calorie Section
+                        NavigationLink(destination: CaloriesDetailView(unitSystem: unitSystem)
+                                        .environmentObject(Hmanager)) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Calories Today")
+                                    .font(.headline)
+
+                                Text("\(Int(Hmanager.activeCalories)) kcal")
+                                    .font(.title2).bold()
+
+                                if !lastFiveDaysCalories.isEmpty {
+                                    FiveDayCaloriesBarChart(data: lastFiveDaysCalories)
+                                        .frame(height: 60)
+                                        .padding(.top, 4)
+
+                                    HStack {
+                                        Text("5-day avg:")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text("\(fiveDayAverageCalories)")
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundStyle(.secondary)
                                     }
                                 } else {
-                                    Text("Set target weight to see progress")
-                                        .font(.footnote)
+                                    Text("5-day history unavailable")
+                                        .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 4)
                         }
+                        .buttonStyle(.plain)
                     }
+                    
+                    
                     //Section to get steps and distance
                     LazyVGrid(
                         columns: [
@@ -240,6 +287,7 @@ struct HomeView: View {
                 Hmanager.fetchSteps()
                 Hmanager.fetchDistance()
                 Hmanager.fetchLastFiveDaysSteps()
+                Hmanager.fetchActiveCalories()
 
                 // Seed initial Body Weight entry if none exists, using the first time account info was saved
                 let hasBodyWeight = workoutData.entries.contains { $0.workoutType == "Body Weight" }
@@ -330,7 +378,7 @@ struct HomeView: View {
                }
            }
 
-           return result
+        return Array(result.prefix(6))
     }
     
     // Section to formate the distance pulled from the health app.
@@ -351,6 +399,17 @@ struct HomeView: View {
     private var fiveDayAverageSteps: Int {
         let total = lastFiveDaysSteps.reduce(0) { $0 + $1.steps }
         return lastFiveDaysSteps.isEmpty ? 0 : total / lastFiveDaysSteps.count
+    }
+    
+    private var estimatedCaloriesToday: Int { Int(Double(Hmanager.steps) * 0.04) }
+
+    private var lastFiveDaysCalories: [(date: Date, calories: Int)] {
+        lastFiveDaysSteps.map { ($0.date, Int(Double($0.steps) * 0.04)) }
+    }
+
+    private var fiveDayAverageCalories: Int {
+        let total = lastFiveDaysCalories.reduce(0) { $0 + $1.calories }
+        return lastFiveDaysCalories.isEmpty ? 0 : total / lastFiveDaysCalories.count
     }
     
     private var currentWeightValue: Double? { Double(weight) }
@@ -439,6 +498,52 @@ private struct FiveDayStepsBarChart: View {
             .frame(width: geo.size.width)  // ✅ Force HStack to use full GeometryReader width
         }
         .frame(maxWidth: .infinity)  // ✅ Tell GeometryReader to take full width
+    }
+}
+
+private struct FiveDayCaloriesBarChart: View {
+    let data: [(date: Date, calories: Int)]
+
+    private var maxCalories: Double {
+        max(Double(data.map { $0.calories }.max() ?? 1), 1)
+    }
+
+    private var weekdayFormatter: DateFormatter {
+        let df = DateFormatter()
+        df.dateFormat = "E"
+        return df
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let spacing: CGFloat = 8
+            let totalSpacing = spacing * CGFloat(data.count - 1)
+            let barWidth = (geo.size.width - totalSpacing) / CGFloat(data.count)
+            let chartHeight = geo.size.height - 20
+
+            HStack(alignment: .bottom, spacing: spacing) {
+                ForEach(Array(data.enumerated()), id: \.offset) { _, item in
+                    VStack(spacing: 4) {
+                        ZStack(alignment: .bottom) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.gray.opacity(0.15))
+                                .frame(width: barWidth, height: chartHeight)
+
+                            let heightRatio = CGFloat(Double(item.calories) / maxCalories)
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.orange.opacity(0.7))
+                                .frame(width: barWidth, height: max(4, chartHeight * heightRatio))
+                        }
+                        Text(weekdayFormatter.string(from: item.date))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(width: barWidth)
+                    }
+                }
+            }
+            .frame(width: geo.size.width)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -567,6 +672,105 @@ private struct WeightUpdateSheet: View {
                     .disabled(Double(newWeightInput) == nil)
                 }
             }
+        }
+    }
+}
+
+private struct CaloriesDetailView: View {
+    @EnvironmentObject var Hmanager: HealthManager
+    let unitSystem: UnitSystem
+
+    @AppStorage("dailyCaloriesGoal") private var dailyCaloriesGoal: Int = 2000
+
+    private var lastFiveDaysSteps: [(date: Date, steps: Int)] { Hmanager.lastFiveDaysSteps }
+
+    private var lastFiveDaysCalories: [(date: Date, calories: Int)] {
+        lastFiveDaysSteps.map { ($0.date, Int(Double($0.steps) * 0.04)) }
+    }
+
+    private var fiveDayAverageCalories: Int {
+        let total = lastFiveDaysCalories.reduce(0) { $0 + $1.calories }
+        return lastFiveDaysCalories.isEmpty ? 0 : total / lastFiveDaysCalories.count
+    }
+
+    private var estimatedCaloriesToday: Int { Int(Double(Hmanager.steps) * 0.04) }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                GroupBox(label: Text("Today")) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Calories")
+                                .font(.headline)
+                            Text("\(Int(Hmanager.activeCalories)) kcal")
+                                .font(.title2).bold()
+                            Text("Goal: \(dailyCaloriesGoal) kcal")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                }
+
+                GroupBox(label: Text("Last 5 Days")) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if !lastFiveDaysCalories.isEmpty {
+                            FiveDayCaloriesBarChart(data: lastFiveDaysCalories)
+                                .frame(maxWidth: .infinity, minHeight: 200)
+                                .padding(.top, 4)
+
+                            HStack {
+                                Text("5-day avg:")
+                                    .font(.body)
+                                    .foregroundStyle(.secondary)
+                                Text("\(fiveDayAverageCalories)")
+                                    .font(.body)
+                                    .bold()
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                            }
+
+                            let met = estimatedCaloriesToday >= dailyCaloriesGoal
+                            HStack {
+                                Label(met ? "Goal met" : "Goal not met", systemImage: met ? "checkmark.circle" : "xmark.circle")
+                                    .font(.headline)
+                                    .foregroundStyle(met ? .green : .red)
+                                Spacer()
+                            }
+                        } else {
+                            Text("5-day history unavailable")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                }
+
+                GroupBox(label: Text("Daily Calories Goal")) {
+                    HStack(spacing: 12) {
+                        Stepper(value: $dailyCaloriesGoal, in: 500...10000, step: 50) {
+                            Text("Goal: \(dailyCaloriesGoal) kcal")
+                                .font(.subheadline)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    Text("This is your target active calories burned per day.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
+                        .padding(.bottom, 8)
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("Calories")
+        .onAppear {
+            Hmanager.fetchSteps()
+            Hmanager.fetchLastFiveDaysSteps()
         }
     }
 }
