@@ -101,7 +101,9 @@ struct ImportView: View {
                             increment: { dict, step in self.increment(&dict, for: category, by: step) },
                             decrement: { dict, step in self.decrement(&dict, for: category, by: step) },
                             weightUnitProvider: { self.weightUnit },
-                            showSavedToast: $showSavedToast
+                            goHomeAfterSave: GoToHomeScreenWhenSaved,
+                            showSavedToast: $showSavedToast,
+                            resetParent: { resetImportView() }
                         )) {
                             HStack(spacing: 12) {
                                 Image(systemName: icon(for: category))
@@ -119,6 +121,7 @@ struct ImportView: View {
             }
             .navigationTitle("Import Workout")
             .onAppear {
+                resetImportView()
                 for category in WorkoutCategory.allCases {
                     if selections[category] == nil {
                         selections[category] = category.workouts.first ?? ""
@@ -126,7 +129,7 @@ struct ImportView: View {
                 }
                 loadEntries()
             }
-            .onDisappear{
+            .onDisappear {
                 resetImportView()
             }
         }
@@ -158,12 +161,15 @@ struct ImportView: View {
         @Binding var distances: [WorkoutCategory: String]
         @Binding var times: [WorkoutCategory: String]
         @Binding var entries: [WorkoutEntry]
+        @Environment(\.dismiss) private var dismiss
 
         let save: () -> Void
         let increment: (inout [WorkoutCategory: String], Double) -> Void
         let decrement: (inout [WorkoutCategory: String], Double) -> Void
         let weightUnitProvider: () -> String
+        let goHomeAfterSave: Bool
         @Binding var showSavedToast: Bool
+        let resetParent: () -> Void
 
         var body: some View {
             ScrollView {
@@ -177,6 +183,9 @@ struct ImportView: View {
             .navigationBarTitleDisplayMode(.inline)
             .overlay(alignment: .top) {
                 if showSavedToast { savedToast }
+            }
+            .onAppear() {
+                resetParent()
             }
         }
 
@@ -321,7 +330,13 @@ struct ImportView: View {
                     .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
 
-                Button(action: save) {
+                Button {
+                    save()
+
+                    if goHomeAfterSave {
+                        dismiss()
+                    }
+                } label: {
                     HStack {
                         Image(systemName: "tray.and.arrow.down.fill")
                         Text("Save \(category.title)").fontWeight(.semibold)
@@ -352,22 +367,17 @@ struct ImportView: View {
                 }
         }
     }
-    
-    //Reseting the importview to the starting screen for it.
-    private func resetImportView() {
-        selections.removeAll()
+    public func resetImportView() { selections.removeAll()
         weights.removeAll()
         reps.removeAll()
         setsDict.removeAll()
         distances.removeAll()
         times.removeAll()
-
         // Re-add default workout selections
         for category in WorkoutCategory.allCases {
             selections[category] = category.workouts.first ?? ""
         }
     }
-
     // MARK: - Save / Storage
     func saveEntry(for category: WorkoutCategory) {
         print("🔍 Saving category: \(category)")
@@ -431,7 +441,7 @@ struct ImportView: View {
         entries.append(newEntry)
         saveEntriesToStorage()
 
-        //What does the button do
+        //How the button resets after being pressed.
         DispatchQueue.main.async {
             
             //This will allow the user to do multiple sets without having to redo.

@@ -29,12 +29,14 @@ struct StartUpView: View {
     var body: some View {
         NavigationView {
             Form {
+                // Area for Name to be entered
                 Section(header: Text("Name")) {
                     TextField("Name", text: $name)
                         .textInputAutocapitalization(.words)
                         .autocorrectionDisabled()
                 }
                 
+                // Area for Gender to be selected
                 Section(header: Text("Gender")) {
                     Picker("Gender", selection: $genderRaw) {
                         ForEach(Gender.allCases) { gender in
@@ -44,6 +46,7 @@ struct StartUpView: View {
                     .pickerStyle(.segmented)
                 }
                 
+                // Area for Unit to be selected
                 Section(header: Text("Unit System")){
                     Picker("Unit System", selection: Binding<UnitSystem>(
                         get: { UnitSystem(rawValue: unitSystemRaw) ?? .metric },
@@ -62,6 +65,7 @@ struct StartUpView: View {
                     .pickerStyle(.segmented)
                 }
 
+                // Area for Body Info
                 Section(header: Text("Body Info")) {
                     // HEIGHT
                     if unitSystem == .imperial {

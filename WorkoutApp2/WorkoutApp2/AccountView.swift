@@ -57,7 +57,7 @@ struct AccountView: View {
                     Section(header: Text("Unit System")){
                         Text(unitSystemRaw)
                     }
-                    
+                    // Delete this by the end. This is great for testing
                     Button("Reset App Setup") {
                         hasCompletedSetup = false
                     }

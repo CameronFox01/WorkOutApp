@@ -21,6 +21,16 @@ struct SettingsView: View {
         NavigationView{
             VStack{
                 Form {
+                    //Section to decide how to react when Save Import Button is pressed.
+                    Section(header: Text("Settings How to Save when Importing")) {
+                        Picker("How to Save when Importing", selection: $GoToHomeScreenWhenSaved) {
+                            Text("Go to Home Screen after Import").tag(true)
+                            Text("Keep in Current screen after Import").tag(false)
+                            
+                        }
+                    }
+                    
+                    //Section to reset the entire app.
                     Button(role: .destructive) {
                         showResetConfirmation = true
                     } label: {
@@ -34,10 +44,10 @@ struct SettingsView: View {
                     } message: {
                         Text("This will clear all saved settings and return you to the initial setup.")
                     }
-                }
+                } //End of Form
                 .navigationTitle("Settings")
-            }
-        }
+            } // End of VStack
+        } // End of Navigation View
         
     }
     //This Function will reset the entire app and delete all data.
