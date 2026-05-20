@@ -15,6 +15,7 @@ struct StartUpView: View {
     @AppStorage("userHeight") private var height: String = ""
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userGender") private var genderRaw: String = Gender.male.rawValue
+
     @State private var selectedFeet = 5
     @State private var selectedInches = 8
     @State private var selectedCentimeters = 173
@@ -22,121 +23,138 @@ struct StartUpView: View {
     enum Gender: String, CaseIterable, Identifiable {
         case male = "Male"
         case female = "Female"
-
         var id: String { self.rawValue }
     }
     
     var body: some View {
         NavigationView {
-                    Form {
-
-                        Section(header: Text("Name")) {
-                            TextField("Name", text: $name)
-                        }
-                        
-                        
-                        Section(header: Text("Gender")) {
-                            Picker("Gender", selection: $genderRaw) {
-                                ForEach(Gender.allCases) { gender in
-                                    Text(gender.rawValue)
-                                }
-                            }
-                            .pickerStyle(SegmentedPickerStyle())
-                        }
-                        
-                        Section(header: Text("Unit System")){
-                            Picker("Unit System", selection: Binding<UnitSystem>(
-                                get: {
-                                    UnitSystem(rawValue: unitSystemRaw) ?? .metric
-                                },
-                                set: { newValue in
-                                    let oldUnit = UnitSystem(rawValue: unitSystemRaw) ?? .metric
-                                    if oldUnit != newValue {
-                                        convertValues(from: oldUnit, to: newValue)
-                                        unitSystemRaw = newValue.rawValue
-                                    }
-                                }
-                            )) {
-                                ForEach(UnitSystem.allCases, id: \.self) { unit in
-                                    Text(unit.rawValue)
-                                }
-                            }
-                            .pickerStyle(SegmentedPickerStyle())
-                        }
-
-                        Section(header: Text("Body Info")) {
-
-                            // HEIGHT
-                            if unitSystem == .imperial {
-
-                                VStack(alignment: .leading, spacing: 8) {
-
-                                    Text("Height")
-
-                                    HStack {
-
-                                        Picker("Feet", selection: $selectedFeet) {
-                                            ForEach(3...7, id: \.self) { foot in
-                                                Text("\(foot) ft")
-                                            }
-                                        }
-                                        .pickerStyle(.wheel)
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 100)
-
-                                        Picker("Inches", selection: $selectedInches) {
-                                            ForEach(0...11, id: \.self) { inch in
-                                                Text("\(inch) in")
-                                            }
-                                        }
-                                        .pickerStyle(.wheel)
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 100)
-                                    }
-                                }
-
-                            } else {
-
-                                VStack(alignment: .leading, spacing: 8) {
-
-                                    Text("Height")
-
-                                    Picker("Centimeters", selection: $selectedCentimeters) {
-                                        ForEach(100...250, id: \.self) { cm in
-                                            Text("\(cm) cm")
-                                        }
-                                    }
-                                    .pickerStyle(.wheel)
-                                    .frame(height: 100)
-                                }
-                            }
-
-                            // WEIGHT
-                            TextField(weightLabel, text: $weight)
-                                .keyboardType(.decimalPad)
-                        }
-
-                        Button("Finish Setup") {
-
-                            // Optional validation
-                            guard !name.isEmpty else { return }
-
-                            if unitSystem == .imperial {
-
-                                let totalInches = (selectedFeet * 12) + selectedInches
-                                height = "\(totalInches)"
-
-                            } else {
-
-                                height = "\(selectedCentimeters)"
-                            }
-
-                            hasCompletedSetup = true
+            Form {
+                Section(header: Text("Name")) {
+                    TextField("Name", text: $name)
+                        .textInputAutocapitalization(.words)
+                        .autocorrectionDisabled()
+                }
+                
+                Section(header: Text("Gender")) {
+                    Picker("Gender", selection: $genderRaw) {
+                        ForEach(Gender.allCases) { gender in
+                            Text(gender.rawValue).tag(gender.rawValue)
                         }
                     }
-                    .navigationTitle("Setup Account")
+                    .pickerStyle(.segmented)
                 }
+                
+                Section(header: Text("Unit System")){
+                    Picker("Unit System", selection: Binding<UnitSystem>(
+                        get: { UnitSystem(rawValue: unitSystemRaw) ?? .metric },
+                        set: { newValue in
+                            let oldUnit = UnitSystem(rawValue: unitSystemRaw) ?? .metric
+                            if oldUnit != newValue {
+                                convertValues(from: oldUnit, to: newValue)
+                                unitSystemRaw = newValue.rawValue
+                            }
+                        }
+                    )) {
+                        ForEach(UnitSystem.allCases, id: \.self) { unit in
+                            Text(unit.rawValue).tag(unit)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                Section(header: Text("Body Info")) {
+                    // HEIGHT
+                    if unitSystem == .imperial {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Height")
+                            HStack {
+                                Picker("Feet", selection: $selectedFeet) {
+                                    ForEach(3...7, id: \.self) { foot in
+                                        Text("\(foot) ft").tag(foot)
+                                    }
+                                }
+                                .pickerStyle(.wheel)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 100)
+
+                                Picker("Inches", selection: $selectedInches) {
+                                    ForEach(0...11, id: \.self) { inch in
+                                        Text("\(inch) in").tag(inch)
+                                    }
+                                }
+                                .pickerStyle(.wheel)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 100)
+                            }
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Height")
+                            Picker("Centimeters", selection: $selectedCentimeters) {
+                                ForEach(100...250, id: \.self) { cm in
+                                    Text("\(cm) cm").tag(cm)
+                                }
+                            }
+                            .pickerStyle(.wheel)
+                            .frame(height: 100)
+                        }
+                    }
+
+                    // WEIGHT
+                    TextField(weightLabel, text: $weight)
+                        .keyboardType(.decimalPad)
+                }
+
+                Button("Finish Setup") {
+                    guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+                    // Always persist height from picker state right now
+                    if unitSystem == .imperial {
+                        let totalInches = (selectedFeet * 12) + selectedInches
+                        height = "\(totalInches)"
+                    } else {
+                        height = "\(selectedCentimeters)"
+                    }
+
+//                    DispatchQueue.main.async {
+//                         hasCompletedSetup = true
+//                     }
+                    hasCompletedSetup = true
+                }
+            }
+            .navigationTitle("Setup Account")
+            .onAppear {
+                // Make sure unit state is consistent and pickers reflect stored value (if any)
+                initializePickersFromStoredHeight()
+
+                // If height hasn’t been set yet, populate it from the default picker selections now
+                if height.isEmpty {
+                    if unitSystem == .imperial {
+                        let totalInches = (selectedFeet * 12) + selectedInches
+                        height = "\(totalInches)"
+                    } else {
+                        height = "\(selectedCentimeters)"
+                    }
+                }
+            }
+        }
     }
+
+    private func initializePickersFromStoredHeight() {
+        // If there is an existing stored height, update the pickers to match it
+        guard !height.isEmpty, let stored = Double(height) else { return }
+        if unitSystem == .imperial {
+            // Height is stored as total inches in your current design
+            let totalInches = Int(stored.rounded())
+            selectedFeet = max(3, min(7, totalInches / 12))
+            selectedInches = max(0, min(11, totalInches % 12))
+        } else {
+            // Metric: height is stored as cm
+            let cm = Int(stored.rounded())
+            selectedCentimeters = max(100, min(250, cm))
+        }
+    }
+    
     func convertValues(from oldUnit: UnitSystem, to newUnit: UnitSystem) {
         guard oldUnit != newUnit else { return }
 
@@ -154,7 +172,7 @@ struct StartUpView: View {
             }
         }
 
-        // ✅ Also convert all saved workout goals in UserDefaults directly
+        // Convert saved workout goals
         let allWorkouts = BodyweightWorkout.allCases.map(\.rawValue)
             + PushWorkout.allCases.map(\.rawValue)
             + PullWorkout.allCases.map(\.rawValue)
@@ -177,11 +195,10 @@ struct StartUpView: View {
             default: continue
             }
 
-            print("✅ Converting \(workout) goal: \(saved) → \(String(format: "%.1f", converted))")
             UserDefaults.standard.set(String(format: "%.1f", converted), forKey: key)
         }
 
-        // ✅ Also convert target body weight stored in UserDefaults
+        // Convert target body weight
         if let saved = UserDefaults.standard.string(forKey: "userTargetWeight"),
            let value = Double(saved) {
             let converted: Double
@@ -216,7 +233,7 @@ struct StartUpView: View {
     }
 }
 
-
 #Preview {
     StartUpView()
 }
+
