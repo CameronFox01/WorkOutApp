@@ -121,7 +121,7 @@ struct GoalView: View {
         }
     }
     
-    //Workout Goal Section - REPLACED AS REQUESTED
+    //Workout Goal Section
     private var workoutGoalsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
@@ -422,7 +422,9 @@ struct GoalView: View {
         
         var body: some View {
             VStack(alignment: .leading, spacing: 12) {
-                Button { withAnimation(.spring()) { isExpanded.toggle() } } label: {
+                Button {
+                    withAnimation(.spring()) {
+                        isExpanded.toggle() } } label: {
                     HStack {
                         Image(systemName: systemImage)
                                  .foregroundColor(symbolColor) // 👈 only icon
@@ -433,6 +435,7 @@ struct GoalView: View {
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                             .foregroundColor(.secondary)
                     }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 
