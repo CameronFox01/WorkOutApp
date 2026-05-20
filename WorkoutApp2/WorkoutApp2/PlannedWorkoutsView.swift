@@ -11,17 +11,17 @@ import SwiftUI
 struct PlannedWorkoutsView: View {
     // Weekday selection
     enum Weekday: String, CaseIterable, Identifiable {
-        case mon, tue, wed, thu, fri, sat, sun
+        case sun, mon, tue, wed, thu, fri, sat
         var id: String { rawValue }
         var display: String {
             switch self {
+            case .sun: return "Sun"
             case .mon: return "Mon"
             case .tue: return "Tue"
             case .wed: return "Wed"
             case .thu: return "Thu"
             case .fri: return "Fri"
             case .sat: return "Sat"
-            case .sun: return "Sun"
             }
         }
     }
@@ -30,7 +30,7 @@ struct PlannedWorkoutsView: View {
     
     @FocusState private var isEditing: Bool
 
-    @State private var selectedDay: Weekday = .mon
+    @State private var selectedDay: Weekday = .sun
     @State private var plannedCount: String = ""
     @State private var plannedItems: [String] = [] // stores workout raw values
     @State private var plannedItemCategories: [WorkoutCategory] = []
