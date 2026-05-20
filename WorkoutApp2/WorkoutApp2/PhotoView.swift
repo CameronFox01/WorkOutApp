@@ -19,6 +19,8 @@ struct PhotoView: View {
 
     @State private var showingLeftCamera: Bool = false
     @State private var showingRightCamera: Bool = false
+    
+    @AppStorage("SaveToPhotosApp") private var saveToPhoto: Bool = true
 
     var body: some View {
         NavigationView {
@@ -135,8 +137,9 @@ struct PhotoView: View {
         }
     }
 
-    // MARK: - App-private persistence (not Photos app)
+    // Saves to App Storage and Photo's App on iPhone
     private func saveToAppStorage(image: UIImage) {
+        //This saves it but I need to create a way to access those saced photo's.
         // Save JPEG to app's documents directory. This does NOT write to the Photos app.
         guard let data = image.jpegData(compressionQuality: 0.9) else { return }
         let filename = UUID().uuidString + ".jpg"
@@ -150,7 +153,9 @@ struct PhotoView: View {
         }
         
         //Saving to Photo's on iPhone
-        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+        if saveToPhoto == true {
+            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+        }
     }
 
     private func documentsDirectory() throws -> URL {

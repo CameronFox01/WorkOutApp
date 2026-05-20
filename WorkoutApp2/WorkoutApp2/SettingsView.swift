@@ -14,6 +14,8 @@ struct SettingsView: View {
     
     @AppStorage("hasCompletedSetup") private var hasCompletedSetup = true
     
+    @AppStorage("SaveToPhotosApp") private var saveToPhoto: Bool = true
+    
     @State private var showResetConfirmation = false
     
     var body: some View {
@@ -27,6 +29,14 @@ struct SettingsView: View {
                             Text("Go to Home Screen after Import").tag(true)
                             Text("Keep in Current screen after Import").tag(false)
                             
+                        }
+                    }
+                    
+                    //Section to decide where the photos taken in app should be saved.
+                    Section(header: Text("Where to Save Photos")){
+                        Picker("How to Save New Photos", selection: $saveToPhoto) {
+                            Text("Save to Photos Library and MyStep").tag(true)
+                            Text("Save to just MyStep").tag(false)
                         }
                     }
                     
