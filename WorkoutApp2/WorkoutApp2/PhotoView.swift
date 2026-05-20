@@ -148,6 +148,9 @@ struct PhotoView: View {
         } catch {
             // print("Failed to save image: \(error)")
         }
+        
+        //Saving to Photo's on iPhone
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
     }
 
     private func documentsDirectory() throws -> URL {
