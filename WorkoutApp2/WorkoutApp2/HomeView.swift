@@ -196,7 +196,7 @@ struct HomeView: View {
                     .padding(.horizontal)
                 }
             }
-            .navigationTitle("Home")
+            .navigationTitle("Welcome, \(name)")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: AccountView()) {

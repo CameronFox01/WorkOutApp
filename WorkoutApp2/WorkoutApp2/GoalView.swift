@@ -39,7 +39,7 @@ struct GoalView: View {
     }
     
     // Colors
-    private let bgColor = Color(hex: "#F3F4F6")
+    private let bgColor = Color(.systemBackground)
     private let primaryBlue = Color(hex: "#2563EB")
     private let secondaryTeal = Color(hex: "#14B8A6")
     private let accentGreen = Color(hex: "#84CC16")
@@ -115,8 +115,9 @@ struct GoalView: View {
                 }
             }
             .padding(14)
-            .background(.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 3)
+            .shadow(color: Color.white.opacity(0.03), radius: 1, x: 0, y: 0)
         }
     }
     
@@ -299,8 +300,9 @@ struct GoalView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(14)
-        .background(.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 3)
+        .shadow(color: Color.white.opacity(0.03), radius: 1, x: 0, y: 0)
     }
     
     //Old stuff below
@@ -352,7 +354,7 @@ struct GoalView: View {
                             .foregroundStyle(.secondary)
                     }
                     .padding(12)
-                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
+                    .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 12))
                     
                     Picker(title, selection: $selection) {
                         ForEach(allCases) { w in
@@ -490,8 +492,9 @@ struct GoalView: View {
                 }
             }
             .padding(16)
-            .background(.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 3)
+            .shadow(color: Color.white.opacity(0.03), radius: 1, x: 0, y: 0)
             // ✅ Load saved value for initial selection when card first expands
             .onAppear {
                 let key = "goal_\(selection.rawValue)"
@@ -546,7 +549,7 @@ func pillField(
                     .padding(.trailing, 12)
             }
         }
-        .background(Color(.systemGray6), in: Capsule())
+        .background(Color(.secondarySystemFill), in: Capsule())
         .contentShape(Capsule())
 }
 
