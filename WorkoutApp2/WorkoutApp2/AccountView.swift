@@ -14,7 +14,6 @@ struct AccountView: View {
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @AppStorage("userHeight") private var height: String = ""
     @AppStorage("userWeight") private var weight: String = ""
-    @AppStorage("userBirthday") private var birthday = Date()
     @AppStorage("userGender") private var genderRaw: String = Gender.male.rawValue
     
     @AppStorage("hasCompletedSetup") private var hasCompletedSetup = true
@@ -49,9 +48,6 @@ struct AccountView: View {
                         
                         Text(weight + " " + weightUnit)
                         
-                    }
-                    Section(header: Text("Birthday")) {
-                        Text("\(birthday, style: .date)")
                     }
                     
                     Section(header: Text("Gender")) {
@@ -88,8 +84,8 @@ struct AccountView: View {
                 
                 .toolbar{
                     ToolbarItem(placement: .navigationBarTrailing){
-                        NavigationLink(destination: GoalView()){
-                            Image(systemName: "trophy.circle")
+                        NavigationLink(destination: SettingsView()){
+                            Image(systemName: "gear")
                                 .font(.title)
                         }
                     }

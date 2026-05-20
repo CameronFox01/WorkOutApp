@@ -14,7 +14,6 @@ struct StartUpView: View {
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @AppStorage("userHeight") private var height: String = ""
     @AppStorage("userWeight") private var weight: String = ""
-    @AppStorage("userBirthday") private var birthday = Date()
     @AppStorage("userGender") private var genderRaw: String = Gender.male.rawValue
     @State private var selectedFeet = 5
     @State private var selectedInches = 8
@@ -35,9 +34,6 @@ struct StartUpView: View {
                             TextField("Name", text: $name)
                         }
                         
-                        Section(header: Text("Birthday")){
-                            DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
-                        }
                         
                         Section(header: Text("Gender")) {
                             Picker("Gender", selection: $genderRaw) {
@@ -217,14 +213,6 @@ struct StartUpView: View {
 
     var weightUnit: String {
         unitSystem == .metric ? "kg" : "lbs"
-    }
-
-    //Age Calculation
-    var age: Int {
-        let calendar = Calendar.current
-        let now = Date()
-        let ageComponents = calendar.dateComponents([.year], from: birthday, to: now)
-        return ageComponents.year ?? 0
     }
 }
 

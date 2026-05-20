@@ -58,6 +58,9 @@ struct ImportView: View {
     }
 
     @State private var entries: [WorkoutEntry] = []
+    
+    //Flag for how the users will want to handle the SAVE BUTTON
+    @AppStorage("saveButtonAction") private var GoToHomeScreenWhenSaved: Bool = false
 
     // One selection per category
     @State private var selections: [WorkoutCategory: String] = [:]
@@ -122,6 +125,9 @@ struct ImportView: View {
                     }
                 }
                 loadEntries()
+            }
+            .onDisappear{
+                resetImportView()
             }
         }
     }
@@ -346,6 +352,21 @@ struct ImportView: View {
                 }
         }
     }
+    
+    //Reseting the importview to the starting screen for it.
+    private func resetImportView() {
+        selections.removeAll()
+        weights.removeAll()
+        reps.removeAll()
+        setsDict.removeAll()
+        distances.removeAll()
+        times.removeAll()
+
+        // Re-add default workout selections
+        for category in WorkoutCategory.allCases {
+            selections[category] = category.workouts.first ?? ""
+        }
+    }
 
     // MARK: - Save / Storage
     func saveEntry(for category: WorkoutCategory) {
@@ -410,13 +431,19 @@ struct ImportView: View {
         entries.append(newEntry)
         saveEntriesToStorage()
 
-        // Clear inputs for quick next set
+        //What does the button do
         DispatchQueue.main.async {
-            if category.usesWeight { weights[category] = "" }
-            if category == .cardio { distances[category] = "" }
-            if category == .cardio { times[category] = "" }
-            reps[category] = ""
-            setsDict[category] = ""
+            
+            //This will allow the user to do multiple sets without having to redo.
+            if GoToHomeScreenWhenSaved == false{
+                if category.usesWeight { weights[category] = "" }
+                if category == .cardio { distances[category] = "" }
+                if category == .cardio { times[category] = "" }
+                reps[category] = ""
+                setsDict[category] = ""
+            }else { //this will move the user out to the home screen after each save.
+                resetImportView()
+            }
         }
 
         feedbackSuccess()

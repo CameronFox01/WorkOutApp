@@ -11,12 +11,18 @@ import SwiftUI
 struct WorkoutApp2App: App {
     @StateObject private var workoutData = WorkoutData()
     @StateObject var healthManager = HealthManager()
+    
+    @AppStorage("hasCompletedSetup") private var hasCompletedSetup: Bool = false
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(workoutData)
-                .environmentObject(healthManager)  // ✅ Add this here
+            if(hasCompletedSetup){
+                ContentView()
+                    .environmentObject(workoutData)
+                    .environmentObject(healthManager)  // ✅ Add this here
+            }else {
+                StartUpView()
+            }
         }
     }
 }
