@@ -33,6 +33,7 @@ struct PlannedWorkoutsView: View {
     @State private var selectedDay: Weekday = .mon
     @State private var plannedCount: String = ""
     @State private var plannedItems: [String] = [] // stores workout raw values
+    @State private var plannedItemCategories: [WorkoutCategory] = []
 
     // Colors
     private let bgColor = Color(hex: "#F3F4F6")
@@ -130,37 +131,56 @@ struct PlannedWorkoutsView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "list.bullet")
                         .foregroundStyle(.secondary)
-                    // A menu-based picker for a workout item
+
+                    // Category menu
                     Menu {
-                        // Grouped by category using your enums
-                        workoutMenuSection("Bodyweight", items: BodyweightWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Push", items: PushWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Pull", items: PullWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Leg", items: LegWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Glute", items: GluteWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Bicep", items: BicepWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Tricep", items: TricepWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Abs", items: AbsWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Cardio", items: CardioWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Sports", items: SportsWorkout.allCases.map(\.rawValue))
-                        workoutMenuSection("Stretch", items: StretchRoutine.allCases.map(\.rawValue))
+                        ForEach(WorkoutCategory.allCases) { cat in
+                            Button(cat.title) {
+                                if idx < plannedItemCategories.count {
+                                    plannedItemCategories[idx] = cat
+                                } else {
+                                    // pad categories to match
+                                    while plannedItemCategories.count < plannedItems.count { plannedItemCategories.append(.bodyweight) }
+                                    plannedItemCategories[idx] = cat
+                                }
+                                // Reset workout selection when category changes
+                                plannedItems[idx] = ""
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            let cat = (idx < plannedItemCategories.count ? plannedItemCategories[idx] : .bodyweight)
+                            Text(cat.title)
+                            Image(systemName: "chevron.down").foregroundStyle(.secondary)
+                        }
+                        .padding(12)
+                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
+                    }
+
+                    // Workout menu filtered by selected category
+                    Menu {
+                        let cat = (idx < plannedItemCategories.count ? plannedItemCategories[idx] : .bodyweight)
+                        ForEach(cat.workouts, id: \.self) { name in
+                            Button(name) {
+                                plannedItems[idx] = name
+                            }
+                        }
                     } label: {
                         HStack {
                             Text(plannedItems[idx].isEmpty ? "Select workout" : plannedItems[idx])
                                 .foregroundStyle(plannedItems[idx].isEmpty ? .secondary : .primary)
-                            Spacer()
-                            Image(systemName: "chevron.down")
-                                .foregroundStyle(.secondary)
+                            Image(systemName: "chevron.down").foregroundStyle(.secondary)
                         }
                         .padding(12)
                         .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
                     }
 
                     Button {
+                        // Remove item and its category in sync
                         plannedItems.remove(at: idx)
+                        if idx < plannedItemCategories.count { plannedItemCategories.remove(at: idx) }
                     } label: {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
+                        Image(systemName: "trash").foregroundColor(.red)
                     }
                     .buttonStyle(.plain)
                 }
@@ -168,6 +188,7 @@ struct PlannedWorkoutsView: View {
 
             Button {
                 plannedItems.append("")
+                plannedItemCategories.append(.bodyweight)
             } label: {
                 Label("Add Workout", systemImage: "plus.circle.fill")
                     .font(.subheadline).bold()
@@ -180,33 +201,16 @@ struct PlannedWorkoutsView: View {
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 
-    @ViewBuilder
-    private func workoutMenuSection(_ title: String, items: [String]) -> some View {
-        Section(title) {
-            ForEach(items, id: \.self) { name in
-                Button(name) {
-                    if let idx = plannedItems.firstIndex(where: { $0.isEmpty }) {
-                        plannedItems[idx] = name
-                    } else {
-                        // Replace the last item if none empty (optional behavior)
-                        if !plannedItems.isEmpty {
-                            plannedItems[plannedItems.count - 1] = name
-                        } else {
-                            plannedItems.append(name)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     // MARK: - Persistence
     private func keyCount(for day: Weekday) -> String { "planned_workouts_count_\(day.rawValue)" }
     private func keyItems(for day: Weekday) -> String { "planned_workouts_items_\(day.rawValue)" }
+    private func keyItemCategories(for day: Weekday) -> String { "planned_workouts_categories_\(day.rawValue)" }
 
     private func saveForDay(_ day: Weekday) {
         UserDefaults.standard.set(plannedCount, forKey: keyCount(for: day))
         UserDefaults.standard.set(plannedItems, forKey: keyItems(for: day))
+        let catRaw = plannedItemCategories.map { $0.rawValue }
+        UserDefaults.standard.set(catRaw, forKey: keyItemCategories(for: day))
     }
 
     private func loadForDay(_ day: Weekday) {
@@ -215,6 +219,19 @@ struct PlannedWorkoutsView: View {
             plannedItems = arr
         } else {
             plannedItems = []
+        }
+
+        if let catArr = UserDefaults.standard.array(forKey: keyItemCategories(for: day)) as? [String] {
+            plannedItemCategories = catArr.compactMap { WorkoutCategory(rawValue: $0) }
+        } else {
+            plannedItemCategories = Array(repeating: .bodyweight, count: plannedItems.count)
+        }
+
+        // Ensure arrays stay aligned
+        if plannedItemCategories.count < plannedItems.count {
+            plannedItemCategories += Array(repeating: .bodyweight, count: plannedItems.count - plannedItemCategories.count)
+        } else if plannedItemCategories.count > plannedItems.count {
+            plannedItemCategories = Array(plannedItemCategories.prefix(plannedItems.count))
         }
     }
 }
