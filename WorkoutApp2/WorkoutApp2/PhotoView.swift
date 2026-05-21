@@ -86,7 +86,16 @@ struct PhotoView: View {
                 }
             }
             .padding()
-            .navigationTitle("Compare Photos")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Compare Photos")
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
         }
     }

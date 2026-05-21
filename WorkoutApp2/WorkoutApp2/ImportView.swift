@@ -119,7 +119,6 @@ struct ImportView: View {
                     }
                 }
             }
-            .navigationTitle("Import Workout")
             .onAppear {
                 resetImportView()
                 for category in WorkoutCategory.allCases {
@@ -132,6 +131,16 @@ struct ImportView: View {
             .onDisappear {
                 resetImportView()
             }
+            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Import Workout")
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 

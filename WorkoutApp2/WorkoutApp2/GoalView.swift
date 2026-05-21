@@ -61,8 +61,16 @@ struct GoalView: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
-            .onTapGesture {
-                isEditing = false
+            .onTapGesture { isEditing = false }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Set Goals")
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
+                }
             }
         }
     }

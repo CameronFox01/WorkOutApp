@@ -54,6 +54,7 @@ struct HomeView: View {
             print("No workoutLog found in UserDefaults.")
         }
     }
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -243,7 +244,6 @@ struct HomeView: View {
                     .padding(.horizontal)
                 }
             }
-            .navigationTitle("Welcome, \(name)")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: AccountView()) {
@@ -256,13 +256,21 @@ struct HomeView: View {
                         } else {
                             Image(systemName: "person.circle")
                                 .font(.title)
+                                .foregroundStyle(Color.blue)
                         }
                     }
                 }
             }
-            .toolbarBackground(Color.blue, for: .navigationBar) //where is my text? and can i do primaryBlue here?
+            .toolbarBackground(Color.blue, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Home")
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $isPresentingWeightSheet) {
                 WeightUpdateSheet(
                     unitSystem: unitSystem,
