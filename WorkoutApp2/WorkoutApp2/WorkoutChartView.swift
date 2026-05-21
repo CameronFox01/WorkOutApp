@@ -83,6 +83,17 @@ struct WorkoutChartView: View {
         .padding(16)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color.blue, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(workoutName.capitalized)
+                    .font(.title2).bold()
+                    .foregroundStyle(.white)
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private func detailLine(for entry: WorkoutEntry) -> String {

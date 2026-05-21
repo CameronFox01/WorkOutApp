@@ -126,7 +126,17 @@ struct StartUpView: View {
                     hasCompletedSetup = true
                 }
             }
-            .navigationTitle("Setup Account")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Setup Account")
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 // Make sure unit state is consistent and pickers reflect stored value (if any)
                 initializePickersFromStoredHeight()

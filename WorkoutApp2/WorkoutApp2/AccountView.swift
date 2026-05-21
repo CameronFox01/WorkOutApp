@@ -80,7 +80,17 @@ struct AccountView: View {
                     // When toggled true, programmatically trigger the PhotosPicker by reassigning selection via the binding set above.
                 }
                 
-                .navigationTitle("Account")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(Color.blue, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("Account")
+                            .font(.largeTitle).bold()
+                            .foregroundStyle(.white)
+                    }
+                }
+                .navigationBarTitleDisplayMode(.inline)
                 
                 .toolbar{
                     ToolbarItem(placement: .navigationBarTrailing){

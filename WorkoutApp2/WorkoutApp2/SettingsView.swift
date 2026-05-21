@@ -55,7 +55,17 @@ struct SettingsView: View {
                         Text("This will clear all saved settings and return you to the initial setup.")
                     }
                 } //End of Form
-                .navigationTitle("Settings")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(Color.blue, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("Settings")
+                            .font(.largeTitle).bold()
+                            .foregroundStyle(.white)
+                    }
+                }
+                .navigationBarTitleDisplayMode(.inline)
             } // End of VStack
         } // End of Navigation View
         

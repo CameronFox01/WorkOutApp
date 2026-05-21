@@ -237,6 +237,7 @@ struct HomeView: View {
                                 .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
                                 .background(Color(.systemGray6))
                                 .cornerRadius(10)
+                                
                             }
                             .buttonStyle(.plain)
                         }
@@ -667,7 +668,17 @@ private struct WeightUpdateSheet: View {
 
                 Spacer()
             }
-            .navigationTitle("Update Weight")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Update Weight")
+                        .font(.title2).bold()
+                        .foregroundStyle(.white)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -778,7 +789,17 @@ private struct CaloriesDetailView: View {
             }
             .padding()
         }
-        .navigationTitle("Calories")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color.blue, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Calories")
+                    .font(.largeTitle).bold()
+                    .foregroundStyle(.white)
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             Hmanager.fetchSteps()
             Hmanager.fetchLastFiveDaysSteps()
@@ -890,7 +911,17 @@ private struct DistanceDetailView: View {
             }
             .padding()
         }
-        .navigationTitle("Activity")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color.blue, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Steps")
+                    .font(.largeTitle).bold()
+                    .foregroundStyle(.white)
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             Hmanager.fetchSteps()
             Hmanager.fetchDistance()
@@ -1078,6 +1109,17 @@ private struct WorkoutCalendarView: View {
             Spacer()
         }
         .navigationTitle("Workout Calendar")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color.blue, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Workout Calendar")
+                    .font(.title2).bold()
+                    .foregroundStyle(.white)
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
