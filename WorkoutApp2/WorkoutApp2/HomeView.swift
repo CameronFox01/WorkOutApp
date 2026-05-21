@@ -26,6 +26,9 @@ struct HomeView: View {
     //Calorie
     @State private var activeCalories: Double = 0
     
+    //How many Workouts to show in Recent Workouts
+    @State private var numberOfWorkoutsToShow: Int = 12
+    
     private var profileImage: UIImage? { //This is setting what the image needs to be.
         guard let data = profileImageData else { return nil }
         return UIImage(data: data)
@@ -205,7 +208,7 @@ struct HomeView: View {
 
                     //Section for Pasted Worked Outs
                     Text("Recent Workouts")
-                        .font(.title2)
+                        .font(.largeTitle)
                         .bold()
                         .padding(.leading)
                     //Creating the boxs for the workouts to be clicked on and carry you to more info on that workout
@@ -390,7 +393,7 @@ struct HomeView: View {
                }
            }
 
-        return Array(result.prefix(6))
+        return Array(result.prefix(numberOfWorkoutsToShow))
     }
     
     // Section to formate the distance pulled from the health app.
@@ -466,7 +469,7 @@ struct HomeView: View {
 
 }
 
-private struct FiveDayStepsBarChart: View {
+public struct FiveDayStepsBarChartWithValues: View {
     let data: [(date: Date, steps: Int)]
 
     private var maxSteps: Double {
@@ -479,100 +482,7 @@ private struct FiveDayStepsBarChart: View {
         return df
     }
 
-    var body: some View {
-        GeometryReader { geo in
-            let spacing: CGFloat = 8
-            let totalSpacing = spacing * CGFloat(data.count - 1)
-            let barWidth = (geo.size.width - totalSpacing) / CGFloat(data.count)  // ✅ Uses full geo width
-            let chartHeight = geo.size.height - 20  // leave room for labels
-
-            HStack(alignment: .bottom, spacing: spacing) {
-                ForEach(Array(data.enumerated()), id: \.offset) { idx, item in
-                    VStack(spacing: 4) {
-                        ZStack(alignment: .bottom) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.gray.opacity(0.15))
-                                .frame(width: barWidth, height: chartHeight)
-
-                            let heightRatio = CGFloat(Double(item.steps) / maxSteps)
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.accentColor.opacity(0.7))
-                                .frame(width: barWidth, height: max(4, chartHeight * heightRatio))
-                        }
-
-                        Text(weekdayFormatter.string(from: item.date))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(width: barWidth)
-                    }
-                }
-            }
-            .frame(width: geo.size.width)  // ✅ Force HStack to use full GeometryReader width
-        }
-        .frame(maxWidth: .infinity)  // ✅ Tell GeometryReader to take full width
-    }
-}
-
-private struct FiveDayCaloriesBarChart: View {
-    let data: [(date: Date, calories: Int)]
-
-    private var maxCalories: Double {
-        max(Double(data.map { $0.calories }.max() ?? 1), 1)
-    }
-
-    private var weekdayFormatter: DateFormatter {
-        let df = DateFormatter()
-        df.dateFormat = "E"
-        return df
-    }
-
-    var body: some View {
-        GeometryReader { geo in
-            let spacing: CGFloat = 8
-            let totalSpacing = spacing * CGFloat(data.count - 1)
-            let barWidth = (geo.size.width - totalSpacing) / CGFloat(data.count)
-            let chartHeight = geo.size.height - 20
-
-            HStack(alignment: .bottom, spacing: spacing) {
-                ForEach(Array(data.enumerated()), id: \.offset) { _, item in
-                    VStack(spacing: 4) {
-                        ZStack(alignment: .bottom) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.gray.opacity(0.15))
-                                .frame(width: barWidth, height: chartHeight)
-
-                            let heightRatio = CGFloat(Double(item.calories) / maxCalories)
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.orange.opacity(0.7))
-                                .frame(width: barWidth, height: max(4, chartHeight * heightRatio))
-                        }
-                        Text(weekdayFormatter.string(from: item.date))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(width: barWidth)
-                    }
-                }
-            }
-            .frame(width: geo.size.width)
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
-
-private struct FiveDayStepsBarChartWithValues: View {
-    let data: [(date: Date, steps: Int)]
-
-    private var maxSteps: Double {
-        max(Double(data.map { $0.steps }.max() ?? 1), 1)
-    }
-
-    private var weekdayFormatter: DateFormatter {
-        let df = DateFormatter()
-        df.dateFormat = "E"
-        return df
-    }
-
-    var body: some View {
+    public var body: some View {
         GeometryReader { geo in
             let spacing: CGFloat = 8
             let totalSpacing = spacing * CGFloat(data.count - 1)
@@ -614,319 +524,6 @@ private struct FiveDayStepsBarChartWithValues: View {
             .frame(width: geo.size.width)
         }
         .frame(maxWidth: .infinity, minHeight: 200)
-    }
-}
-
-private struct WeightUpdateSheet: View {
-    let unitSystem: UnitSystem
-    let weightUnit: String
-    @Binding var currentWeight: String
-    @Binding var newWeightInput: String
-    var entries: [WorkoutEntry]
-    let onSave: (String) -> Void
-    let unitSystemRaw: String
-
-    @Environment(\.dismiss) private var dismiss
-
-    private var bodyWeightEntries: [WorkoutEntry] {
-        entries.filter { $0.workoutType == "Body Weight" }
-            .sorted { $0.date < $1.date }
-    }
-
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 16) {
-                // Mini chart using existing WorkoutProgressChart for consistency
-                WorkoutProgressChart(
-                    workoutName: "Body Weight",
-                    entries: entries,
-                    unitSystemRaw: unitSystemRaw
-                )
-                .frame(height: 220)
-                .padding(.horizontal)
-                .padding(.top, 25)
-                .padding(.bottom, 25)
-
-                VStack(alignment: .leading, spacing: 25) {
-                    Text("Enter new weight (") + Text(weightUnit).bold() + Text(")")
-                    HStack(spacing: 12) {
-                        TextField("e.g. 180", text: $newWeightInput)
-                            .keyboardType(.decimalPad)
-                            .textFieldStyle(.roundedBorder)
-                        Stepper("", onIncrement: {
-                            let current = Double(newWeightInput) ?? Double(currentWeight) ?? 0
-                            newWeightInput = String(format: "%.1f", current + (unitSystem == .imperial ? 1.0 : 0.5))
-                        }, onDecrement: {
-                            let current = Double(newWeightInput) ?? Double(currentWeight) ?? 0
-                            let next = max(0, current - (unitSystem == .imperial ? 1.0 : 0.5))
-                            newWeightInput = String(format: "%.1f", next)
-                        })
-                        .labelsHidden()
-                    }
-                }
-                .padding(.horizontal)
-
-                Spacer()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.blue, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Update Weight")
-                        .font(.title2).bold()
-                        .foregroundStyle(.white)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        let trimmed = newWeightInput.trimmingCharacters(in: .whitespaces)
-                        guard !trimmed.isEmpty, Double(trimmed) != nil else { return }
-                        onSave(trimmed)
-                        currentWeight = trimmed
-                        dismiss()
-                    }
-                    .disabled(Double(newWeightInput) == nil)
-                }
-            }
-        }
-    }
-}
-
-private struct CaloriesDetailView: View {
-    @EnvironmentObject var Hmanager: HealthManager
-    let unitSystem: UnitSystem
-
-    @AppStorage("dailyCaloriesGoal") private var dailyCaloriesGoal: Int = 2000
-
-    private var lastFiveDaysSteps: [(date: Date, steps: Int)] { Hmanager.lastFiveDaysSteps }
-
-    private var lastFiveDaysCalories: [(date: Date, calories: Int)] {
-        lastFiveDaysSteps.map { ($0.date, Int(Double($0.steps) * 0.04)) }
-    }
-
-    private var fiveDayAverageCalories: Int {
-        let total = lastFiveDaysCalories.reduce(0) { $0 + $1.calories }
-        return lastFiveDaysCalories.isEmpty ? 0 : total / lastFiveDaysCalories.count
-    }
-
-    private var estimatedCaloriesToday: Int { Int(Double(Hmanager.steps) * 0.04) }
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                GroupBox(label: Text("Today")) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Calories")
-                                .font(.headline)
-                            Text("\(Int(Hmanager.activeCalories)) kcal")
-                                .font(.title2).bold()
-                            Text("Goal: \(dailyCaloriesGoal) kcal")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                    }
-                    .padding()
-                }
-
-                GroupBox(label: Text("Last 5 Days")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if !lastFiveDaysCalories.isEmpty {
-                            FiveDayCaloriesBarChart(data: lastFiveDaysCalories)
-                                .frame(maxWidth: .infinity, minHeight: 200)
-                                .padding(.top, 4)
-
-                            HStack {
-                                Text("5-day avg:")
-                                    .font(.body)
-                                    .foregroundStyle(.secondary)
-                                Text("\(fiveDayAverageCalories)")
-                                    .font(.body)
-                                    .bold()
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                            }
-
-                            let met = estimatedCaloriesToday >= dailyCaloriesGoal
-                            HStack {
-                                Label(met ? "Goal met" : "Goal not met", systemImage: met ? "checkmark.circle" : "xmark.circle")
-                                    .font(.headline)
-                                    .foregroundStyle(met ? .green : .red)
-                                Spacer()
-                            }
-                        } else {
-                            Text("5-day history unavailable")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom)
-                }
-
-                GroupBox(label: Text("Daily Calories Goal")) {
-                    HStack(spacing: 12) {
-                        Stepper(value: $dailyCaloriesGoal, in: 500...10000, step: 50) {
-                            Text("Goal: \(dailyCaloriesGoal) kcal")
-                                .font(.subheadline)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    Text("This is your target active calories burned per day.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
-                }
-            }
-            .padding()
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Color.blue, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Calories")
-                    .font(.largeTitle).bold()
-                    .foregroundStyle(.white)
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            Hmanager.fetchSteps()
-            Hmanager.fetchLastFiveDaysSteps()
-        }
-    }
-}
-
-private struct DistanceDetailView: View {
-    @EnvironmentObject var Hmanager: HealthManager
-    let unitSystem: UnitSystem
-    
-    @AppStorage("dailyStepsGoal") private var dailyStepsGoal: Int = 10000
-    
-    private var lastFiveDaysSteps: [(date: Date, steps: Int)] { Hmanager.lastFiveDaysSteps }
-    private var fiveDayAverageSteps: Int {
-        let total = lastFiveDaysSteps.reduce(0) { $0 + $1.steps }
-        return lastFiveDaysSteps.isEmpty ? 0 : total / lastFiveDaysSteps.count
-    }
-    
-    var formattedDistance: String {
-        if unitSystem == .metric {
-            let km = Hmanager.distance / 1000
-            return String(format: "%.2f km", km)
-        } else {
-            let miles = Hmanager.distance / 1609.34
-            return String(format: "%.2f mi", miles)
-        }
-    }
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                GroupBox(label: Text("Today")) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Steps")
-                                .font(.headline)
-                            Text("\(Hmanager.steps)")
-                                .font(.title2).bold()
-                            Text("Goal: \(dailyStepsGoal)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 8) {
-                            Text("Distance")
-                                .font(.headline)
-                            Text(formattedDistance)
-                                .font(.title2).bold()
-                        }
-                    }
-                    .padding()
-                }
-
-                GroupBox(label: Text("Last 5 Days")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if !lastFiveDaysSteps.isEmpty {
-                            FiveDayStepsBarChartWithValues(data: lastFiveDaysSteps)
-                              
-                                .frame(maxWidth: .infinity, minHeight: 200)
-                                .padding(.top, 4)
-
-                            HStack {
-                                Text("5-day avg:")
-                                    .font(.body)
-                                    .foregroundStyle(.secondary)
-                                Text("\(fiveDayAverageSteps)")
-                                    .font(.body)
-                                    .bold()
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                            }
-                            
-                            // Move goal status below the chart and avg row
-                            if let latest = lastFiveDaysSteps.last {
-                                let met = latest.steps >= dailyStepsGoal
-                                HStack {
-                                    Label(met ? "Goal met" : "Goal not met", systemImage: met ? "checkmark.circle" : "xmark.circle")
-                                        .font(.headline)
-                                        .foregroundStyle(met ? .green : .red)
-                                    Spacer()
-                                }
-                            }
-                        } else {
-                            Text("5-day history unavailable")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom)
-                }
-
-                GroupBox(label: Text("Daily Step Goal")) {
-                    HStack(spacing: 12) {
-                        Stepper(value: $dailyStepsGoal, in: 1000...50000, step: 500) {
-                            Text("Goal: \(dailyStepsGoal) steps")
-                                .font(.subheadline)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    Text("This goal applies per day and is shown above when comparing recent days.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
-                }
-            }
-            .padding()
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Color.blue, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Steps")
-                    .font(.largeTitle).bold()
-                    .foregroundStyle(.white)
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            Hmanager.fetchSteps()
-            Hmanager.fetchDistance()
-            Hmanager.fetchLastFiveDaysSteps()
-        }
     }
 }
 
