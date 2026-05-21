@@ -20,6 +20,12 @@ struct PhotoView: View {
     @State private var showingLeftCamera: Bool = false
     @State private var showingRightCamera: Bool = false
     
+    //Array for saved photos
+    @State private var savedPhotoURLs: [URL] = []
+    @State private var showingSavedPhotos = false
+    @State private var selectedGalleryImage: UIImage?
+    @State private var showingSidePicker = false
+    
     @AppStorage("SaveToPhotosApp") private var saveToPhoto: Bool = true
 
     var body: some View {
@@ -31,6 +37,25 @@ struct PhotoView: View {
                     imagePane(title: "Right", image: rightImage, takeAction: { showingRightCamera = true }, pickAction: { /* handled by PhotosPicker below */ })
                 }
                 .frame(maxHeight: .infinity)
+                
+                Button {
+                    showingSavedPhotos = true
+                } label: {
+                    HStack {
+                        Image(systemName: "photo.stack")
+                        Text("View Saved Photos")
+                            .fontWeight(.semibold)
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+                .buttonStyle(.plain)
 
                 // Pickers row
                 HStack(spacing: 12) {
@@ -84,6 +109,30 @@ struct PhotoView: View {
                         if let img = newValue { saveToAppStorage(image: img) }
                     }))
                 }
+                .sheet(isPresented: $showingSavedPhotos) {
+                    SavedPhotosView { image in
+                        selectedGalleryImage = image
+                        showingSidePicker = true
+                    }
+                }
+                .confirmationDialog(
+                    "Use Photo",
+                    isPresented: $showingSidePicker,
+                    titleVisibility: .visible
+                ) {
+                    Button("Use for Left") {
+                        leftImage = selectedGalleryImage
+                    }
+
+                    Button("Use for Right") {
+                        rightImage = selectedGalleryImage
+                    }
+
+                    Button("Cancel", role: .cancel) { }
+                }
+            }
+            .onAppear{
+                loadSavedPhotos()
             }
             .padding()
             .navigationBarTitleDisplayMode(.inline)
@@ -97,6 +146,27 @@ struct PhotoView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+    
+    private func loadSavedPhotos() {
+        do {
+            let directory = try documentsDirectory()
+
+            let files = try FileManager.default.contentsOfDirectory(
+                at: directory,
+                includingPropertiesForKeys: nil
+            )
+
+            savedPhotoURLs = files.filter {
+                $0.pathExtension.lowercased() == "jpg"
+            }
+            .sorted(by: {
+                $0.lastPathComponent > $1.lastPathComponent
+            })
+
+        } catch {
+            print("Failed to load saved photos: \(error)")
         }
     }
 
@@ -165,6 +235,8 @@ struct PhotoView: View {
         if saveToPhoto == true {
             UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
         }
+        
+        loadSavedPhotos()
     }
 
     private func documentsDirectory() throws -> URL {
