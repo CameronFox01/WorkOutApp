@@ -9,6 +9,14 @@
 import SwiftUI
 
 struct PlannedWorkoutsView: View {
+    //Sizing of the buttons in the tool bar
+    @State private var buttonHeight: CGFloat = 10
+    @State private var buttonWidth: CGFloat = 10
+    @State private var buttonTextSize: CGFloat = 18
+    
+    //Envirment section
+    @Environment(\.dismiss) private var dismiss
+    
     // Weekday selection
     enum Weekday: String, CaseIterable, Identifiable {
         case sun, mon, tue, wed, thu, fri, sat
@@ -45,7 +53,6 @@ struct PlannedWorkoutsView: View {
                 
                 ScrollView {
                     VStack(spacing: 25) {
-                        buttonCreators
                         daySelector
                         plannedCountCard
                         plannedItemsCard
@@ -62,49 +69,40 @@ struct PlannedWorkoutsView: View {
             .toolbarBackground(Color.blue, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
+                // Left Side
+                ToolbarItem(placement: .topBarLeading){
+                    Button("Close") {
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                    .font(.system(size: CGFloat(buttonTextSize)))
+                    .padding(.horizontal, buttonWidth)
+                    .padding(.vertical, buttonHeight)
+                }
+                //Middle Part
                 ToolbarItem(placement: .principal) {
-                    Text("Plan Your Workouts")
-                        .font(.largeTitle).bold()
+                    Text("Schedule")
+                        .font(.title).bold()
                         .foregroundStyle(.white)
+                }
+                
+                //Right Side
+                ToolbarItem(placement: .topBarTrailing){
+                    Button{
+                        saveForDay(selectedDay)
+                    } label: {
+                        Text("Save")
+                            .fontWeight(.semibold)
+                            .font(.system(size: CGFloat(buttonTextSize)))
+                            .padding(.horizontal, buttonWidth)
+                            .padding(.vertical, buttonHeight)
+                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
             loadForDay(selectedDay)
-        }
-    }
-
-    @Environment(\.dismiss) private var dismiss
-    
-    @State private var buttonHeight: CGFloat = 12
-    @State private var buttonWidth: CGFloat = 18
-    
-    private var buttonCreators: some View {
-        HStack {
-            Button("Close") {
-                dismiss()
-            }
-            .fontWeight(.semibold)
-            .font(.system(size: CGFloat(20)))
-            .foregroundStyle(.white)
-            .padding(.horizontal, buttonWidth)
-            .padding(.vertical, buttonHeight)
-            .background(Color.red, in: Capsule())
-            
-            Spacer()
-            
-            Button{
-                saveForDay(selectedDay)
-            } label: {
-                Text("Save")
-                    .fontWeight(.semibold)
-                    .font(.system(size: CGFloat(20)))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, buttonWidth)
-                    .padding(.vertical, buttonHeight)
-                    .background(Color.green, in: Capsule())
-            }
         }
     }
 
