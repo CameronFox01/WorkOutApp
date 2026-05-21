@@ -42,9 +42,10 @@ struct PlannedWorkoutsView: View {
         NavigationView {
             ZStack {
                 bgColor.ignoresSafeArea()
-
+                
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 25) {
+                        buttonCreators
                         daySelector
                         plannedCountCard
                         plannedItemsCard
@@ -58,21 +59,16 @@ struct PlannedWorkoutsView: View {
                     isEditing = false
                 }
             }
-            .navigationTitle("Planned Workouts")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Close") {
-                        dismiss()
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
-                        saveForDay(selectedDay)
-                    }
-                    .fontWeight(.semibold)
+                ToolbarItem(placement: .principal) {
+                    Text("Plan Your Workouts")
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
             loadForDay(selectedDay)
@@ -80,6 +76,37 @@ struct PlannedWorkoutsView: View {
     }
 
     @Environment(\.dismiss) private var dismiss
+    
+    @State private var buttonHeight: CGFloat = 12
+    @State private var buttonWidth: CGFloat = 18
+    
+    private var buttonCreators: some View {
+        HStack {
+            Button("Close") {
+                dismiss()
+            }
+            .fontWeight(.semibold)
+            .font(.system(size: CGFloat(20)))
+            .foregroundStyle(.white)
+            .padding(.horizontal, buttonWidth)
+            .padding(.vertical, buttonHeight)
+            .background(Color.red, in: Capsule())
+            
+            Spacer()
+            
+            Button{
+                saveForDay(selectedDay)
+            } label: {
+                Text("Save")
+                    .fontWeight(.semibold)
+                    .font(.system(size: CGFloat(20)))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, buttonWidth)
+                    .padding(.vertical, buttonHeight)
+                    .background(Color.green, in: Capsule())
+            }
+        }
+    }
 
     private var daySelector: some View {
         HStack(spacing: 8) {
@@ -90,7 +117,7 @@ struct PlannedWorkoutsView: View {
                     loadForDay(day)
                 }) {
                     Text(day.display)
-                        .font(.subheadline).bold()
+                        .font(.system(size: CGFloat(20))).bold()
                         .foregroundColor(selectedDay == day ? .white : .primary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
