@@ -260,6 +260,9 @@ struct HomeView: View {
                     }
                 }
             }
+            .toolbarBackground(Color.blue, for: .navigationBar) //where is my text? and can i do primaryBlue here?
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(isPresented: $isPresentingWeightSheet) {
                 WeightUpdateSheet(
                     unitSystem: unitSystem,
