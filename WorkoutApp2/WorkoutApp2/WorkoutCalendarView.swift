@@ -96,7 +96,7 @@ import SwiftUI
             // This is the section for the calendar and heat map itself.
             let firstWeekday = calendar.component(.weekday, from: monthStart)
             //let leadingBlanks = (firstWeekday + 5) % 7 // make Monday=1 alignment
-            let leadingBlanks = firstWeekday - 1
+            let leadingBlanks = firstWeekday - 1 // This makes you start on Sundays
 
             let cells: [Date?] = Array(repeating: nil, count: leadingBlanks) + daysInMonth
 

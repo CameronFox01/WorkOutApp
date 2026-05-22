@@ -9,18 +9,22 @@
 import SwiftUI
 
 struct PlannedWorkoutsView: View {
-    //Sizing of the buttons in the tool bar
+
+    // MARK: - Environment
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+
+    // MARK: - Toolbar Button Sizes
     @State private var buttonHeight: CGFloat = 10
     @State private var buttonWidth: CGFloat = 10
     @State private var buttonTextSize: CGFloat = 18
-    
-    //Envirment section
-    @Environment(\.dismiss) private var dismiss
-    
-    // Weekday selection
+
+    // MARK: - Weekdays
     enum Weekday: String, CaseIterable, Identifiable {
         case sun, mon, tue, wed, thu, fri, sat
+
         var id: String { rawValue }
+
         var display: String {
             switch self {
             case .sun: return "Sun"
@@ -34,23 +38,50 @@ struct PlannedWorkoutsView: View {
         }
     }
 
+    // MARK: - Storage
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
-    
+
+    // MARK: - Focus
     @FocusState private var isEditing: Bool
 
+    // MARK: - State
     @State private var selectedDay: Weekday = .sun
     @State private var plannedCount: String = ""
-    @State private var plannedItems: [String] = [] // stores workout raw values
+    @State private var plannedItems: [String] = []
     @State private var plannedItemCategories: [WorkoutCategory] = []
 
-    // Colors
-    private let bgColor = Color(hex: "#F3F4F6")
+    // MARK: - Dynamic Colors
+
+    private var bgColor: Color {
+        colorScheme == .dark
+        ? Color.black
+        : Color("#F3F4F6")
+    }
+
+    private var cardColor: Color {
+        colorScheme == .dark
+        ? Color(.systemGray6)
+        : .white
+    }
+
+    private var secondaryCardColor: Color {
+        colorScheme == .dark
+        ? Color(.systemGray5)
+        : Color(.systemGray6)
+    }
+
+    private var textColor: Color {
+        colorScheme == .dark ? .white : .primary
+    }
+
+    // MARK: - Body
 
     var body: some View {
         NavigationView {
             ZStack {
-                bgColor.ignoresSafeArea()
-                
+                bgColor
+                    .ignoresSafeArea()
+
                 ScrollView {
                     VStack(spacing: 25) {
                         daySelector
@@ -68,35 +99,40 @@ struct PlannedWorkoutsView: View {
             }
             .toolbarBackground(Color.blue, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+
             .toolbar {
-                // Left Side
-                ToolbarItem(placement: .topBarLeading){
+
+                // LEFT
+                ToolbarItem(placement: .topBarLeading) {
                     Button("Close") {
                         dismiss()
                     }
                     .fontWeight(.semibold)
-                    .font(.system(size: CGFloat(buttonTextSize)))
+                    .font(.system(size: buttonTextSize))
                     .padding(.horizontal, buttonWidth)
                     .padding(.vertical, buttonHeight)
+                    .foregroundStyle(.white)
                 }
-                //Middle Part
+
+                // CENTER
                 ToolbarItem(placement: .principal) {
                     Text("Schedule")
-                        .font(.title).bold()
+                        .font(.title.bold())
                         .foregroundStyle(.white)
                 }
-                
-                //Right Side
-                ToolbarItem(placement: .topBarTrailing){
-                    Button{
+
+                // RIGHT
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
                         saveForDay(selectedDay)
                     } label: {
                         Text("Save")
                             .fontWeight(.semibold)
-                            .font(.system(size: CGFloat(buttonTextSize)))
+                            .font(.system(size: buttonTextSize))
                             .padding(.horizontal, buttonWidth)
                             .padding(.vertical, buttonHeight)
                     }
+                    .foregroundStyle(.white)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -106,20 +142,26 @@ struct PlannedWorkoutsView: View {
         }
     }
 
+    // MARK: - Day Selector
+
     private var daySelector: some View {
         HStack(spacing: 8) {
             ForEach(Weekday.allCases) { day in
                 Button(action: {
-                    saveForDay(selectedDay) // save current before switching
+                    saveForDay(selectedDay)
                     selectedDay = day
                     loadForDay(day)
                 }) {
                     Text(day.display)
-                        .font(.system(size: CGFloat(20))).bold()
-                        .foregroundColor(selectedDay == day ? .white : .primary)
+                        .font(.system(size: 20).bold())
+                        .foregroundColor(selectedDay == day ? .white : textColor)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(selectedDay == day ? Color.accentColor : Color(.systemGray6))
+                        .padding(.vertical, 10)
+                        .background(
+                            selectedDay == day
+                            ? Color.accentColor
+                            : secondaryCardColor
+                        )
                         .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -127,154 +169,275 @@ struct PlannedWorkoutsView: View {
         }
     }
 
+    // MARK: - Planned Count Card
+
     private var plannedCountCard: some View {
         VStack(alignment: .leading, spacing: 12) {
+
             Text("Workouts Planned")
-                .font(.headline).bold()
-                .padding(.bottom, 4)
+                .font(.headline.bold())
+                .foregroundStyle(textColor)
 
             HStack(spacing: 12) {
+
                 Image(systemName: "calendar.badge.plus")
                     .foregroundStyle(.tint)
+
                 Text("Number of workouts")
                     .font(.subheadline)
+                    .foregroundStyle(textColor)
+
                 Spacer()
-                pillField(text: $plannedCount, placeholder: "3", focus: $isEditing)
+
+                pillField(
+                    text: $plannedCount,
+                    placeholder: "3",
+                    focus: $isEditing
+                )
             }
         }
         .padding(16)
-        .background(.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+        .background(
+            cardColor,
+            in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+        )
+        .shadow(
+            color: colorScheme == .dark
+            ? .clear
+            : .black.opacity(0.05),
+            radius: 8,
+            x: 0,
+            y: 4
+        )
     }
 
+    // MARK: - Planned Workouts Card
+
     private var plannedItemsCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+
+        VStack(alignment: .leading, spacing: 14) {
+
             Text("Specific Workouts")
-                .font(.headline).bold()
+                .font(.headline.bold())
+                .foregroundStyle(textColor)
 
             ForEach(plannedItems.indices, id: \.self) { idx in
+
                 HStack(spacing: 12) {
+
                     Image(systemName: "list.bullet")
                         .foregroundStyle(.secondary)
 
-                    // Category menu
+                    // CATEGORY MENU
                     Menu {
                         ForEach(WorkoutCategory.allCases) { cat in
                             Button(cat.title) {
+
                                 if idx < plannedItemCategories.count {
                                     plannedItemCategories[idx] = cat
                                 } else {
-                                    // pad categories to match
-                                    while plannedItemCategories.count < plannedItems.count { plannedItemCategories.append(.bodyweight) }
+
+                                    while plannedItemCategories.count < plannedItems.count {
+                                        plannedItemCategories.append(.bodyweight)
+                                    }
+
                                     plannedItemCategories[idx] = cat
                                 }
-                                // Reset workout selection when category changes
+
                                 plannedItems[idx] = ""
                             }
                         }
                     } label: {
+
                         HStack {
-                            let cat = (idx < plannedItemCategories.count ? plannedItemCategories[idx] : .bodyweight)
+
+                            let cat = (
+                                idx < plannedItemCategories.count
+                                ? plannedItemCategories[idx]
+                                : .bodyweight
+                            )
+
                             Text(cat.title)
-                            Image(systemName: "chevron.down").foregroundStyle(.secondary)
+                                .foregroundStyle(textColor)
+
+                            Image(systemName: "chevron.down")
+                                .foregroundStyle(.secondary)
                         }
                         .padding(12)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
+                        .background(
+                            secondaryCardColor,
+                            in: RoundedRectangle(cornerRadius: 12)
+                        )
                     }
 
-                    // Workout menu filtered by selected category
+                    // WORKOUT MENU
                     Menu {
-                        let cat = (idx < plannedItemCategories.count ? plannedItemCategories[idx] : .bodyweight)
+
+                        let cat = (
+                            idx < plannedItemCategories.count
+                            ? plannedItemCategories[idx]
+                            : .bodyweight
+                        )
+
                         ForEach(cat.workouts, id: \.self) { name in
                             Button(name) {
                                 plannedItems[idx] = name
                             }
                         }
+
                     } label: {
+
                         HStack {
-                            Text(plannedItems[idx].isEmpty ? "Select workout" : plannedItems[idx])
-                                .foregroundStyle(plannedItems[idx].isEmpty ? .secondary : .primary)
-                            Image(systemName: "chevron.down").foregroundStyle(.secondary)
+
+                            Text(
+                                plannedItems[idx].isEmpty
+                                ? "Select workout"
+                                : plannedItems[idx]
+                            )
+                            .foregroundStyle(
+                                plannedItems[idx].isEmpty
+                                ? .secondary
+                                : textColor
+                            )
+
+                            Image(systemName: "chevron.down")
+                                .foregroundStyle(.secondary)
                         }
                         .padding(12)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
+                        .background(
+                            secondaryCardColor,
+                            in: RoundedRectangle(cornerRadius: 12)
+                        )
                     }
 
+                    // DELETE BUTTON
                     Button {
-                        // Remove item and its category in sync
+
                         plannedItems.remove(at: idx)
-                        if idx < plannedItemCategories.count { plannedItemCategories.remove(at: idx) }
+
+                        if idx < plannedItemCategories.count {
+                            plannedItemCategories.remove(at: idx)
+                        }
+
                     } label: {
-                        Image(systemName: "trash").foregroundColor(.red)
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
                     }
                     .buttonStyle(.plain)
                 }
             }
 
+            // ADD BUTTON
             Button {
+
                 plannedItems.append("")
                 plannedItemCategories.append(.bodyweight)
+
             } label: {
+
                 Label("Add Workout", systemImage: "plus.circle.fill")
-                    .font(.subheadline).bold()
+                    .font(.subheadline.bold())
             }
             .buttonStyle(.plain)
             .padding(.top, 6)
         }
         .padding(16)
-        .background(.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+        .background(
+            cardColor,
+            in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+        )
+        .shadow(
+            color: colorScheme == .dark
+            ? .clear
+            : .black.opacity(0.05),
+            radius: 8,
+            x: 0,
+            y: 4
+        )
     }
 
     // MARK: - Persistence
-    private func keyCount(for day: Weekday) -> String { "planned_workouts_count_\(day.rawValue)" }
-    private func keyItems(for day: Weekday) -> String { "planned_workouts_items_\(day.rawValue)" }
-    private func keyItemCategories(for day: Weekday) -> String { "planned_workouts_categories_\(day.rawValue)" }
+
+    private func keyCount(for day: Weekday) -> String {
+        "planned_workouts_count_\(day.rawValue)"
+    }
+
+    private func keyItems(for day: Weekday) -> String {
+        "planned_workouts_items_\(day.rawValue)"
+    }
+
+    private func keyItemCategories(for day: Weekday) -> String {
+        "planned_workouts_categories_\(day.rawValue)"
+    }
 
     private func saveForDay(_ day: Weekday) {
-        UserDefaults.standard.set(plannedCount, forKey: keyCount(for: day))
-        UserDefaults.standard.set(plannedItems, forKey: keyItems(for: day))
+
+        UserDefaults.standard.set(
+            plannedCount,
+            forKey: keyCount(for: day)
+        )
+
+        UserDefaults.standard.set(
+            plannedItems,
+            forKey: keyItems(for: day)
+        )
+
         let catRaw = plannedItemCategories.map { $0.rawValue }
-        UserDefaults.standard.set(catRaw, forKey: keyItemCategories(for: day))
+
+        UserDefaults.standard.set(
+            catRaw,
+            forKey: keyItemCategories(for: day)
+        )
     }
 
     private func loadForDay(_ day: Weekday) {
-        plannedCount = UserDefaults.standard.string(forKey: keyCount(for: day)) ?? ""
-        if let arr = UserDefaults.standard.array(forKey: keyItems(for: day)) as? [String] {
+
+        plannedCount =
+        UserDefaults.standard.string(
+            forKey: keyCount(for: day)
+        ) ?? ""
+
+        if let arr = UserDefaults.standard.array(
+            forKey: keyItems(for: day)
+        ) as? [String] {
+
             plannedItems = arr
+
         } else {
+
             plannedItems = []
         }
 
-        if let catArr = UserDefaults.standard.array(forKey: keyItemCategories(for: day)) as? [String] {
-            plannedItemCategories = catArr.compactMap { WorkoutCategory(rawValue: $0) }
+        if let catArr = UserDefaults.standard.array(
+            forKey: keyItemCategories(for: day)
+        ) as? [String] {
+
+            plannedItemCategories =
+            catArr.compactMap {
+                WorkoutCategory(rawValue: $0)
+            }
+
         } else {
-            plannedItemCategories = Array(repeating: .bodyweight, count: plannedItems.count)
+
+            plannedItemCategories =
+            Array(repeating: .bodyweight, count: plannedItems.count)
         }
 
-        // Ensure arrays stay aligned
         if plannedItemCategories.count < plannedItems.count {
-            plannedItemCategories += Array(repeating: .bodyweight, count: plannedItems.count - plannedItemCategories.count)
+
+            plannedItemCategories +=
+            Array(
+                repeating: .bodyweight,
+                count: plannedItems.count - plannedItemCategories.count
+            )
+
         } else if plannedItemCategories.count > plannedItems.count {
-            plannedItemCategories = Array(plannedItemCategories.prefix(plannedItems.count))
+
+            plannedItemCategories =
+            Array(plannedItemCategories.prefix(plannedItems.count))
         }
     }
 }
-
-// Color helper
-fileprivate extension Color {
-    init(hex: String) {
-        var hexString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        if hexString.hasPrefix("#") { hexString.removeFirst() }
-        var int: UInt64 = 0
-        Scanner(string: hexString).scanHexInt64(&int)
-        let r = Double((int >> 16) & 0xFF) / 255.0
-        let g = Double((int >> 8) & 0xFF) / 255.0
-        let b = Double(int & 0xFF) / 255.0
-        self = Color(red: r, green: g, blue: b)
-    }
-}
-
 #Preview {
     PlannedWorkoutsView()
 }
