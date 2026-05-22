@@ -36,7 +36,25 @@ struct PhotoView: View {
                 // Side-by-side image comparison
                 HStack(spacing: 12) {
                     imagePane(title: "Left", image: leftImage, takeAction: { showingLeftCamera = true }, pickAction: { /* handled by PhotosPicker below */ })
+                        .onChange(of: leftSelectedItem) { _, newItem in
+                              guard let newItem else { return }
+                              Task {
+                                  if let data = try? await newItem.loadTransferable(type: Data.self),
+                                     let image = UIImage(data: data) {
+                                      leftImage = image
+                                  }
+                              }
+                          }
                     imagePane(title: "Right", image: rightImage, takeAction: { showingRightCamera = true }, pickAction: { /* handled by PhotosPicker below */ })
+                        .onChange(of: rightSelectedItem) { _, newItem in
+                                guard let newItem else { return }
+                                Task {
+                                    if let data = try? await newItem.loadTransferable(type: Data.self),
+                                       let image = UIImage(data: data) {
+                                        rightImage = image
+                                    }
+                                }
+                            }
                 }
                 .frame(maxHeight: .infinity)
                 
