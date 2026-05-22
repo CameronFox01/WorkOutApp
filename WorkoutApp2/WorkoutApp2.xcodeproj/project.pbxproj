@@ -411,6 +411,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = MyStride;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage for taking progress photo's";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "To allow the app to access Health Data to display your steps, flights climbed, and calroies burned in the Home tab.  ";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "The app will track and display your steps and how far you have travelled.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Permission to access photos from gallery to be used in the app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -422,7 +423,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -445,6 +446,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = MyStride;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage for taking progress photo's";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "To allow the app to access Health Data to display your steps, flights climbed, and calroies burned in the Home tab.  ";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "The app will track and display your steps and how far you have travelled.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Permission to access photos from gallery to be used in the app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -456,7 +458,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

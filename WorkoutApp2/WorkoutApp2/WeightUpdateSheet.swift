@@ -25,7 +25,7 @@ struct WeightUpdateSheet: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 16) {
+            VStack(spacing: 20) {
                 // Mini chart using existing WorkoutProgressChart for consistency
                 WorkoutProgressChart(
                     workoutName: "Body Weight",
@@ -34,8 +34,8 @@ struct WeightUpdateSheet: View {
                 )
                 .frame(height: 220)
                 .padding(.horizontal)
-                .padding(.top, 25)
-                .padding(.bottom, 25)
+                .padding(.top, 100) // Brings it from the top to lower
+                .padding(.bottom, 60) // Brings the space between the graph and entering in a new weight to be bigger
 
                 VStack(alignment: .leading, spacing: 25) {
                     Text("Enter new weight (") + Text(weightUnit).bold() + Text(")")

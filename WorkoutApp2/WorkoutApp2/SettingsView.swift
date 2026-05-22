@@ -66,6 +66,19 @@ struct SettingsView: View {
                     }
                 }
                 .navigationBarTitleDisplayMode(.inline)
+                .safeAreaInset(edge: .bottom) {
+                    VStack(spacing: 4) {
+                        Text("MyStep")
+                            .font(.headline)
+
+                        Text("Version \(appVersion)")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color(.systemGroupedBackground))
+                }
             } // End of VStack
         } // End of Navigation View
         
@@ -81,6 +94,11 @@ struct SettingsView: View {
         UserDefaults.standard.set(false, forKey: "hasCompletedSetup")
         hasCompletedSetup = false
     }
+}
+
+// Function to get the apps version
+private var appVersion: String {
+    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
 }
 
 #Preview {
