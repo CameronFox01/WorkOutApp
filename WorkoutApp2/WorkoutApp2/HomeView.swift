@@ -71,46 +71,50 @@ struct HomeView: View {
                             
                     ){
                         // Weight Section
-                        GroupBox(label: Text("Weight")) {
-                            Button { isPresentingWeightSheet = true; newWeightInput = weight } label: {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    // Current weight prominent
-                                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                        Text(weight.isEmpty ? "—" : weight)
-                                            .font(.system(size: 34, weight: .bold))
-                                        Text(weightUnit)
-                                            .font(.headline)
-                                            .foregroundStyle(.secondary)
-                                    }
-
-                                    // Target
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "target")
-                                            .foregroundStyle(.secondary)
-                                        Text("Target: \(targetWeight.isEmpty ? "—" : targetWeight) \(weightUnit)")
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                    }
-
-                                    // Progress percentage from original weight
-                                    if let pct = progressPercentText, let color = progressColor {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "chart.line.uptrend.xyaxis")
-                                                .foregroundStyle(color)
-                                            Text(pct)
-                                                .font(.subheadline).bold()
-                                                .foregroundStyle(color)
-                                        }
-                                    } else {
-                                        Text("Set target weight to see progress")
-                                            .font(.footnote)
-                                            .foregroundStyle(.secondary)
-                                    }
+                        Button { isPresentingWeightSheet = true; newWeightInput = weight } label: {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Weight")
+                                    .font(.headline)
+                                // Current weight prominent
+                                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                    Text(weight.isEmpty ? "—" : weight)
+                                        .font(.system(size: 34, weight: .bold))
+                                    Text(weightUnit)
+                                        .font(.headline)
+                                        .foregroundStyle(.secondary)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 4)
+
+                                // Target
+                                HStack(spacing: 6) {
+                                    Image(systemName: "target")
+                                        .foregroundStyle(.secondary)
+                                    Text("Target: \(targetWeight.isEmpty ? "—" : targetWeight) \(weightUnit)")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                // Progress percentage from original weight
+                                if let pct = progressPercentText, let color = progressColor {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "chart.line.uptrend.xyaxis")
+                                            .foregroundStyle(color)
+                                        Text(pct)
+                                            .font(.subheadline).bold()
+                                            .foregroundStyle(color)
+                                    }
+                                } else {
+                                    Text("Set target weight to see progress")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 4)
+                            .background(Color(.systemBackground))
                         }
+                        .cardStyle()
+                        .background(Color(.systemBackground))
+                        
                         // Calorie Section
                         NavigationLink(destination: CaloriesDetailView(unitSystem: unitSystem)
                                         .environmentObject(Hmanager)) {
@@ -142,8 +146,16 @@ struct HomeView: View {
                                 }
                             }
                         }
+                        .cardStyle()
                         .buttonStyle(.plain)
                     }
+                    
+                    // Timer Section
+                    Group{
+                        TimerView()
+                            .padding(30)
+                    }
+                    .cardStyle()
                     
                     
                     //Section to get steps and distance
@@ -188,6 +200,7 @@ struct HomeView: View {
                             }
                         }
                         .buttonStyle(.plain)
+                        .cardStyle()
 
                         NavigationLink(destination: WorkoutCalendarView(entries: workoutData.entries)) {
                             VStack(alignment: .leading) {
@@ -198,10 +211,11 @@ struct HomeView: View {
                             }
                             .padding()
                             .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
-                            .background(Color(.systemGray6))
+                            //.background(Color(.systemGray6))
                             .cornerRadius(10)
                         }
                         .buttonStyle(.plain)
+                        .cardStyle()
                     }
                     .padding(.horizontal)
                     //Divider().padding(.vertical)
@@ -565,6 +579,24 @@ private struct WorkoutHeatMapView: View {
                 }
             }
         }
+    }
+}
+
+struct CardStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(8)
+            .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 3)
+         
+    }
+}
+
+extension View {
+    func cardStyle() -> some View {
+        self.modifier(CardStyle())
     }
 }
 
