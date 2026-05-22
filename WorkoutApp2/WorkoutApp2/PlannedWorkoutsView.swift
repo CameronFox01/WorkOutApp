@@ -103,16 +103,16 @@ struct PlannedWorkoutsView: View {
             .toolbar {
 
                 // LEFT
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Close") {
-                        dismiss()
-                    }
-                    .fontWeight(.semibold)
-                    .font(.system(size: buttonTextSize))
-                    .padding(.horizontal, buttonWidth)
-                    .padding(.vertical, buttonHeight)
-                    .foregroundStyle(.white)
-                }
+//                ToolbarItem(placement: .topBarLeading) {
+//                    Button("Close") {
+//                        dismiss()
+//                    }
+//                    .fontWeight(.semibold)
+//                    .font(.system(size: buttonTextSize))
+//                    .padding(.horizontal, buttonWidth)
+//                    .padding(.vertical, buttonHeight)
+//                    .foregroundStyle(.white)
+//                }
 
                 // CENTER
                 ToolbarItem(placement: .principal) {

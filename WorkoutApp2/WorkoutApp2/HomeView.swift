@@ -155,7 +155,8 @@ struct HomeView: View {
                         TimerView()
                             .padding(30)
                     }
-                    .cardStyle()
+                    
+                    //.cardStyle()
                     
                     
                     //Section to get steps and distance

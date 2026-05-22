@@ -15,49 +15,76 @@ struct TimerView: View {
     @State var isTimerRunning: Bool = false
     @State private var startTime = Date()
     @State private var timerString: String = "00:00"
-    @State private var timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+    let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
     
+    @State private var showBigTimer = false
+
     var body: some View {
-        HStack {
-            Button("Stop Timer"){
-                if isTimerRunning{
-                    isTimerRunning = false
-                }
+
+        HStack(spacing: 16) {
+
+            // MARK: - Stop
+            Button {
+                isTimerRunning = false
+            } label: {
+                Image(systemName: "stop.fill")
+                    .font(.system(size: 18, weight: .bold))
+                    .frame(width: 44, height: 44)
             }
-            .font(.headline.bold())
             .buttonStyle(.borderedProminent)
-            .tint(Color.red)
-           
+            .tint(.red)
+
             Spacer()
-            
-            Text(self.timerString)
-                .font(.title)
-                .bold()
+
+            // MARK: - Timer Display (tap to expand)
+            VStack(spacing: 2) {
+                Text(timerString)
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .onTapGesture {
+                        showBigTimer = true
+                    }
+
+                Text("Tap to expand")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+
             Spacer()
-            
-            Button("Start Timer") {
-                if !isTimerRunning{
-                    // Resetting and setting up the timer
+
+            // MARK: - Start / Reset
+            Button {
+                if !isTimerRunning {
                     timerString = "00:00"
                     startTime = Date()
-                    // Starting the timer
                     isTimerRunning = true
                 }
+            } label: {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 18, weight: .bold))
+                    .frame(width: 44, height: 44)
             }
-            .font(.headline.bold())
             .buttonStyle(.borderedProminent)
-            .tint(Color.green)
-        
+            .tint(.green)
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
         .onReceive(timer) { _ in
             guard isTimerRunning else { return }
-            
+
             let elapsed = Date().timeIntervalSince(startTime)
-            
+
             let minutes = Int(elapsed) / 60
             let seconds = Int(elapsed) % 60
-            
+
             timerString = String(format: "%02d:%02d", minutes, seconds)
+        }
+        .sheet(isPresented: $showBigTimer) {
+            TimeViewBig()
         }
     }
 }
