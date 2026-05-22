@@ -175,8 +175,31 @@ import SwiftUI
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(workouts, id: \.self) { workout in
-                            Text(workout)
-                                .font(.title3.bold())
+                            NavigationLink {
+                                ImportView.CategoryDetailView(
+                                    category: categoryForWorkout(workout),
+                                    unitSystemRaw: .constant(UnitSystem.metric.rawValue),
+                                    selections: .constant([
+                                        categoryForWorkout(workout): workout
+                                    ]),
+                                    weights: .constant([:]),
+                                    reps: .constant([:]),
+                                    sets: .constant([:]),
+                                    distances: .constant([:]),
+                                    times: .constant([:]),
+                                    entries: .constant([]),
+                                    save: {},
+                                    increment: { _, _ in },
+                                    decrement: { _, _ in },
+                                    weightUnitProvider: { "lbs" },
+                                    goHomeAfterSave: false,
+                                    showSavedToast: .constant(false),
+                                    resetParent: {}
+                                )
+                            } label: {
+                                Text(workout)
+                                    .font(.title3.bold())
+                            }
                         }
                     }
                 }
@@ -192,7 +215,7 @@ import SwiftUI
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("Workout Calendar")
-                    .font(.largeTitle).bold()
+                    .font(.title).bold()
                     .foregroundStyle(.white)
             }
         }
@@ -206,6 +229,16 @@ import SwiftUI
             }
         }
     }
+     
+     private func categoryForWorkout(_ workout: String) -> WorkoutCategory {
+         for category in WorkoutCategory.allCases {
+             if category.workouts.contains(workout) {
+                 return category
+             }
+         }
+
+         return .bodyweight
+     }
      
      private func keyCount(for day: Weekday) -> String { "planned_workouts_count_\(day.rawValue)" }
      private func keyItems(for day: Weekday) -> String { "planned_workouts_items_\(day.rawValue)" }

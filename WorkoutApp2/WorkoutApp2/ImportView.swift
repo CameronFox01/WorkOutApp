@@ -78,8 +78,19 @@ struct ImportView: View {
     // UI feedback
     @State private var showSavedToast = false
     
+    let preselectedCategory: WorkoutCategory?
+    let preselectedWorkout: String?
+    
     private var unitSystem: UnitSystem {
         UnitSystem(rawValue: unitSystemRaw) ?? .metric
+    }
+    
+    init(
+        preselectedCategory: WorkoutCategory? = nil,
+        preselectedWorkout: String? = nil
+    ) {
+        self.preselectedCategory = preselectedCategory
+        self.preselectedWorkout = preselectedWorkout
     }
 
     var body: some View {
@@ -121,12 +132,20 @@ struct ImportView: View {
             }
             .onAppear {
                 resetImportView()
-                for category in WorkoutCategory.allCases {
-                    if selections[category] == nil {
-                        selections[category] = category.workouts.first ?? ""
-                    }
-                }
-                loadEntries()
+
+                  for category in WorkoutCategory.allCases {
+                      if selections[category] == nil {
+                          selections[category] = category.workouts.first ?? ""
+                      }
+                  }
+
+                  // PRESELECT WORKOUT
+                  if let category = preselectedCategory,
+                     let workout = preselectedWorkout {
+                      selections[category] = workout
+                  }
+
+                  loadEntries()
             }
             .onDisappear {
                 resetImportView()
