@@ -12,6 +12,22 @@ import SwiftUI
     @State private var selectedDate: Date = Calendar.current.startOfDay(for: Date())
 
     private var calendar: Calendar { Calendar.current }
+     
+     enum Weekday: String, CaseIterable, Identifiable {
+         case sun, mon, tue, wed, thu, fri, sat
+         var id: String { rawValue }
+         var display: String {
+             switch self {
+             case .sun: return "Sun"
+             case .mon: return "Mon"
+             case .tue: return "Tue"
+             case .wed: return "Wed"
+             case .thu: return "Thu"
+             case .fri: return "Fri"
+             case .sat: return "Sat"
+             }
+         }
+     }
 
     private var monthStart: Date {
         let base = calendar.date(byAdding: .month, value: currentMonthOffset, to: Date()) ?? Date()
@@ -115,6 +131,10 @@ import SwiftUI
                 let dayEntries = entries(for: selectedDate)
                 let bodyWeightForDay = dayEntries.first(where: { $0.workoutType == "Body Weight" && !$0.weight.isEmpty })?.weight
                 let fallbackWeight = lastStoredBodyWeightEntry?.weight
+                
+                let workouts = UserDefaults.standard.stringArray(
+                    forKey: keyItems(for: weekday(from: selectedDate))
+                ) ?? []
 
                 // This is the Hstack for the selected Date and the users body weight on that day.
                 HStack {
@@ -145,6 +165,21 @@ import SwiftUI
                         .padding(.vertical, 8)
                     }
                 }
+                Spacer()
+                //Section for Schedule to be accessed and displayed here.
+                VStack(alignment: .leading, spacing: 8){
+                    Text("Planned Workouts")
+                        .font(.title.bold())
+                    if workouts.isEmpty {
+                        Text("No planned workouts")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(workouts, id: \.self) { workout in
+                            Text(workout)
+                                .font(.title3.bold())
+                        }
+                    }
+                }
             }
             .padding(.horizontal)
 
@@ -171,6 +206,24 @@ import SwiftUI
             }
         }
     }
+     
+     private func keyCount(for day: Weekday) -> String { "planned_workouts_count_\(day.rawValue)" }
+     private func keyItems(for day: Weekday) -> String { "planned_workouts_items_\(day.rawValue)" }
+     private func keyItemCategories(for day: Weekday) -> String { "planned_workouts_categories_\(day.rawValue)" }
+     
+     private func weekday(from date: Date) -> Weekday {
+         let weekdayNumber = calendar.component(.weekday, from: date)
+
+         switch weekdayNumber {
+         case 1: return .sun
+         case 2: return .mon
+         case 3: return .tue
+         case 4: return .wed
+         case 5: return .thu
+         case 6: return .fri
+         default: return .sat
+         }
+     }
 }
 
 #Preview {
