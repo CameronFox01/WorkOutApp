@@ -43,7 +43,14 @@ import SwiftUI
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        VStack(alignment: .trailing, spacing: 8) {
+                        VStack(alignment: .center, spacing: 27){
+                            Text("Flights Climbed")
+                                .font(.headline)
+                            Text("\(Hmanager.flightsClimbed)")
+                                .font(.title2).bold()
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 27) {
                             Text("Distance")
                                 .font(.headline)
                             Text(formattedDistance)
@@ -125,6 +132,7 @@ import SwiftUI
             Hmanager.fetchSteps()
             Hmanager.fetchDistance()
             Hmanager.fetchLastFiveDaysSteps()
+            Hmanager.fetchFlightsClimbed()
         }
     }
 }

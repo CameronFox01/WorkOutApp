@@ -18,13 +18,20 @@ class HealthManager: ObservableObject {
     @Published var steps: Int = 0  // ✅ Add this published property
     @Published var distance: Double = 0
     @Published var activeCalories: Double = 0
+    @Published var flightsClimbed: Int = 0
     
     init(){
         let steps = HKQuantityType(.stepCount)
         let distance = HKQuantityType(.distanceWalkingRunning)
         let activeEnergy = HKQuantityType(.activeEnergyBurned)
-        
-        let healthTypes: Set = [steps, distance, activeEnergy]
+        let flights = HKQuantityType(.flightsClimbed)
+
+        let healthTypes: Set = [
+            steps,
+            distance,
+            activeEnergy,
+            flights
+        ]
         
         Task{
             do{
@@ -33,6 +40,39 @@ class HealthManager: ObservableObject {
                 print("error fetching health data")
             }
         }
+    }
+    
+    func fetchFlightsClimbed() {
+        let flightsType = HKQuantityType(.flightsClimbed)
+
+        let startOfDay = Calendar.current.startOfDay(for: Date())
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: startOfDay,
+            end: Date(),
+            options: .strictStartDate
+        )
+
+        let query = HKStatisticsQuery(
+            quantityType: flightsType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, result, error in
+
+            guard let quantity = result?.sumQuantity(),
+                  error == nil else {
+                print("Error fetching flights climbed")
+                return
+            }
+
+            let sumCount = Int(quantity.doubleValue(for: .count()))
+
+            DispatchQueue.main.async {
+                self.flightsClimbed = sumCount
+            }
+        }
+
+        healthStore.execute(query)
     }
     
     func fetchSteps() {
