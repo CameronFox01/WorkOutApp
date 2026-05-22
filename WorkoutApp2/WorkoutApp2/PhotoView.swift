@@ -27,6 +27,8 @@ struct PhotoView: View {
     @State private var showingSidePicker = false
     
     @AppStorage("SaveToPhotosApp") private var saveToPhoto: Bool = true
+    
+    @State private var showImageSheet = false
 
     var body: some View {
         NavigationView {
@@ -38,62 +40,26 @@ struct PhotoView: View {
                 }
                 .frame(maxHeight: .infinity)
                 
-                Button {
-                    showingSavedPhotos = true
-                } label: {
-                    HStack {
-                        Image(systemName: "photo.stack")
-                        Text("View Saved Photos")
-                            .fontWeight(.semibold)
-
-                        Spacer()
-
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-                }
-                .buttonStyle(.plain)
-
                 // Pickers row
-                HStack(spacing: 12) {
-                    PhotosPicker(selection: $leftSelectedItem, matching: .images, photoLibrary: .shared()) {
-                        Label("Pick Left", systemImage: "photo.on.rectangle")
-                            .font(.subheadline.weight(.semibold))
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 14)
-                            .background(Color(.systemGray6))
-                            .clipShape(Capsule())
-                    }
-                    .onChange(of: leftSelectedItem, initial: false) { oldValue, newValue in
-                        guard let newItem = newValue else { return }
-                        Task {
-                            if let data = try? await newItem.loadTransferable(type: Data.self),
-                               let image = UIImage(data: data) {
-                                leftImage = image
-                            }
-                        }
-                    }
+                VStack(spacing: 12) {
+                    photoPicker(title: "Pick Left Photo From Device", selection: $leftSelectedItem)
+                    photoPicker(title: "Pick Right Photo From Device", selection: $rightSelectedItem)
+                    
+                    Button {
+                        showingSavedPhotos = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "photo.stack")
 
-                    PhotosPicker(selection: $rightSelectedItem, matching: .images, photoLibrary: .shared()) {
-                        Label("Pick Right", systemImage: "photo.on.rectangle")
-                            .font(.subheadline.weight(.semibold))
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 14)
-                            .background(Color(.systemGray6))
-                            .clipShape(Capsule())
-                    }
-                    .onChange(of: rightSelectedItem, initial: false) { oldValue, newValue in
-                        guard let newItem = newValue else { return }
-                        Task {
-                            if let data = try? await newItem.loadTransferable(type: Data.self),
-                               let image = UIImage(data: data) {
-                                rightImage = image
-                            }
+                            Text("View Photos Stored on App")
+                                .fontWeight(.semibold)
                         }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
+                    .buttonStyle(.plain)
                 }
 
                 // Camera sheets for each side
@@ -243,6 +209,20 @@ struct PhotoView: View {
         let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         guard let dir = urls.first else { throw URLError(.fileDoesNotExist) }
         return dir
+    }
+    
+    @ViewBuilder
+    func photoPicker(title: String, selection: Binding<PhotosPickerItem?>) -> some View {
+        PhotosPicker(selection: selection, matching: .images) {
+            Label(title, systemImage: "photo.on.rectangle")
+                .font(.headline.weight(.semibold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 14)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 }
 
