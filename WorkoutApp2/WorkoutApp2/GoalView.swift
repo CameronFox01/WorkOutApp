@@ -24,7 +24,8 @@ struct GoalView: View {
     @State private var selectedBicep: BicepWorkout = .alternatingDumbbellCurl
     @State private var selectedTricep: TricepWorkout = .bandedPushdown
     @State private var selectedAbs: AbsWorkout = .abdominalVacuum
-    @State private var selectedCardio: CardioWorkout = .battleRopes
+    @State private var selectedDistanceCardio: DistanceCardioWorkout = .briskWalking
+    @State private var selectedTimeCardio: TimeCardioWorkout = .burpees
     @State private var selectedSports: SportsWorkout = .archery
     @State private var selectedStretch: StretchRoutine = .ankleCircles
     
@@ -255,15 +256,29 @@ struct GoalView: View {
                 
                 // Cardio (distance goal)
                 CollapsibleGoalCard(
-                    title: "Cardio",
+                    title: "Distance Cardio",
                     systemImage: "figure.run",
-                    selection: $selectedCardio,
-                    allCases: CardioWorkout.allCases,
+                    selection: $selectedDistanceCardio,
+                    allCases: DistanceCardioWorkout.allCases,
                     unitSystem: unitSystem,
                     unitSystemRaw: $unitSystemRaw,
                     targetWeights: $workoutTargetWeights,
                     usesWeight: false,
-                    isCardio: true,
+                    isDistanceCardio: true,
+                    symbolColor: primaryBlue,
+                    focus: $isEditing
+                )
+                
+                CollapsibleGoalCard(
+                    title: "Time Cardio",
+                    systemImage: "figure.dance",
+                    selection: $selectedTimeCardio,
+                    allCases: TimeCardioWorkout.allCases,
+                    unitSystem: unitSystem,
+                    unitSystemRaw: $unitSystemRaw,
+                    targetWeights: $workoutTargetWeights,
+                    usesWeight: false,
+                    isTimeCardio: true,
                     symbolColor: primaryBlue,
                     focus: $isEditing
                 )
@@ -323,7 +338,7 @@ struct GoalView: View {
         + BicepWorkout.allCases.map(\.rawValue)
         + TricepWorkout.allCases.map(\.rawValue)
         + AbsWorkout.allCases.map(\.rawValue)
-        + CardioWorkout.allCases.map(\.rawValue)
+        + DistanceCardioWorkout.allCases.map(\.rawValue)
         
         for workout in allWorkouts {
             let key = "goal_\(workout)"
@@ -419,9 +434,11 @@ struct GoalView: View {
         @Binding var unitSystemRaw: String
         @Binding var targetWeights: [String: String]
         let usesWeight: Bool
-        var isCardio: Bool = false
+        var isDistanceCardio: Bool = false
+        var isTimeCardio: Bool = false
         let symbolColor: Color // ✅ now a parameter
         let focus: FocusState<Bool>.Binding
+        
 
         @State private var isExpanded: Bool = false
         
@@ -464,7 +481,7 @@ struct GoalView: View {
                         }
                         
                         HStack {
-                            if isCardio {
+                            if isDistanceCardio {
                                 pillField(text: Binding<String>(
                                     get: { targetWeights[selection.rawValue] ?? "" },
                                     set: { targetWeights[selection.rawValue] = $0 }
@@ -481,7 +498,15 @@ struct GoalView: View {
                                           suffix: weightUnit,
                                           focus: focus
                                 )
-                            } else {
+                            } else if isTimeCardio {
+                                pillField(text: Binding<String>(
+                                    get: { targetWeights[selection.rawValue] ?? "" },
+                                    set: { targetWeights[selection.rawValue] = $0 }
+                                ), placeholder: "30",
+                                          suffix: "min",
+                                          focus: focus
+                                )
+                            }else {
                                 pillField(text: Binding<String>(
                                     get: { targetWeights[selection.rawValue] ?? "" },
                                     set: { targetWeights[selection.rawValue] = $0 }

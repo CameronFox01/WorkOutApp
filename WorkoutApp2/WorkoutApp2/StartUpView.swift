@@ -195,7 +195,7 @@ struct StartUpView: View {
             + BicepWorkout.allCases.map(\.rawValue)
             + TricepWorkout.allCases.map(\.rawValue)
             + AbsWorkout.allCases.map(\.rawValue)
-            + CardioWorkout.allCases.map(\.rawValue)
+            + DistanceCardioWorkout.allCases.map(\.rawValue)
 
         for workout in allWorkouts {
             let key = "goal_\(workout)"

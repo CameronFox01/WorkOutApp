@@ -15,13 +15,29 @@ struct WorkoutEntry: Identifiable, Codable {
     var sets: String
     var date: Date
 }
-
+// Enums for each workout type
 enum WorkoutCategory: String, CaseIterable, Identifiable {
-    case bodyweight, push, pull, leg, glute, bicep, tricep, abs, cardio, sports, stretch
+    case bodyweight, push, pull, leg, glute, bicep, tricep, abs, distanceCardio, timeCardio, sports, stretch
 
     var id: String { rawValue }
 
-    var title: String { rawValue.capitalized }
+    // Title of the Sections
+    var title: String {
+        switch self {
+        case .bodyweight: return "Body Weight"
+        case .push: return "Push"
+        case .pull: return "Pull"
+        case .leg: return "Leg"
+        case .glute: return "Glute"
+        case .bicep: return "Bicep"
+        case .tricep: return "Tricep"
+        case .abs: return "Abs"
+        case .distanceCardio: return "Distance Cardio"
+        case .timeCardio: return "Time Cardio"
+        case .sports: return "Sports"
+        case .stretch: return "Stretch"
+        }
+    }
 
     var workouts: [String] {
         switch self {
@@ -33,7 +49,8 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
         case .leg: return LegWorkout.allCases.map(\.rawValue)
         case .glute: return GluteWorkout.allCases.map(\.rawValue)
         case .tricep: return TricepWorkout.allCases.map(\.rawValue)
-        case .cardio: return CardioWorkout.allCases.map(\.rawValue)
+        case .distanceCardio: return DistanceCardioWorkout.allCases.map(\.rawValue)
+        case .timeCardio: return TimeCardioWorkout.allCases.map(\.rawValue)
         case .sports: return SportsWorkout.allCases.map(\.rawValue)
         case .stretch: return StretchRoutine.allCases.map(\.rawValue)
         }
@@ -42,7 +59,7 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
     // Categories where weight is typically not entered
     var usesWeight: Bool {
         switch self {
-        case .bodyweight, .abs, .stretch, .sports, .cardio: return false
+        case .bodyweight, .abs, .stretch, .sports, .distanceCardio: return false
         default: return true
         }
     }
@@ -93,6 +110,7 @@ struct ImportView: View {
         self.preselectedWorkout = preselectedWorkout
     }
 
+    // The view of the list of all workouts
     var body: some View {
         NavigationView {
             List {
@@ -173,7 +191,8 @@ struct ImportView: View {
         case .bicep: return "dumbbell"
         case .tricep: return "bolt.circle"
         case .abs: return "figure.core.training"
-        case .cardio: return "figure.run"
+        case .distanceCardio: return "figure.run"
+        case .timeCardio: return "figure.dance"
         case .sports: return "sportscourt"
         case .stretch: return "figure.yoga"
         }
@@ -199,6 +218,7 @@ struct ImportView: View {
         @Binding var showSavedToast: Bool
         let resetParent: () -> Void
 
+        // The view for the logging. It calls "card" to do all of the heavy lifting
         var body: some View {
             ScrollView {
                 VStack(spacing: 16) {
@@ -256,6 +276,7 @@ struct ImportView: View {
             )
         }
 
+        // This does all of the real work to create the logging screen
         @ViewBuilder private var card: some View {
             VStack(alignment: .leading, spacing: 12) {
                 Picker("Workout", selection: selectionBinding) {
@@ -268,7 +289,7 @@ struct ImportView: View {
                 .padding(.vertical, 10)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-                if category.usesWeight && category != .cardio {
+                if category.usesWeight && category != .distanceCardio && category != .timeCardio{
                     HStack(spacing: 12) {
                         Image(systemName: "scalemass")
                             .foregroundStyle(.secondary)
@@ -286,7 +307,7 @@ struct ImportView: View {
                     .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
 
-                if category == .cardio {
+                if category == .distanceCardio {
                     HStack(spacing: 12) {
                         Image(systemName: "ruler")
                             .foregroundStyle(.secondary)
@@ -303,8 +324,26 @@ struct ImportView: View {
                     .padding(12)
                     .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
+                
+                if category == .timeCardio {
+                    HStack(spacing: 12) {
+                        Image(systemName: "timer")
+                            .foregroundStyle(.secondary)
+                        TextField("Time (min)", text: timeBinding)
+                            .keyboardType(.decimalPad)
+                        Spacer()
+                        Stepper("", onIncrement: {
+                            increment(&times, 1)
+                        }, onDecrement: {
+                            decrement(&times, 1)
+                        })
+                        .labelsHidden()
+                    }
+                    .padding(12)
+                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
 
-                if category != .cardio {
+                if category != .distanceCardio {
                     HStack(spacing: 12) {
                         Image(systemName: "number")
                             .foregroundStyle(.secondary)
@@ -322,7 +361,7 @@ struct ImportView: View {
                     .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
 
-                if category != .cardio {
+                if category != .distanceCardio {
                     HStack(spacing: 12) {
                         Image(systemName: "square.grid.2x2")
                             .foregroundStyle(.secondary)
@@ -340,7 +379,7 @@ struct ImportView: View {
                     .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
 
-                if category == .cardio {
+                if category == .distanceCardio {
                     HStack(spacing: 12) {
                         Image(systemName: "clock")
                             .foregroundStyle(.secondary)
@@ -418,7 +457,7 @@ struct ImportView: View {
             }
         }
         
-        if category == .cardio {
+        if category == .distanceCardio {
             guard let distance = distances[category], !distance.isEmpty else {
                 feedbackError()
                 print("⛔️ Missing values for distance")
@@ -432,7 +471,7 @@ struct ImportView: View {
         }
 
         let rep = reps[category] ?? ""
-        if category != .cardio {
+        if category != .distanceCardio {
             guard !rep.isEmpty else {
                 feedbackError()
                 print("⛔️ Missing values for rep")
@@ -447,12 +486,12 @@ struct ImportView: View {
         }
 
         let setsVal: String = {
-            if category == .cardio { return times[category] ?? "" }
+            if category == .distanceCardio { return times[category] ?? "" }
             else { return setsDict[category] ?? "" }
         }()
 
         let weightString: String = {
-            if category == .cardio { return distances[category] ?? "" }
+            if category == .distanceCardio { return distances[category] ?? "" }
             if category.usesWeight { return weights[category] ?? "" }
             else { return "" }
         }()
@@ -475,8 +514,8 @@ struct ImportView: View {
             //This will allow the user to do multiple sets without having to redo.
             if GoToHomeScreenWhenSaved == false{
                 if category.usesWeight { weights[category] = "" }
-                if category == .cardio { distances[category] = "" }
-                if category == .cardio { times[category] = "" }
+                if category == .distanceCardio { distances[category] = "" }
+                if category == .distanceCardio { times[category] = "" }
                 reps[category] = ""
                 setsDict[category] = ""
             }else { //this will move the user out to the home screen after each save.

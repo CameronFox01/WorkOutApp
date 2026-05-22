@@ -246,29 +246,46 @@ enum GluteWorkout: String, CaseIterable, Identifiable, Hashable {
     var id: String { self.rawValue }
 }
 
-//Cardio workouts
-enum CardioWorkout: String, CaseIterable, Identifiable, Hashable {
-    case battleRopes = "Battle Ropes", briskWalking = "Brisk Walking", burpees = "Burpees"
-    case circuitTraining = "Circuit Training", crossCountrySkiing = "Cross-Country Skiing"
-    case crossTrainer = "Cross Trainer", cycleSprint = "Cycle Sprint", cycling = "Cycling"
-    case danceCardio = "Dance Cardio", elliptical = "Elliptical", ellipticalIntervals = "Elliptical Intervals"
-    case fitnessBoxing = "Fitness Boxing", hiking = "Hiking", HIIT = "HIIT", highKnees = "High Knees"
-    case iceSkating = "Ice Skating", intervalTraining = "Interval Training", jumpRope = "Jump Rope"
-    case jumpSquats = "Jump Squats", jumpingJacks = "Jumping Jacks", kayaking = "Kayaking"
-    case kickboxing = "Kickboxing", mountainBiking = "Mountain Biking", mountainClimbers = "Mountain Climbers"
+//Cardio workouts that require distance
+enum DistanceCardioWorkout: String, CaseIterable, Identifiable, Hashable {
+    case briskWalking = "Brisk Walking"
+    case crossCountrySkiing = "Cross-Country Skiing"
+    case cycleSprint = "Cycle Sprint", cycling = "Cycling"
+    case elliptical = "Elliptical", ellipticalIntervals = "Elliptical Intervals"
+    case hiking = "Hiking"
+    case iceSkating = "Ice Skating"
+    case kayaking = "Kayaking"
+    case mountainBiking = "Mountain Biking"
     case outdoorCycling = "Outdoor Cycling", paddleboarding = "Paddleboarding", rollerblading = "Rollerblading"
     case rowing = "Rowing", rowingMachine = "Rowing Machine", rowingSprints = "Rowing Sprints"
-    case running = "Running", shadowBoxing = "Shadow Boxing", skaterJumps = "Skater Jumps"
-    case speedWalking = "Speed Walking", spinClass = "Spin Class", stairClimbing = "Stair Climbing"
-    case stairClimbingIntervals = "Stair Climbing Intervals", stairMaster = "Stair Master"
-    case stationaryBike = "Stationary Bike", stepAerobics = "Step Aerobics", swimming = "Swimming"
-    case swimmingLaps = "Swimming Laps", treadmillInclineWalk = "Treadmill Incline Walk"
+    case running = "Running", skaterJumps = "Skater Jumps"
+    case speedWalking = "Speed Walking"
+    case stationaryBike = "Stationary Bike", swimming = "Swimming"
+    case swimmingLaps = "Swimming Laps", treadmill = "Treadmill", treadmillInclineWalk = "Treadmill Incline Walk"
     case treadmillJogging = "Treadmill Jogging", treadmillSprint = "Treadmill Sprint"
-    case waterAerobics = "Water Aerobics", zumba = "Zumba"
     
     var id: String { self.rawValue }
 }
 
+//Cardio Workouts that are time based
+enum TimeCardioWorkout: String, CaseIterable, Identifiable, Hashable {
+    case battleRopes = "Battle Ropes"
+    case burpees = "Burpees", burpeesWithPlank = "Burpees with Plank", burpeesWithPushUps = "Burpees with Push-Ups"
+    case burpeesWithTricepDips = "Burpees with Tricep Dips", burpeesWithWallSits = "Burpees with Wall Sits"
+    case circuitTraining = "Circuit Training", crossTrainer = "Cross Trainer",danceCardio = "Dance Cardio"
+    case fitnessBoxing = "Fitness Boxing", HIIT = "HIIT", highKnees = "High Knees"
+    case intervalTraining = "Interval Training", jumpRope = "Jump Rope"
+    case jumpSquats = "Jump Squats", jumpingJacks = "Jumping Jacks"
+    case kickboxing = "Kickboxing",  mountainClimbers = "Mountain Climbers"
+    case shadowBoxing = "Shadow Boxing", spinClass = "Spin Class", stairClimbing = "Stair Climbing"
+    case stairClimbingIntervals = "Stair Climbing Intervals", stairMaster = "Stair Master"
+    case stepAerobics = "Step Aerobics"
+    case waterAerobics = "Water Aerobics", zumba = "Zumba"
+    
+    var id: String{self.rawValue}
+}
+
+// Sports Workouts
 enum SportsWorkout: String, CaseIterable, Identifiable, Hashable {
     case archery = "Archery", badminton = "Badminton", baseball = "Baseball", basketball = "Basketball"
     case billiards = "Billiards", bobsledding = "Bobsledding", bowling = "Bowling", boxing = "Boxing"

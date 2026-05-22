@@ -10,7 +10,7 @@ import UIKit
 
 struct CameraView: UIViewControllerRepresentable {
     @Binding var image : UIImage? //bind to the parent view state
-    @Environment (\.presentationMode) var presentationMode //Dismiss the view when done
+    @Environment(\.presentationMode) var presentationMode //Dismiss the view when done
     
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController() //Create the Camera Picker
