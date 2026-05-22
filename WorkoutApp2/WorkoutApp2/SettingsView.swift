@@ -40,6 +40,15 @@ struct SettingsView: View {
                         }
                     }
                     
+                    // Delete this by the end. This is great for testing
+                    Button{
+                        hasCompletedSetup = false
+                    } label: {
+                        Text("Reset App Setup")
+                    }
+                    // No confirmation because I dont want to use AI in front of a TA.
+                   
+                    
                     //Section to reset the entire app.
                     Button(role: .destructive) {
                         showResetConfirmation = true
