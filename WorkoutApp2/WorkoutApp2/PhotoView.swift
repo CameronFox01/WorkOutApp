@@ -36,6 +36,13 @@ struct PhotoView: View {
                 // Side-by-side image comparison
                 HStack(spacing: 12) {
                     imagePane(title: "Left", image: leftImage, takeAction: { showingLeftCamera = true }, pickAction: { /* handled by PhotosPicker below */ })
+                    imagePane(title: "Right", image: rightImage, takeAction: { showingRightCamera = true }, pickAction: { /* handled by PhotosPicker below */ })
+                }
+                .frame(maxHeight: .infinity)
+                
+                // Pickers row
+                VStack(spacing: 12) {
+                    photoPicker(title: "Pick Left Photo From Device", selection: $leftSelectedItem)
                         .onChange(of: leftSelectedItem) { _, newItem in
                               guard let newItem else { return }
                               Task {
@@ -45,7 +52,7 @@ struct PhotoView: View {
                                   }
                               }
                           }
-                    imagePane(title: "Right", image: rightImage, takeAction: { showingRightCamera = true }, pickAction: { /* handled by PhotosPicker below */ })
+                    photoPicker(title: "Pick Right Photo From Device", selection: $rightSelectedItem)
                         .onChange(of: rightSelectedItem) { _, newItem in
                                 guard let newItem else { return }
                                 Task {
@@ -55,21 +62,14 @@ struct PhotoView: View {
                                     }
                                 }
                             }
-                }
-                .frame(maxHeight: .infinity)
-                
-                // Pickers row
-                VStack(spacing: 12) {
-                    photoPicker(title: "Pick Left Photo From Device", selection: $leftSelectedItem)
-                    photoPicker(title: "Pick Right Photo From Device", selection: $rightSelectedItem)
                     
                     Button {
                         showingSavedPhotos = true
                     } label: {
                         HStack {
-                            Image(systemName: "photo.stack")
+                            Image(systemName: "photo.on.rectangle")
 
-                            Text("View Photos Stored on App")
+                            Text("Pick From Photos Stored on App")
                                 .fontWeight(.semibold)
                         }
                         .frame(maxWidth: .infinity)
@@ -78,6 +78,19 @@ struct PhotoView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
                     .buttonStyle(.plain)
+                    
+                    NavigationLink {
+                        ViewPhotosInApp()
+                    } label: {
+                        HStack {
+                            Image(systemName: "photo.stack")
+                            Text("View Photos")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
                 }
 
                 // Camera sheets for each side
