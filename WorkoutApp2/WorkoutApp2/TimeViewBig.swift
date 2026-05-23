@@ -19,7 +19,7 @@ struct TimeViewBig: View {
     // Everything Needed for counting up
     @Binding var isStopWatchRunning: Bool
     @Binding var startTime: Date
-    @Binding var timerString: String
+    @Binding var stopWatchString: String
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let stopWatch = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -30,7 +30,7 @@ struct TimeViewBig: View {
         self._isTimerRunning = isTimerRunning
         self._isStopWatchRunning = isStopWatchRunning
         self._startTime = startTime
-        self._timerString = timerString
+        self._stopWatchString = timerString
     }
 
     var body: some View {
@@ -43,7 +43,11 @@ struct TimeViewBig: View {
 
                     // MARK: - Stop
                     Button {
-                        isStopWatchRunning = false
+                        if isStopWatchRunning {
+                            isStopWatchRunning = false
+                        } else {
+                            stopWatchString = "00:00"
+                        }
                     } label: {
                         Image(systemName: "stop.fill")
                             .font(.system(size: 18, weight: .bold))
@@ -56,7 +60,7 @@ struct TimeViewBig: View {
 
                     // MARK: - Timer Display (tap to expand)
                     VStack(spacing: 2) {
-                        Text(timerString)
+                        Text(stopWatchString)
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .monospacedDigit()
                     }
@@ -66,7 +70,7 @@ struct TimeViewBig: View {
                     // MARK: - Start / Reset
                     Button {
                         if !isStopWatchRunning {
-                            timerString = "00:00"
+                            stopWatchString = "00:00"
                             startTime = Date()
                             isStopWatchRunning = true
                         }
@@ -92,7 +96,7 @@ struct TimeViewBig: View {
                     let minutes = Int(elapsed) / 60
                     let seconds = Int(elapsed) % 60
 
-                    timerString = String(format: "%02d:%02d", minutes, seconds)
+                    stopWatchString = String(format: "%02d:%02d", minutes, seconds)
                 }
 
                 // MARK: - Timer Display Card
@@ -151,7 +155,12 @@ struct TimeViewBig: View {
                 HStack(spacing: 16) {
 
                     Button {
-                        isTimerRunning = false
+                        if isTimerRunning {
+                            isTimerRunning = false
+                        } else {
+                            totalSeconds = 60
+                            remainingSeconds = 60
+                        }
                     } label: {
                         Label("Stop", systemImage: "stop.fill")
                             .frame(maxWidth: .infinity)

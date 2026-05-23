@@ -12,30 +12,49 @@
 import SwiftUI
 
 struct TimerView: View {
-    @State var isTimerRunning: Bool = false
-    @State private var startTime = Date()
-    @State private var timerString: String = "00:00"
+    // Storage for the Stop Watch
+    @AppStorage("isStopWatchRunning")
+    private var isStopWatchRunning: Bool = false
+
+    @AppStorage("startStopWatch")
+    private var startStopWatch: Double = 0
+
+    @AppStorage("stopWatchString")
+    private var stopWatchString: String = "00:00"
+
+    
     // Countdown state
-    @State private var totalSeconds: Int = 60
-    @State private var remainingSeconds: Int = 60
-    @State private var isCountdownRunning: Bool = false
-    private let countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
-    let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
-    
+    @AppStorage("totalSeconds") private var totalSeconds: Int = 60
+    @AppStorage("remainingSeconds") private var remainingSeconds: Int = 60
+    @AppStorage("isCountdownRunning") private var isCountdownRunning: Bool = false
+    //@State private var totalSeconds: Int = 60
+    //@State private var remainingSeconds: Int = 60
+    //@State private var isCountdownRunning: Bool = false
+
+    private let countdownTimer =
+        Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    let timer =
+        Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+
     @State private var showBigTimer = false
 
-    @AppStorage("showStopWatch") private var showStopWatch: Bool = true
-    
+    @AppStorage("showStopWatch")
+    private var showStopWatch: Bool = true
+
     var body: some View {
-        
-        if showStopWatch { //Section for stopwatch to be shown.
-            
+
+        if showStopWatch {
+
             HStack(spacing: 16) {
-                
-                // MARK: - Stop
+
+                // Stop
                 Button {
-                    isTimerRunning = false
+                    if isStopWatchRunning {
+                        isStopWatchRunning = false
+                    } else {
+                        stopWatchString = "00:00"
+                    }
                 } label: {
                     Image(systemName: "stop.fill")
                         .font(.system(size: 18, weight: .bold))
@@ -43,32 +62,41 @@ struct TimerView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.red)
-                
+
                 Spacer()
-                
-                // MARK: - Timer Display (tap to expand)
+
+                // Timer Display
                 VStack(spacing: 2) {
-                    Text(timerString)
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+
+                    Text(stopWatchString)
+                        .font(.system(size: 22,
+                                      weight: .bold,
+                                      design: .rounded))
                         .monospacedDigit()
                         .onTapGesture {
                             showBigTimer = true
                         }
-                    
+
                     Text("Tap to expand")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
-                
+
                 Spacer()
-                
-                // MARK: - Start / Reset
+
+                // Start
                 Button {
-                    if !isTimerRunning {
-                        timerString = "00:00"
-                        startTime = Date()
-                        isTimerRunning = true
+
+                    if !isStopWatchRunning {
+
+                        stopWatchString = "00:00"
+
+                        // FIXED
+                        startStopWatch = Date().timeIntervalSince1970
+
+                        isStopWatchRunning = true
                     }
+
                 } label: {
                     Image(systemName: "play.fill")
                         .font(.system(size: 18, weight: .bold))
@@ -80,43 +108,50 @@ struct TimerView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: 16,
+                                 style: .continuous)
                     .fill(Color(.secondarySystemBackground))
             )
+
+            // FIXED
             .onReceive(timer) { _ in
-                guard isTimerRunning else { return }
-                
-                let elapsed = Date().timeIntervalSince(startTime)
-                
+
+                guard isStopWatchRunning else { return }
+
+                let start = Date(timeIntervalSince1970: startStopWatch)
+
+                let elapsed = Date().timeIntervalSince(start)
+
                 let minutes = Int(elapsed) / 60
                 let seconds = Int(elapsed) % 60
-                
-                timerString = String(format: "%02d:%02d", minutes, seconds)
+
+                stopWatchString =
+                    String(format: "%02d:%02d", minutes, seconds)
             }
+
             .sheet(isPresented: $showBigTimer) {
                 TimeViewBig(
                     totalSeconds: $totalSeconds,
                     remainingSeconds: $remainingSeconds,
                     isTimerRunning: $isCountdownRunning,
-                    isStopWatchRunning: $isTimerRunning,
-                    startTime: $startTime,
-                    timerString: $timerString
+                    isStopWatchRunning: $isStopWatchRunning,
+                    startTime: startTimeBinding,
+                    timerString: $stopWatchString
                 )
             }
-        } else { // section to show compact countdown
-            HStack(spacing: 12) {
-                // Decrease time
-                Button {
+
+        } else {
+            // section to show compact countdown
+            HStack(spacing: 12) { // Decrease time
+                Button{
                     guard !isCountdownRunning else { return }
                     adjustTime(by: -30)
                 } label: {
                     Image(systemName: "minus.circle.fill")
                         .font(.system(size: 20, weight: .bold))
-                        .frame(width: 36, height: 36)
-                }
-                .tint(.orange)
-                .buttonStyle(.bordered)
-
+                    .frame(width: 36, height: 36) } .tint(.orange)
+                    .buttonStyle(.bordered)
+                
                 // Time display (tap to expand big view)
                 VStack(spacing: 2) {
                     Text(formatTime(remainingSeconds))
@@ -128,7 +163,7 @@ struct TimerView: View {
                         .foregroundStyle(.secondary)
                 }
                 .frame(minWidth: 100)
-
+                
                 // Increase time
                 Button {
                     guard !isCountdownRunning else { return }
@@ -140,49 +175,63 @@ struct TimerView: View {
                 }
                 .tint(.blue)
                 .buttonStyle(.bordered)
-
+                
                 Spacer(minLength: 0)
-
-                // Start/Stop toggle (single button)
-                Button {
-                    toggleCountdown()
+                
+                // Stop Button
+                Button{
+                    if isCountdownRunning {
+                        isCountdownRunning = false
+                    } else {
+                        totalSeconds = 60
+                        remainingSeconds = 60
+                    }
+                    
                 } label: {
-                    Image(systemName: isCountdownRunning ? "pause.fill" : "play.fill")
+                    Image(systemName: "pause.fill")
                         .font(.system(size: 18, weight: .bold))
                         .frame(width: 44, height: 44)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(isCountdownRunning ? .gray : .green)
+                .tint(Color.red)
+                
+                // Start Button
+                Button{
+                    isCountdownRunning = true
+                } label: {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.green)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(.secondarySystemBackground))
+            .background( RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
             )
             .onReceive(countdownTimer) { _ in
                 guard isCountdownRunning else { return }
-                if remainingSeconds > 0 {
-                    remainingSeconds -= 1
-                } else {
-                    isCountdownRunning = false
+                if remainingSeconds > 0 { remainingSeconds -= 1 }
+                else { isCountdownRunning = false
                     let generator = UINotificationFeedbackGenerator()
                     generator.notificationOccurred(.success)
                 }
             }
             .sheet(isPresented: $showBigTimer) {
-                TimeViewBig(
-                    totalSeconds: $totalSeconds,
-                    remainingSeconds: $remainingSeconds,
-                    isTimerRunning: $isCountdownRunning,
-                    isStopWatchRunning: $isTimerRunning,
-                    startTime: $startTime,
-                    timerString: $timerString
-                )
+                TimeViewBig( totalSeconds: $totalSeconds,
+                             remainingSeconds: $remainingSeconds,
+                             isTimerRunning: $isCountdownRunning,
+                             isStopWatchRunning: $isStopWatchRunning,
+                             startTime: startTimeBinding,
+                             timerString: $stopWatchString )
             }
         }
     }
-    
+
+    // MARK: - Helpers
+
     private func adjustTime(by delta: Int) {
         totalSeconds = max(0, totalSeconds + delta)
         remainingSeconds = max(0, remainingSeconds + delta)
@@ -192,8 +241,11 @@ struct TimerView: View {
         if isCountdownRunning {
             isCountdownRunning = false
         } else {
-            // If remaining is zero, reset from total
-            if remainingSeconds == 0 { remainingSeconds = max(0, totalSeconds) }
+
+            if remainingSeconds == 0 {
+                remainingSeconds = max(0, totalSeconds)
+            }
+
             isCountdownRunning = remainingSeconds > 0
         }
     }
@@ -202,6 +254,19 @@ struct TimerView: View {
         let m = seconds / 60
         let s = seconds % 60
         return String(format: "%02d:%02d", m, s)
+    }
+
+    // MARK: - Date Conversion
+
+    private var startTimeBinding: Binding<Date> {
+        Binding<Date>(
+            get: {
+                Date(timeIntervalSince1970: startStopWatch)
+            },
+            set: { newValue in
+                startStopWatch = newValue.timeIntervalSince1970
+            }
+        )
     }
 }
 
