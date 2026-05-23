@@ -12,16 +12,26 @@ struct TimeViewBig: View {
     @Environment(\.dismiss) private var dismiss
     
     // Everything needed for counting down
-    @State private var totalSeconds: Int = 300   // default 5 minutes
-    @State private var remainingSeconds: Int = 300
-    @State private var isTimerRunning: Bool = false
-    @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    @Binding var totalSeconds: Int
+    @Binding var remainingSeconds: Int
+    @Binding var isTimerRunning: Bool
     
-    //Everything Needed for counting up
-    @State var isStopWatchRunning: Bool = false
-    @State private var startTime = Date()
-    @State private var timerString: String = "00:00"
+    // Everything Needed for counting up
+    @Binding var isStopWatchRunning: Bool
+    @Binding var startTime: Date
+    @Binding var timerString: String
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let stopWatch = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+    
+    init(totalSeconds: Binding<Int>, remainingSeconds: Binding<Int>, isTimerRunning: Binding<Bool>, isStopWatchRunning: Binding<Bool>, startTime: Binding<Date>, timerString: Binding<String>) {
+        self._totalSeconds = totalSeconds
+        self._remainingSeconds = remainingSeconds
+        self._isTimerRunning = isTimerRunning
+        self._isStopWatchRunning = isStopWatchRunning
+        self._startTime = startTime
+        self._timerString = timerString
+    }
 
     var body: some View {
         NavigationStack {
@@ -200,5 +210,12 @@ struct TimeViewBig: View {
     }
 }
 #Preview {
-    TimeViewBig()
+    TimeViewBig(
+        totalSeconds: .constant(300),
+        remainingSeconds: .constant(300),
+        isTimerRunning: .constant(false),
+        isStopWatchRunning: .constant(false),
+        startTime: .constant(Date()),
+        timerString: .constant("00:00")
+    )
 }

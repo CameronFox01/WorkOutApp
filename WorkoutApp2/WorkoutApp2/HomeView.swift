@@ -27,7 +27,7 @@ struct HomeView: View {
     @State private var activeCalories: Double = 0
     
     //How many Workouts to show in Recent Workouts
-    @State private var numberOfWorkoutsToShow: Int = 12
+    @AppStorage("numberOfWorkoutsToShow") private var numberOfWorkoutsToShow: Int = 12
     
     private var profileImage: UIImage? { //This is setting what the image needs to be.
         guard let data = profileImageData else { return nil }

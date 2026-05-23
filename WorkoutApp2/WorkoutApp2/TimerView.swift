@@ -94,7 +94,14 @@ struct TimerView: View {
                 timerString = String(format: "%02d:%02d", minutes, seconds)
             }
             .sheet(isPresented: $showBigTimer) {
-                TimeViewBig()
+                TimeViewBig(
+                    totalSeconds: $totalSeconds,
+                    remainingSeconds: $remainingSeconds,
+                    isTimerRunning: $isCountdownRunning,
+                    isStopWatchRunning: $isTimerRunning,
+                    startTime: $startTime,
+                    timerString: $timerString
+                )
             }
         } else { // section to show compact countdown
             HStack(spacing: 12) {
@@ -164,7 +171,14 @@ struct TimerView: View {
                 }
             }
             .sheet(isPresented: $showBigTimer) {
-                TimeViewBig()
+                TimeViewBig(
+                    totalSeconds: $totalSeconds,
+                    remainingSeconds: $remainingSeconds,
+                    isTimerRunning: $isCountdownRunning,
+                    isStopWatchRunning: $isTimerRunning,
+                    startTime: $startTime,
+                    timerString: $timerString
+                )
             }
         }
     }
