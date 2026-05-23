@@ -20,7 +20,30 @@ struct EditWorkoutView: View {
     @State private var reps: String = ""
     @State private var sets: String = ""
     @State private var date: Date = Date()
+    
+    // Focus handling for keyboard dismissal
+    @FocusState private var focusedField: Field?
 
+    private enum Field: Hashable {
+        case weight
+        case reps
+        case sets
+    }
+    
+    // Picker selections
+    @State private var selectedCategory: WorkoutCategory = .push
+
+    // Lookup from workout name to category to initialize the picker
+    private let workoutCategoryLookup: [String: WorkoutCategory] = {
+        var lookup: [String: WorkoutCategory] = [:]
+        for category in WorkoutCategory.allCases {
+            for workout in category.workouts {
+                lookup[workout] = category
+            }
+        }
+        return lookup
+    }()
+    
     init(entry: WorkoutEntry) {
         self._entry = State(initialValue: entry)
         self._workoutType = State(initialValue: entry.workoutType)
@@ -28,21 +51,72 @@ struct EditWorkoutView: View {
         self._reps = State(initialValue: entry.reps)
         self._sets = State(initialValue: entry.sets)
         self._date = State(initialValue: entry.date)
+        // Initialize selected category from the current workout type if possible
+        if let cat = workoutCategoryLookup[entry.workoutType] {
+            self._selectedCategory = State(initialValue: cat)
+        } else {
+            self._selectedCategory = State(initialValue: .push)
+        }
     }
 
     var body: some View {
         Form {
             Section(header: Text("Workout")) {
-                TextField("Type", text: $workoutType)
+                Picker("Category", selection: $selectedCategory) {
+                    ForEach(WorkoutCategory.allCases) { category in
+                        HStack(spacing: 10) {
+
+                            Image(systemName: category.icon)
+                                .foregroundStyle(Color.blue)
+
+                            Text(category.title)
+                                .foregroundStyle(Color.black)
+                                .font(.headline.bold())
+                        }
+                        .tag(category)
+                    }
+                }
+                .pickerStyle(.navigationLink)
+                Picker("Workout", selection: $workoutType) {
+                    ForEach(selectedCategory.workouts, id: \.self) { workout in
+                        Text(workout).tag(workout)
+                            .foregroundStyle(Color.black)
+                            .font(.headline.bold())
+                    }
+                }
+                .pickerStyle(.navigationLink)
                 DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
             }
             Section(header: Text("Details")) {
-                TextField("Weight", text: $weight)
-                    .keyboardType(.decimalPad)
-                TextField("Reps", text: $reps)
-                    .keyboardType(.numberPad)
-                TextField("Sets", text: $sets)
-                    .keyboardType(.numberPad)
+                //Section for Weight
+                HStack{
+                    Text("Weight:")
+                    
+                    TextField("Weight", text: $weight)
+                        .keyboardType(.decimalPad)
+                        .focused($focusedField, equals: .weight)
+                        .submitLabel(.next)
+                        .onSubmit { focusedField = .reps }
+                }
+                //Section for Reps
+                HStack{
+                    Text("Reps:")
+                    
+                    TextField("Reps", text: $reps)
+                        .keyboardType(.numberPad)
+                        .focused($focusedField, equals: .reps)
+                        .submitLabel(.next)
+                        .onSubmit { focusedField = .sets }
+                }
+                //Section for Sets
+                HStack{
+                    Text("Sets:")
+                    TextField("Sets", text: $sets)
+                        .keyboardType(.numberPad)
+                        .focused($focusedField, equals: .sets)
+                        .submitLabel(.done)
+                        .onSubmit { focusedField = nil }
+                }
             }
 
             Section {
@@ -53,14 +127,29 @@ struct EditWorkoutView: View {
                 }
             }
         }
-        .navigationTitle("Edit Workout")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color.blue, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { dismiss() }
-            }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") { saveChanges() }
+            }
+            ToolbarItem(placement: .principal){
+                Text("Edit Workout")
+                    .font(.largeTitle).bold()
+                    .foregroundStyle(.white)
+            }
+        }
+        .onChange(of: selectedCategory) { _, newCategory in
+            // When category changes, if current workout type is not in the new category, reset to the first option.
+            if !newCategory.workouts.contains(workoutType) {
+                workoutType = newCategory.workouts.first ?? workoutType
+            }
+        }
+        .toolbar { // keyboard toolbar
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { focusedField = nil }
             }
         }
     }

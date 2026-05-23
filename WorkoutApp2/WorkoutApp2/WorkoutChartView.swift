@@ -28,6 +28,10 @@ struct WorkoutChartView: View {
             .sorted { $0.date > $1.date }
     }
 
+    private var mostRecentEntry: WorkoutEntry? {
+        entriesForWorkout.first
+    }
+
     private var weightUnit: String {
         UnitSystem(rawValue: unitSystemRaw) == .imperial ? "lbs" : "kg"
     }
@@ -91,6 +95,18 @@ struct WorkoutChartView: View {
                 Text(workoutName.capitalized)
                     .font(.title2).bold()
                     .foregroundStyle(.white)
+            }
+            ToolbarItem(placement: .topBarTrailing){
+                if let entry = mostRecentEntry {
+                    NavigationLink(destination: EditWorkoutView(entry: entry)){
+                        Label("Edit", systemImage: "pencil")
+                    }
+                } else {
+                    Label("Edit", systemImage: "pencil")
+                        .foregroundStyle(.secondary)
+                        .opacity(0.4)
+                        .accessibilityHidden(true)
+                }
             }
         }
         .navigationBarTitleDisplayMode(.inline)
