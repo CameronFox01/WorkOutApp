@@ -94,7 +94,7 @@ struct AllImportedWorkoutsView: View {
 
                 } else {
 
-                    ForEach(workoutData.entries) { entry in
+                    ForEach(workoutData.entries.reversed()) { entry in
                         let iconName = workoutCategoryLookup[entry.workoutType]?.icon ?? "dumbbell.fill"
                         WorkoutEntryCard(entry: entry, iconName: iconName, weightUnit: weightUnit)
                     }
@@ -138,46 +138,50 @@ private struct WorkoutEntryCard: View {
     let weightUnit: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: iconName)
-                    .foregroundStyle(.blue)
-                Text(entry.workoutType)
-                    .font(.headline)
-                Spacer()
-            }
-            Divider()
-            VStack(alignment: .leading, spacing: 8) {
-                if !entry.weight.isEmpty {
-                    Label("\(entry.weight) \(weightUnit)", systemImage: "scalemass")
+        NavigationLink(destination: EditWorkoutView(entry: entry)){
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Image(systemName: iconName)
+                        .foregroundStyle(.blue)
+                    Text(entry.workoutType)
+                        .font(.headline)
+                        .foregroundStyle(Color.black)
+                    Spacer()
                 }
-                if !entry.reps.isEmpty {
-                    Label("\(entry.reps) Reps", systemImage: "number")
+                Divider()
+                VStack(alignment: .leading, spacing: 8) {
+                    if !entry.weight.isEmpty {
+                        Label("\(entry.weight) \(weightUnit)", systemImage: "scalemass")
+                    }
+                    if !entry.reps.isEmpty {
+                        Label("\(entry.reps) Reps", systemImage: "number")
+                    }
+                    if !entry.sets.isEmpty {
+                        Label("\(entry.sets) Sets", systemImage: "square.grid.2x2")
+                    }
                 }
-                if !entry.sets.isEmpty {
-                    Label("\(entry.sets) Sets", systemImage: "square.grid.2x2")
+                .font(.subheadline)
+                .foregroundStyle(Color.black)
+                Divider()
+                HStack {
+                    Spacer()
+                    Text(entry.date.formatted(date: .abbreviated, time: .shortened))
+                        .font(.caption)
+                        .foregroundStyle(Color(.systemGray))
                 }
             }
-            .font(.subheadline)
-            Divider()
-            HStack {
-                Spacer()
-                Text(entry.date.formatted(date: .abbreviated, time: .shortened))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(Color(.secondarySystemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(Color.gray.opacity(0.15), lineWidth: 1)
+            )
+            .padding(.horizontal)
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(Color(.secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.gray.opacity(0.15), lineWidth: 1)
-        )
-        .padding(.horizontal)
     }
 }
 
