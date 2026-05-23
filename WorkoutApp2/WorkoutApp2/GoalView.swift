@@ -60,18 +60,26 @@ struct GoalView: View {
                 .onAppear {
                     loadWorkoutGoals()
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
-            .scrollDismissesKeyboard(.interactively)
-            .onTapGesture { isEditing = false }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.blue, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Set Goals")
-                        .font(.largeTitle).bold()
-                        .foregroundStyle(.white)
+            .onTapGesture {
+                isEditing = false
+            }
+            .toolbar{
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isEditing = false }
                 }
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color.blue, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Set Goals")
+                    .font(.largeTitle).bold()
+                    .foregroundStyle(.white)
             }
         }
     }
@@ -101,7 +109,8 @@ struct GoalView: View {
                               suffix: weightUnit,
                               focus: $isEditing
                             )
-                        }
+                    //.submitScope()
+                }
                 
                 // Workouts per Week row
                 HStack(spacing: 12) {
@@ -121,6 +130,7 @@ struct GoalView: View {
                         suffix: "",
                         focus: $isEditing
                     )
+                    //.submitScope()
                 }
             }
             .padding(14)
@@ -561,7 +571,33 @@ fileprivate extension Color {
         self = Color(red: r, green: g, blue: b)
     }
 }
-
+//
+//@ViewBuilder
+//func pillField(
+//    text: Binding<String>,
+//    placeholder: String,
+//    suffix: String? = nil,
+//    focus: FocusState<Bool>.Binding
+//) -> some View {
+//    HStack(spacing: 8) {
+//            TextField(placeholder, text: text)
+//                .focused(focus)
+//                .keyboardType(.decimalPad)
+//                .padding(.vertical, 10)
+//                .padding(.leading, 14)
+//                .padding(.trailing, suffix == nil ? 14 : 4)
+//                .frame(maxWidth: .infinity, alignment: .leading)
+//
+//            if let suffix {
+//                Text(suffix)
+//                    .font(.caption)
+//                    .foregroundStyle(.secondary)
+//                    .padding(.trailing, 12)
+//            }
+//        }
+//        .background(Color(.secondarySystemFill), in: Capsule())
+//        .contentShape(Capsule())
+//}
 @ViewBuilder
 func pillField(
     text: Binding<String>,
@@ -570,23 +606,25 @@ func pillField(
     focus: FocusState<Bool>.Binding
 ) -> some View {
     HStack(spacing: 8) {
-            TextField(placeholder, text: text)
-                .focused(focus)
-                .keyboardType(.decimalPad)
-                .padding(.vertical, 10)
-                .padding(.leading, 14)
-                .padding(.trailing, suffix == nil ? 14 : 4)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        TextField(placeholder, text: text)
+            .focused(focus) // Keep this
+            .keyboardType(.decimalPad)
+            .submitLabel(.done)
+            .padding(.vertical, 10)
+            .padding(.leading, 14)
+            .padding(.trailing, suffix == nil ? 14 : 4)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let suffix {
-                Text(suffix)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.trailing, 12)
-            }
+        if let suffix {
+            Text(suffix)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.trailing, 12)
         }
-        .background(Color(.secondarySystemFill), in: Capsule())
-        .contentShape(Capsule())
+    }
+    // REMOVE .submitScope() from here and in the calling code
+    .background(Color(.secondarySystemFill), in: Capsule())
+    .contentShape(Capsule())
 }
 
 func gradientButton(

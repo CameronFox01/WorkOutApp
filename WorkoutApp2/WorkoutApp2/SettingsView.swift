@@ -16,13 +16,25 @@ struct SettingsView: View {
     
     @AppStorage("SaveToPhotosApp") private var saveToPhoto: Bool = true
     
+    @AppStorage("showStopWatch") private var showStopWatch: Bool = true
+    
     @State private var showResetConfirmation = false
+    
+    @State private var showResetAccountConfirmation = false
     
     var body: some View {
         //Text("Settings View")
         NavigationView{
             VStack{
                 Form {
+                    //Section as to what to display in home view for the Timer
+                    Section(header: Text("Setting to display either Stop Watch or Count Down")){
+                        Picker("Display Stop Watch or Count Down", selection: $showStopWatch) {
+                            Text("Show Stop Watch").tag(true)
+                            Text("Show Count Down").tag(false)
+                        }
+                    }
+                    
                     //Section to decide how to react when Save Import Button is pressed.
                     Section(header: Text("Settings How to Save when Importing")) {
                         Picker("How to Save when Importing", selection: $GoToHomeScreenWhenSaved) {
@@ -42,11 +54,19 @@ struct SettingsView: View {
                     
                     // Delete this by the end. This is great for testing
                     Button{
-                        hasCompletedSetup = false
+                        showResetAccountConfirmation = true
                     } label: {
                         Text("Reset App Setup")
                     }
                     // No confirmation because I dont want to use AI in front of a TA.
+                    .confirmationDialog("Reset Account only", isPresented: $showResetAccountConfirmation, titleVisibility: .visible){
+                        Button("Reset the account but save the data"){
+                            hasCompletedSetup = false
+                        }
+                        Button("Cancel", role: .cancel){}
+                    } message: {
+                        Text("This will clear account information and return you to the setup form.")
+                    }
                    
                     
                     //Section to reset the entire app.
