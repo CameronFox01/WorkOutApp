@@ -10,7 +10,7 @@ struct CaloriesDetailView: View {
     @EnvironmentObject var Hmanager: HealthManager
     let unitSystem: UnitSystem
 
-    @AppStorage("dailyCaloriesGoal") private var dailyCaloriesGoal: Int = 2000
+    @AppStorage("dailyCaloriesGoal") private var dailyCaloriesGoal: Int = 500
 
     private var lastFiveDaysSteps: [(date: Date, steps: Int)] { Hmanager.lastFiveDaysSteps }
 

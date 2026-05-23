@@ -237,7 +237,7 @@ enum GluteWorkout: String, CaseIterable, Identifiable, Hashable {
     case monsterWalk = "Monster Walk", reverseHyper = "Reverse Hyper", romanianDeadlift = "Romanian Deadlift"
     case seatedHipAbduction = "Seated Hip Abduction", sideLyingLegLift = "Side Lying Leg Lift"
     case singleLegDeadlift = "Single Leg Deadlift", singleLegHipThrust = "Single Leg Hip Thrust"
-    case singleLegSquat = "Single Leg Squat", sissySquat = "Sissy Squat", squatToPulse = "Squat To Pulse"
+    case singleLegSquat = "Single Leg Squat", sissySquat = "Sissy Squat", squat = "Squat", squatToPulse = "Squat To Pulse"
     case standingGluteKickback = "Standing Glute Kickback", stepUps = "Step-ups"
     case sumoDeadlift = "Sumo Deadlift", sumoSquat = "Sumo Squat", walkingLunges = "Walking Lunges"
     case weightedHipThrust = "Weighted Hip Thrust", weightedSideLunge = "Weighted Side Lunge"

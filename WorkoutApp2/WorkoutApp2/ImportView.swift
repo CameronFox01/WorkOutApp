@@ -63,6 +63,47 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
         default: return true
         }
     }
+    var icon: String {
+        switch self {
+
+        case .bodyweight:
+            return "figure.cross.training"
+
+        case .push:
+            return "arrow.up.forward.circle.fill"
+
+        case .pull:
+            return "arrow.down.backward.circle.fill"
+
+        case .leg:
+            return "figure.strengthtraining.functional"
+
+        case .glute:
+            return "figure.strengthtraining.traditional"
+
+        case .bicep:
+            return "dumbbell.fill"
+
+        case .tricep:
+            return "bolt.circle.fill"
+
+        case .abs:
+            return "figure.core.training"
+
+        case .distanceCardio:
+            return "figure.run"
+
+        case .timeCardio:
+            return "timer"
+
+        case .sports:
+            return "sportscourt.fill"
+
+        case .stretch:
+            return "figure.yoga"
+     
+        }
+    }
 }
 
 struct ImportView: View {
@@ -114,6 +155,15 @@ struct ImportView: View {
     var body: some View {
         NavigationView {
             List {
+                NavigationLink{
+                    AllImportedWorkoutsView()
+                } label:{
+                    HStack{
+                        Image(systemName: "list.bullet")
+                        Text("See all imported workouts")
+                    }
+                }
+                
                 Section() {
                     ForEach(WorkoutCategory.allCases) { category in
                         NavigationLink(destination: CategoryDetailView(

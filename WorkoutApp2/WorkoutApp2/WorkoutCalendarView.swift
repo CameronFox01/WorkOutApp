@@ -79,135 +79,137 @@ import SwiftUI
     }
 
     var body: some View {
-        VStack(spacing: 25) {
-            // This entire HStack is for the Arrows and Month/Year
-            HStack {
-                Button(action: { currentMonthOffset -= 1 }) { Image(systemName: "chevron.left") }
-                    .font(Font.largeTitle.bold())
-                Spacer()
-                Text(monthTitle)
-                    .font(Font.largeTitle.bold())
-                Spacer()
-                Button(action: { currentMonthOffset += 1 }) { Image(systemName: "chevron.right") }
-                    .font(Font.largeTitle.bold())
-            }
-            .padding(.horizontal)
-
-            // This is the section for the calendar and heat map itself.
-            let firstWeekday = calendar.component(.weekday, from: monthStart)
-            //let leadingBlanks = (firstWeekday + 5) % 7 // make Monday=1 alignment
-            let leadingBlanks = firstWeekday - 1 // This makes you start on Sundays
-
-            let cells: [Date?] = Array(repeating: nil, count: leadingBlanks) + daysInMonth
-
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
-                ForEach(cells.indices, id: \.self) { idx in
-                    if let day = cells[idx] {
-                        let key = calendar.startOfDay(for: day)
-                        let count = countsByDay[key] ?? 0
-                        VStack {
-                            Button {
-                                selectedDate = calendar.startOfDay(for: day)
-                            } label: {
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(color(for: count))
-                                    .frame(height: 38)
-                                    .overlay(
-                                        Text("\(calendar.component(.day, from: day))")
-                                            .font(.headline)
-                                            .foregroundColor(.primary)
-                                    )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    } else {
-                        Color.clear.frame(height: 32)
-                    }
-                }
-            }
-            .padding(.horizontal)
-            
-            // Details for selected day
-            VStack(alignment: .leading, spacing: 8) {
-                let dayEntries = entries(for: selectedDate)
-                let bodyWeightForDay = dayEntries.first(where: { $0.workoutType == "Body Weight" && !$0.weight.isEmpty })?.weight
-                let fallbackWeight = lastStoredBodyWeightEntry?.weight
-                
-                let workouts = UserDefaults.standard.stringArray(
-                    forKey: keyItems(for: weekday(from: selectedDate))
-                ) ?? []
-
-                // This is the Hstack for the selected Date and the users body weight on that day.
+        ScrollView {
+            VStack(spacing: 25) {
+                // This entire HStack is for the Arrows and Month/Year
                 HStack {
-                    Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
-                        .font(.title.bold())
+                    Button(action: { currentMonthOffset -= 1 }) { Image(systemName: "chevron.left") }
+                        .font(Font.largeTitle.bold())
                     Spacer()
-                    if let w = bodyWeightForDay ?? fallbackWeight {
-                        Text("Weight: \(w)")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                    }
+                    Text(monthTitle)
+                        .font(Font.largeTitle.bold())
+                    Spacer()
+                    Button(action: { currentMonthOffset += 1 }) { Image(systemName: "chevron.right") }
+                        .font(Font.largeTitle.bold())
                 }
-
-                //The section for no workouts completed on that day
-                if dayEntries.isEmpty {
-                    ContentUnavailableView("No workouts", systemImage: "calendar", description: Text("No workouts logged for this day."))
-                } else { //The section for there being workouts on that day.
-                    ForEach(dayEntries) { e in
-                        HStack(alignment: .firstTextBaseline, spacing: 12) {
-                            Text(e.workoutType)
-                                .font(.headline).bold()
-                            Spacer()
-                            if !e.weight.isEmpty { Text(e.weight).font(.headline) }
-                            if !e.reps.isEmpty { Text("\(e.reps) reps").font(.headline) }
-                            if !e.sets.isEmpty { Text("\(e.sets) sets").font(.headline) }
+                .padding(.horizontal)
+                
+                // This is the section for the calendar and heat map itself.
+                let firstWeekday = calendar.component(.weekday, from: monthStart)
+                //let leadingBlanks = (firstWeekday + 5) % 7 // make Monday=1 alignment
+                let leadingBlanks = firstWeekday - 1 // This makes you start on Sundays
+                
+                let cells: [Date?] = Array(repeating: nil, count: leadingBlanks) + daysInMonth
+                
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+                    ForEach(cells.indices, id: \.self) { idx in
+                        if let day = cells[idx] {
+                            let key = calendar.startOfDay(for: day)
+                            let count = countsByDay[key] ?? 0
+                            VStack {
+                                Button {
+                                    selectedDate = calendar.startOfDay(for: day)
+                                } label: {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(color(for: count))
+                                        .frame(height: 38)
+                                        .overlay(
+                                            Text("\(calendar.component(.day, from: day))")
+                                                .font(.headline)
+                                                .foregroundColor(.primary)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        } else {
+                            Color.clear.frame(height: 32)
                         }
-                        .foregroundColor(.primary)
-                        .padding(.vertical, 8)
                     }
                 }
-                Spacer()
-                //Section for Schedule to be accessed and displayed here.
-                VStack(alignment: .leading, spacing: 8){
-                    Text("Planned Workouts")
-                        .font(.title.bold())
-                    if workouts.isEmpty {
-                        Text("No planned workouts")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(workouts, id: \.self) { workout in
-                            NavigationLink {
-                                ImportView.CategoryDetailView(
-                                    category: categoryForWorkout(workout),
-                                    unitSystemRaw: .constant(UnitSystem.metric.rawValue),
-                                    selections: .constant([
-                                        categoryForWorkout(workout): workout
-                                    ]),
-                                    weights: .constant([:]),
-                                    reps: .constant([:]),
-                                    sets: .constant([:]),
-                                    distances: .constant([:]),
-                                    times: .constant([:]),
-                                    entries: .constant([]),
-                                    save: {},
-                                    increment: { _, _ in },
-                                    decrement: { _, _ in },
-                                    weightUnitProvider: { "lbs" },
-                                    goHomeAfterSave: false,
-                                    showSavedToast: .constant(false),
-                                    resetParent: {}
-                                )
-                            } label: {
-                                Text(workout)
-                                    .font(.title3.bold())
+                .padding(.horizontal)
+                
+                // Details for selected day
+                VStack(alignment: .leading, spacing: 8) {
+                    let dayEntries = entries(for: selectedDate)
+                    let bodyWeightForDay = dayEntries.first(where: { $0.workoutType == "Body Weight" && !$0.weight.isEmpty })?.weight
+                    let fallbackWeight = lastStoredBodyWeightEntry?.weight
+                    
+                    let workouts = UserDefaults.standard.stringArray(
+                        forKey: keyItems(for: weekday(from: selectedDate))
+                    ) ?? []
+                    
+                    // This is the Hstack for the selected Date and the users body weight on that day.
+                    HStack {
+                        Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
+                            .font(.title.bold())
+                        Spacer()
+                        if let w = bodyWeightForDay ?? fallbackWeight {
+                            Text("Weight: \(w)")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    //The section for no workouts completed on that day
+                    if dayEntries.isEmpty {
+                        ContentUnavailableView("No workouts", systemImage: "calendar", description: Text("No workouts logged for this day."))
+                    } else { //The section for there being workouts on that day.
+                        ForEach(dayEntries) { e in
+                            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                                Text(e.workoutType)
+                                    .font(.headline).bold()
+                                Spacer()
+                                if !e.weight.isEmpty { Text(e.weight).font(.headline) }
+                                if !e.reps.isEmpty { Text("\(e.reps) reps").font(.headline) }
+                                if !e.sets.isEmpty { Text("\(e.sets) sets").font(.headline) }
+                            }
+                            .foregroundColor(.primary)
+                            .padding(.vertical, 8)
+                        }
+                    }
+                    Spacer()
+                    //Section for Schedule to be accessed and displayed here.
+                    VStack(alignment: .leading, spacing: 8){
+                        Text("Planned Workouts")
+                            .font(.title.bold())
+                        if workouts.isEmpty {
+                            Text("No planned workouts")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(workouts, id: \.self) { workout in
+                                NavigationLink {
+                                    ImportView.CategoryDetailView(
+                                        category: categoryForWorkout(workout),
+                                        unitSystemRaw: .constant(UnitSystem.metric.rawValue),
+                                        selections: .constant([
+                                            categoryForWorkout(workout): workout
+                                        ]),
+                                        weights: .constant([:]),
+                                        reps: .constant([:]),
+                                        sets: .constant([:]),
+                                        distances: .constant([:]),
+                                        times: .constant([:]),
+                                        entries: .constant([]),
+                                        save: {},
+                                        increment: { _, _ in },
+                                        decrement: { _, _ in },
+                                        weightUnitProvider: { "lbs" },
+                                        goHomeAfterSave: false,
+                                        showSavedToast: .constant(false),
+                                        resetParent: {}
+                                    )
+                                } label: {
+                                    Text(workout)
+                                        .font(.title3.bold())
+                                }
                             }
                         }
                     }
                 }
+                .padding(.horizontal)
+                
+                Spacer()
             }
-            .padding(.horizontal)
-
-            Spacer()
         }
         .navigationTitle("Workout Calendar")
         .navigationBarTitleDisplayMode(.inline)
