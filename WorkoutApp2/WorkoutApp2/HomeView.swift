@@ -626,9 +626,10 @@ struct HomeView: View {
         return pct >= 0
     }
 
+    // Then your function works perfectly:
     private var progressColor: Color? {
         guard let positive = progressMovedDirectionPositive else { return nil }
-        return positive ? .green : .red
+        return positive ? .darkGreen : .red
     }
 
 }
@@ -770,6 +771,10 @@ extension View {
     func cardStyle() -> some View {
         self.modifier(CardStyle())
     }
+}
+
+extension Color {
+    static let darkGreen = Color(red: 0.0, green: 0.4, blue: 0.0)
 }
 
 struct HomeView_Previews: PreviewProvider {
