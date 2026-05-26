@@ -22,12 +22,16 @@ struct FiveDayCaloriesBarChart: View {
     var body: some View {
         GeometryReader { geo in
             let spacing: CGFloat = 8
-            let totalSpacing = spacing * CGFloat(data.count - 1)
-            let barWidth = (geo.size.width - totalSpacing) / CGFloat(data.count)
+            let dataCount = max(data.count, 1)
+
+            let totalSpacing = spacing * CGFloat(max(dataCount - 1, 0))
+            let barWidth = (geo.size.width - totalSpacing) / CGFloat(dataCount)
             let chartHeight = geo.size.height - 20
 
             HStack(alignment: .bottom, spacing: spacing) {
-                ForEach(Array(data.enumerated()), id: \.offset) { _, item in
+                ForEach(data.indices, id: \.self) { i in
+                    let item = data[i]
+
                     VStack(spacing: 4) {
                         ZStack(alignment: .bottom) {
                             RoundedRectangle(cornerRadius: 4)
@@ -35,10 +39,13 @@ struct FiveDayCaloriesBarChart: View {
                                 .frame(width: barWidth, height: chartHeight)
 
                             let heightRatio = CGFloat(Double(item.calories) / maxCalories)
+
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(Color.orange.opacity(0.7))
-                                .frame(width: barWidth, height: max(4, chartHeight * heightRatio))
+                                .frame(width: barWidth,
+                                       height: max(4, chartHeight * heightRatio))
                         }
+
                         Text(weekdayFormatter.string(from: item.date))
                             .font(.caption)
                             .foregroundStyle(.secondary)

@@ -28,7 +28,8 @@ struct FiveDayStepsBarChart: View {
             let chartHeight = geo.size.height - 20  // leave room for labels
 
             HStack(alignment: .bottom, spacing: spacing) {
-                ForEach(Array(data.enumerated()), id: \.offset) { idx, item in
+                ForEach(data.indices, id: \.self) { i in
+                    let item = data[i]
                     VStack(spacing: 4) {
                         ZStack(alignment: .bottom) {
                             RoundedRectangle(cornerRadius: 4)

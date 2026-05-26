@@ -8,8 +8,6 @@
 import SwiftUI
 import Charts
 
-import SwiftUI
-
 struct ContentView: View {
     @EnvironmentObject var healthManager: HealthManager
     @EnvironmentObject var workoutData: WorkoutData
@@ -24,39 +22,23 @@ struct ContentView: View {
         if hasCompletedSetup {
 
             TabView {
-
-                NavigationStack{
-                    HomeView()
-                        .environmentObject(healthManager)
-                        .environmentObject(workoutData)
-                }
+                
+                HomeView()
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }
 
-                NavigationStack{
-                    ImportView()
-                        .environmentObject(healthManager)
-                        .environmentObject(workoutData)
-                }
+                ImportView()
                 .tabItem {
                     Label("Import", systemImage: "dumbbell")
                 }
                 
-                NavigationStack{
-                    PhotoView()
-                        .environmentObject(healthManager)
-                        .environmentObject(workoutData)
-                }
+                PhotoView()
                 .tabItem {
                     Label("Camera", systemImage: "camera")
                 }
                 
-                NavigationStack{
-                    GoalView()
-                        .environmentObject(healthManager)
-                        .environmentObject(workoutData)
-                }
+                GoalView()
                 .tabItem{
                     Label("Goal", systemImage: "trophy")
                 }
@@ -66,8 +48,6 @@ struct ContentView: View {
         } else {
 
             StartUpView()
-                .environmentObject(healthManager)
-                .environmentObject(workoutData)
         }
     }
 

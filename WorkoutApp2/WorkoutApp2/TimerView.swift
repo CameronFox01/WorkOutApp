@@ -40,7 +40,7 @@ struct TimerView: View {
     @State private var showBigTimer = false
 
     @AppStorage("showStopWatch")
-    private var showStopWatch: Bool = false
+    private var showStopWatch: Bool = true
 
     var body: some View {
 
@@ -139,6 +139,12 @@ struct TimerView: View {
                     timerString: $stopWatchString
                 )
             }
+            .onAppear(){
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
 
         } else {
             // section to show compact countdown
@@ -174,7 +180,7 @@ struct TimerView: View {
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 20, weight: .bold))
-                        .frame(width: 36, height: 36)
+                      //  .frame(width: 36, height: 36)
                 }
                 .tint(.blue)
                 .buttonStyle(.bordered)
@@ -229,6 +235,12 @@ struct TimerView: View {
                              isStopWatchRunning: $isStopWatchRunning,
                              startTime: startTimeBinding,
                              timerString: $stopWatchString )
+            }
+            .onAppear(){
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
             }
         }
     }

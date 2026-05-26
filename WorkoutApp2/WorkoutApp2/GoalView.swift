@@ -571,33 +571,6 @@ fileprivate extension Color {
         self = Color(red: r, green: g, blue: b)
     }
 }
-//
-//@ViewBuilder
-//func pillField(
-//    text: Binding<String>,
-//    placeholder: String,
-//    suffix: String? = nil,
-//    focus: FocusState<Bool>.Binding
-//) -> some View {
-//    HStack(spacing: 8) {
-//            TextField(placeholder, text: text)
-//                .focused(focus)
-//                .keyboardType(.decimalPad)
-//                .padding(.vertical, 10)
-//                .padding(.leading, 14)
-//                .padding(.trailing, suffix == nil ? 14 : 4)
-//                .frame(maxWidth: .infinity, alignment: .leading)
-//
-//            if let suffix {
-//                Text(suffix)
-//                    .font(.caption)
-//                    .foregroundStyle(.secondary)
-//                    .padding(.trailing, 12)
-//            }
-//        }
-//        .background(Color(.secondarySystemFill), in: Capsule())
-//        .contentShape(Capsule())
-//}
 @ViewBuilder
 func pillField(
     text: Binding<String>,
