@@ -22,6 +22,10 @@ struct AccountView: View {
     @State private var showingProfilePhotoPicker = false
     @State private var showingProfileCamera = false
     
+    @State private var selectedFeet = 5
+    @State private var selectedInches = 8
+    @State private var selectedCentimeters = 173
+    
     private var profileImage: UIImage? {
         guard let data = profileImageData else { return nil }
         return UIImage(data: data)
@@ -36,105 +40,164 @@ struct AccountView: View {
     
     var body: some View {
         NavigationView {
-            VStack{
-                Form {
-                    
-                    Section(header: Text("Name")) {
-                        Text(name)
-                    }
-                    
-                    Section(header: Text("Body Info")){
-                        Text(displayHeight)
+            ZStack{
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(1.0),
+                        Color.cyan.opacity(0.6),
+                        Color(.systemBackground)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                VStack{
+                    Form {
                         
-                        Text(weight + " " + weightUnit)
+                        Section(header: Text("Name")) {
+                            TextField("Enter your name", text: $name)
+                        }
                         
-                    }
-                    
-                    Section(header: Text("Gender")) {
-                        Text(genderRaw)
-                    }
-                    
-                    Section(header: Text("Unit System")){
-                        Text(unitSystemRaw)
-                    }
-                }
-                
-                PhotosPicker(selection: Binding(get: { nil }, set: { item in
-                    guard let item else { return }
-                    Task {
-                        if let data = try? await item.loadTransferable(type: Data.self) {
-                            profileImageData = data
-                        }
-                    }
-                }), matching: .images, photoLibrary: .shared()) {
-                    EmptyView()
-                }
-                .frame(width: 0, height: 0)
-                .opacity(0.0)
-                .accessibilityHidden(true)
-                .onChange(of: showingProfilePhotoPicker, initial: false) { old, new in
-                    // When toggled true, programmatically trigger the PhotosPicker by reassigning selection via the binding set above.
-                }
-                
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackground(Color.blue, for: .navigationBar)
-                .toolbarBackground(.visible, for: .navigationBar)
-                .toolbar {
-                    ToolbarItem(placement: .principal) {
-                        Text("Account")
-                            .font(.largeTitle).bold()
-                            .foregroundStyle(.white)
-                    }
-                }
-                .navigationBarTitleDisplayMode(.inline)
-                
-                .toolbar{
-                    ToolbarItem(placement: .navigationBarTrailing){
-                        NavigationLink(destination: SettingsView()){
-                            Image(systemName: "gear")
-                                .font(.title)
-                        }
-                    }
-                }
-                .toolbar{
-                    ToolbarItem(placement: .navigationBarLeading){
-                        HStack(spacing: 0) {
-                            PhotosPicker(selection: Binding(get: { nil }, set: { item in
-                                guard let item else { return }
-                                Task {
-                                    if let data = try? await item.loadTransferable(type: Data.self) {
-                                        profileImageData = data
+                        Section(header: Text("Body Info")){
+                            if unitSystem == .imperial {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Height")
+                                    HStack {
+                                        Picker("Feet", selection: $selectedFeet) {
+                                            ForEach(3...7, id: \.self) { foot in
+                                                Text("\(foot) ft").tag(foot)
+                                            }
+                                        }
+                                        .pickerStyle(.wheel)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 100)
+
+                                        Picker("Inches", selection: $selectedInches) {
+                                            ForEach(0...11, id: \.self) { inch in
+                                                Text("\(inch) in").tag(inch)
+                                            }
+                                        }
+                                        .pickerStyle(.wheel)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 100)
                                     }
                                 }
-                            }), matching: .images, photoLibrary: .shared()) {
-                                if let uiImage = profileImage {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 50, height: 50)
-                                        .clipShape(Circle())
-                                } else {
-                                    Image(systemName: "person.circle")
-                                        .font(.title)
+                                .onChange(of: selectedFeet) {
+                                    height = "\((selectedFeet * 12) + selectedInches)"
+                                }
+                                .onChange(of: selectedInches) {
+                                    height = "\((selectedFeet * 12) + selectedInches)"
+                                }
+                            } else {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Height")
+                                    Picker("Centimeters", selection: $selectedCentimeters) {
+                                        ForEach(100...250, id: \.self) { cm in
+                                            Text("\(cm) cm").tag(cm)
+                                        }
+                                    }
+                                    .pickerStyle(.wheel)
+                                    .frame(height: 100)
+                                }
+                                .onChange(of: selectedCentimeters) {
+                                    height = "\(selectedCentimeters)"
                                 }
                             }
-                            .contextMenu {
-                                Button("Take Photo") { showingProfileCamera = true }
-                                if profileImageData != nil {
-                                    Button(role: .destructive) { profileImageData = nil } label: { Text("Remove Photo") }
+                            
+                            Text(weight + " " + weightUnit)
+                            
+                        }
+                        
+                        Section(header: Text("Gender")) {
+                            Text(genderRaw)
+                        }
+                        
+                        Section(header: Text("Unit System")){
+                            Text(unitSystemRaw)
+                        }
+                    }
+                    .scrollContentBackground(.hidden) // This removes the Forms default background
+                    
+                    PhotosPicker(selection: Binding(get: { nil }, set: { item in
+                        guard let item else { return }
+                        Task {
+                            if let data = try? await item.loadTransferable(type: Data.self) {
+                                profileImageData = data
+                            }
+                        }
+                    }), matching: .images, photoLibrary: .shared()) {
+                        EmptyView()
+                    }
+                    .frame(width: 0, height: 0)
+                    .opacity(0.0)
+                    .accessibilityHidden(true)
+                    .onChange(of: showingProfilePhotoPicker, initial: false) { old, new in
+                        // When toggled true, programmatically trigger the PhotosPicker by reassigning selection via the binding set above.
+                    }
+                    
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbarBackground(Color.blue, for: .navigationBar)
+                    .toolbarBackground(.visible, for: .navigationBar)
+                    .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            Text("Account")
+                                .font(.largeTitle).bold()
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    .navigationBarTitleDisplayMode(.inline)
+                    
+                    .toolbar{
+                        ToolbarItem(placement: .navigationBarTrailing){
+                            NavigationLink(destination: SettingsView()){
+                                Image(systemName: "gear")
+                                    .font(.title)
+                            }
+                        }
+                    }
+                    .toolbar{
+                        ToolbarItem(placement: .navigationBarLeading){
+                            HStack(spacing: 0) {
+                                PhotosPicker(selection: Binding(get: { nil }, set: { item in
+                                    guard let item else { return }
+                                    Task {
+                                        if let data = try? await item.loadTransferable(type: Data.self) {
+                                            profileImageData = data
+                                        }
+                                    }
+                                }), matching: .images, photoLibrary: .shared()) {
+                                    if let uiImage = profileImage {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 50, height: 50)
+                                            .clipShape(Circle())
+                                    } else {
+                                        Image(systemName: "person.circle")
+                                            .font(.title)
+                                    }
+                                }
+                                .contextMenu {
+                                    Button("Take Photo") { showingProfileCamera = true }
+                                    if profileImageData != nil {
+                                        Button(role: .destructive) { profileImageData = nil } label: { Text("Remove Photo") }
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                .sheet(isPresented: $showingProfileCamera) {
-                    CameraView(image: Binding(get: { profileImage }, set: { newImage in
-                        if let img = newImage, let data = img.jpegData(compressionQuality: 0.9) {
-                            profileImageData = data
-                        }
-                    }))
+                    .sheet(isPresented: $showingProfileCamera) {
+                        CameraView(image: Binding(get: { profileImage }, set: { newImage in
+                            if let img = newImage, let data = img.jpegData(compressionQuality: 0.9) {
+                                profileImageData = data
+                            }
+                        }))
+                    }
                 }
             }
+        }
+        .onAppear {
+            initializePickersFromStoredHeight()
         }
     }
     
@@ -150,6 +213,24 @@ struct AccountView: View {
             let feet = totalInches / 12
             let inches = totalInches % 12
             return "\(feet)'\(inches)\""
+        }
+    }
+    
+    var unitSystem: UnitSystem {
+        UnitSystem(rawValue: unitSystemRaw) ?? .metric
+    }
+    private func initializePickersFromStoredHeight() {
+        guard !height.isEmpty,
+              let stored = Double(height) else { return }
+
+        if unitSystem == .imperial {
+            let totalInches = Int(stored.rounded())
+
+            selectedFeet = max(3, min(7, totalInches / 12))
+            selectedInches = max(0, min(11, totalInches % 12))
+        } else {
+            let cm = Int(stored.rounded())
+            selectedCentimeters = max(100, min(250, cm))
         }
     }
 }

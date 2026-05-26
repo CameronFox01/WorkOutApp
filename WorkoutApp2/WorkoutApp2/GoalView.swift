@@ -40,7 +40,6 @@ struct GoalView: View {
     }
     
     // Colors
-    private let bgColor = Color(.systemBackground)
     private let primaryBlue = Color(hex: "#2563EB")
     private let secondaryTeal = Color(hex: "#14B8A6")
     private let accentGreen = Color(hex: "#84CC16")
@@ -48,7 +47,16 @@ struct GoalView: View {
     
     var body: some View {
         ZStack{
-            bgColor.ignoresSafeArea()
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(1.0),
+                    Color.cyan.opacity(0.6),
+                    Color(.systemBackground)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 16) {
                     generalGoalsCard

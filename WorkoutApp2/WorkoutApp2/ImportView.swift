@@ -154,50 +154,66 @@ struct ImportView: View {
     // The view of the list of all workouts
     var body: some View {
         NavigationView {
-            List {
-                // All of the Types of workouts
-                Section() {
-                    ForEach(WorkoutCategory.allCases) { category in
-                        NavigationLink(destination: CategoryDetailView(
-                            category: category,
-                            unitSystemRaw: $unitSystemRaw,
-                            selections: $selections,
-                            weights: $weights,
-                            reps: $reps,
-                            sets: $setsDict,
-                            distances: $distances,
-                            times: $times,
-                            entries: $entries,
-                            save: { saveEntry(for: category) },
-                            increment: { dict, step in self.increment(&dict, for: category, by: step) },
-                            decrement: { dict, step in self.decrement(&dict, for: category, by: step) },
-                            weightUnitProvider: { self.weightUnit },
-                            goHomeAfterSave: GoToHomeScreenWhenSaved,
-                            showSavedToast: $showSavedToast,
-                            resetParent: { resetImportView() }
-                        )) {
-                            HStack(spacing: 12) {
-                                Image(systemName: icon(for: category))
-                                    .foregroundStyle(Color.accentColor)
-                                VStack(alignment: .leading) {
-                                    Text(category.title)
-                                    Text("Tap to log")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+            ZStack{
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(1.0),
+                        Color.cyan.opacity(0.6),
+                        Color(.systemBackground)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                List {
+                    // All of the Types of workouts
+                    Section() {
+                        ForEach(WorkoutCategory.allCases) { category in
+                            NavigationLink(destination: CategoryDetailView(
+                                category: category,
+                                unitSystemRaw: $unitSystemRaw,
+                                selections: $selections,
+                                weights: $weights,
+                                reps: $reps,
+                                sets: $setsDict,
+                                distances: $distances,
+                                times: $times,
+                                entries: $entries,
+                                save: { saveEntry(for: category) },
+                                increment: { dict, step in self.increment(&dict, for: category, by: step) },
+                                decrement: { dict, step in self.decrement(&dict, for: category, by: step) },
+                                weightUnitProvider: { self.weightUnit },
+                                goHomeAfterSave: GoToHomeScreenWhenSaved,
+                                showSavedToast: $showSavedToast,
+                                resetParent: { resetImportView() }
+                            )) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: icon(for: category))
+                                        .foregroundStyle(Color.accentColor)
+                                    VStack(alignment: .leading) {
+                                        Text(category.title)
+                                        Text("Tap to log")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
                                 }
                             }
+                            //.listRowBackground(Color.white.opacity(0.63))
+                        }
+                    }
+                    // Seeing all workouts that have been entered
+                    NavigationLink{
+                        AllImportedWorkoutsView()
+                    } label:{
+                        HStack{
+                            Image(systemName: "list.bullet")
+                            Text("See all imported workouts")
                         }
                     }
                 }
-                // Seeing all workouts that have been entered
-                NavigationLink{
-                    AllImportedWorkoutsView()
-                } label:{
-                    HStack{
-                        Image(systemName: "list.bullet")
-                        Text("See all imported workouts")
-                    }
-                }
+                .listRowSpacing(12)
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
             }
             .onAppear {
                 resetImportView()

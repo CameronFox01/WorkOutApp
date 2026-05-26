@@ -32,106 +32,113 @@ struct PhotoView: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 16) {
-                // Side-by-side image comparison
-                HStack(spacing: 12) {
-                    imagePane(title: "Left", image: leftImage, takeAction: { showingLeftCamera = true }, pickAction: { /* handled by PhotosPicker below */ })
-                    imagePane(title: "Right", image: rightImage, takeAction: { showingRightCamera = true }, pickAction: { /* handled by PhotosPicker below */ })
-                }
-                .frame(maxHeight: .infinity)
-                
-                // Pickers row
-                VStack(spacing: 12) {
-                    photoPicker(title: "Pick Left Photo From Device", selection: $leftSelectedItem)
-                        .onChange(of: leftSelectedItem) { _, newItem in
-                              guard let newItem else { return }
-                              Task {
-                                  if let data = try? await newItem.loadTransferable(type: Data.self),
-                                     let image = UIImage(data: data) {
-                                      leftImage = image
-                                  }
-                              }
-                          }
-                    photoPicker(title: "Pick Right Photo From Device", selection: $rightSelectedItem)
-                        .onChange(of: rightSelectedItem) { _, newItem in
-                                guard let newItem else { return }
-                                Task {
-                                    if let data = try? await newItem.loadTransferable(type: Data.self),
-                                       let image = UIImage(data: data) {
-                                        rightImage = image
-                                    }
-                                }
+            ZStack {
+                // Consistent Gradient Background
+                LinearGradient(
+                    colors: [Color.blue.opacity(1.0), Color.cyan.opacity(0.6), Color(.systemBackground)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // 1. Comparison Card
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Current Comparison")
+                                .font(.headline).bold()
+                            
+                            HStack(spacing: 16) {
+                                imagePane(title: "Left", image: leftImage, action: { showingLeftCamera = true })
+                                imagePane(title: "Right", image: rightImage, action: { showingRightCamera = true })
                             }
-                    
-                    Button {
-                        showingSavedPhotos = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "photo.on.rectangle")
-
-                            Text("Pick From Photos Stored on App")
-                                .fontWeight(.semibold)
                         }
-                        .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color(.systemGray6))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                    }
-                    .buttonStyle(.plain)
-                    
-                    NavigationLink {
-                        ViewPhotosInApp()
-                    } label: {
-                        HStack {
-                            Image(systemName: "photo.stack")
-                            Text("View Photos")
+                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
+
+                        // 2. Actions Card
+                        VStack(spacing: 12) {
+                            // LEFT PICKER
+                                photoPickerButton(title: "Load Left Photo", selection: $leftSelectedItem)
+                                    .onChange(of: leftSelectedItem) { _, newItem in
+                                        Task {
+                                            if let data = try? await newItem?.loadTransferable(type: Data.self),
+                                               let image = UIImage(data: data) {
+                                                leftImage = image
+                                            }
+                                        }
+                                    }
+                                
+                                // RIGHT PICKER
+                                photoPickerButton(title: "Load Right Photo", selection: $rightSelectedItem)
+                                    .onChange(of: rightSelectedItem) { _, newItem in
+                                        Task {
+                                            if let data = try? await newItem?.loadTransferable(type: Data.self),
+                                               let image = UIImage(data: data) {
+                                                rightImage = image
+                                            }
+                                        }
+                                    }
+                            
+                            Button { showingSavedPhotos = true } label: {
+                                Label("Gallery", systemImage: "photo.on.rectangle")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
                         }
-                        .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color(.systemGray6))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
+                        
+                        Spacer()
+                        NavigationLink(destination: ViewPhotosInApp()) {
+                            Label("Archive", systemImage: "photo.stack")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
                     }
+                    .padding()
+                }
+            }
+            .sheet(isPresented: $showingLeftCamera) {
+               CameraView(image: Binding(get: { leftImage }, set: { newValue in
+                   leftImage = newValue
+                   if let img = newValue { saveToAppStorage(image: img) }
+               }))
+            }
+            .sheet(isPresented: $showingRightCamera) {
+                CameraView(image: Binding(get: { rightImage }, set: { newValue in
+                    rightImage = newValue
+                    if let img = newValue { saveToAppStorage(image: img) }
+                }))
+            }
+            .sheet(isPresented: $showingSavedPhotos) {
+                SavedPhotosView { image in
+                    selectedGalleryImage = image
+                    showingSidePicker = true
+                }
+            }
+            .confirmationDialog(
+                "Use Photo",
+                isPresented: $showingSidePicker,
+                titleVisibility: .visible
+            ) {
+                Button("Use for Left") {
+                    leftImage = selectedGalleryImage
                 }
 
-                // Camera sheets for each side
-                .sheet(isPresented: $showingLeftCamera) {
-                    CameraView(image: Binding(get: { leftImage }, set: { newValue in
-                        leftImage = newValue
-                        if let img = newValue { saveToAppStorage(image: img) }
-                    }))
+                Button("Use for Right") {
+                    rightImage = selectedGalleryImage
                 }
-                .sheet(isPresented: $showingRightCamera) {
-                    CameraView(image: Binding(get: { rightImage }, set: { newValue in
-                        rightImage = newValue
-                        if let img = newValue { saveToAppStorage(image: img) }
-                    }))
-                }
-                .sheet(isPresented: $showingSavedPhotos) {
-                    SavedPhotosView { image in
-                        selectedGalleryImage = image
-                        showingSidePicker = true
-                    }
-                }
-                .confirmationDialog(
-                    "Use Photo",
-                    isPresented: $showingSidePicker,
-                    titleVisibility: .visible
-                ) {
-                    Button("Use for Left") {
-                        leftImage = selectedGalleryImage
-                    }
 
-                    Button("Use for Right") {
-                        rightImage = selectedGalleryImage
-                    }
-
-                    Button("Cancel", role: .cancel) { }
-                }
+                Button("Cancel", role: .cancel) { }
             }
             .onAppear{
                 loadSavedPhotos()
             }
-            .padding()
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color.blue, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -144,6 +151,20 @@ struct PhotoView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
         }
+    }
+
+    @ViewBuilder
+    private func photoPickerButton(title: String, selection: Binding<PhotosPickerItem?>) -> some View {
+        PhotosPicker(selection: selection, matching: .images) {
+            HStack {
+                Image(systemName: "photo")
+                Text(title)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(10)
+            .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
     }
     
     private func loadSavedPhotos() {
@@ -167,49 +188,26 @@ struct PhotoView: View {
         }
     }
 
-    // MARK: - UI Helpers
+    // SINGLE SOURCE OF TRUTH for the display pane
     @ViewBuilder
-    private func imagePane(title: String, image: UIImage?, takeAction: @escaping () -> Void, pickAction: @escaping () -> Void) -> some View {
+    private func imagePane(title: String, image: UIImage?, action: @escaping () -> Void) -> some View {
         VStack(spacing: 8) {
             if let uiImage = image {
                 Image(uiImage: uiImage)
                     .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity)
+                    .scaledToFill()
+                    .frame(height: 250)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray6))
-                    VStack(spacing: 6) {
-                        Image(systemName: "photo")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.secondary)
-                        Text("No Image")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(12)
-                }
-                .frame(maxWidth: .infinity)
-                .aspectRatio(3/4, contentMode: .fit)
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(.tertiarySystemFill))
+                    .frame(height: 250)
+                    .overlay(Image(systemName: "plus").foregroundStyle(.secondary))
             }
-
-            HStack(spacing: 8) {
-                Button(action: takeAction) {
-                    Label("Take", systemImage: "camera")
-                        .font(.footnote.weight(.semibold))
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color.accentColor.opacity(0.15))
-                        .clipShape(Capsule())
-                }
-                // The pick action is handled by the PhotosPicker row below; this button is a convenience to guide users
-                // It can be wired to scroll/focus if desired; for now it's disabled visually
-                .buttonStyle(.plain)
-
-                // Spacer for symmetry or add more actions here
-            }
+            
+            Button("Camera", action: action)
+                .font(.caption.bold())
+                .buttonStyle(.bordered)
         }
     }
 

@@ -24,125 +24,144 @@ struct SettingsView: View {
     @FocusState private var workoutsFieldFocused: Bool
 
     var body: some View {
-
         NavigationView {
-            VStack {
-                Form {
+            ZStack{
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(1.0),
+                        Color.cyan.opacity(0.6),
+                        Color(.systemBackground)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                VStack {
+                    ScrollView {
+                        VStack(spacing: 20) {
 
-                    //How many workouts to show in the Home tab
-                    Section(header: Text("How many workouts to show in Recent Workouts")) {
+                            // DISPLAY SECTION
+                            SettingsCard(title: "Home Screen") {
 
-                        TextField(
-                            "12",
-                            value: $numberOfWorkoutsToShow,
-                            format: .number
-                        )
-                        .keyboardType(.numberPad)
-                        .focused($workoutsFieldFocused)
-                    }
+                                SettingsRow(
+                                    icon: "rectangle.grid.2x2.fill",
+                                    title: "Recent Workouts"
+                                ) {
+                                    TextField(
+                                        "12",
+                                        value: $numberOfWorkoutsToShow,
+                                        format: .number
+                                    )
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(width: 50)
+                                    .focused($workoutsFieldFocused)
+                                }
 
-                    //Section as to what to display in home view for the Timer
-                    Section(header: Text("Setting to display either Stop Watch or Count Down")) {
-                        Picker("Display Stop Watch or Count Down", selection: $showStopWatch) {
-                            Text("Show Stop Watch").tag(true)
-                            Text("Show Count Down").tag(false)
+                                Divider()
+
+                                SettingsRow(
+                                    icon: "timer",
+                                    title: "Show Stopwatch"
+                                ) {
+                                    Toggle("", isOn: $showStopWatch)
+                                        .labelsHidden()
+                                }
+                            }
+
+                            // IMPORT SECTION
+                            SettingsCard(title: "Import Settings") {
+
+                                SettingsRow(
+                                    icon: "square.and.arrow.down",
+                                    title: "Return Home After Import"
+                                ) {
+                                    Toggle("", isOn: $GoToHomeScreenWhenSaved)
+                                        .labelsHidden()
+                                }
+
+                                Divider()
+
+                                SettingsRow(
+                                    icon: "photo.on.rectangle",
+                                    title: "Save to Photos App"
+                                ) {
+                                    Toggle("", isOn: $saveToPhoto)
+                                        .labelsHidden()
+                                }
+                            }
+
+                            // RESET SECTION
+                            SettingsCard(title: "Danger Zone") {
+
+                                Button {
+                                    showResetAccountConfirmation = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "person.crop.circle.badge.xmark")
+
+                                        Text("Reset App Setup")
+
+                                        Spacer()
+                                    }
+                                    .foregroundStyle(.orange)
+                                }
+
+                                Divider()
+
+                                Button(role: .destructive) {
+                                    showResetConfirmation = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "trash")
+
+                                        Text("Reset Entire App")
+
+                                        Spacer()
+                                    }
+                                }
+                            }
+
+                            // APP INFO
+                            VStack(spacing: 6) {
+
+                                Text("MyStep")
+                                    .font(.headline)
+
+                                Text("Version \(appVersion)")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.top, 10)
+                            .padding(.bottom, 30)
                         }
+                        .padding()
                     }
-
-                    //Section to decide how to react when Save Import Button is pressed.
-                    Section(header: Text("Settings How to Save when Importing")) {
-                        Picker("How to Save when Importing", selection: $GoToHomeScreenWhenSaved) {
-                            Text("Go to Home Screen after Import").tag(true)
-                            Text("Keep in Current screen after Import").tag(false)
+                    .scrollIndicators(.hidden)
+                    
+                    .toolbar {
+                        
+                        ToolbarItem(placement: .principal) {
+                            Text("Settings")
+                                .font(.largeTitle).bold()
+                                .foregroundStyle(.white)
                         }
-                    }
-
-                    //Section to decide where the photos taken in app should be saved.
-                    Section(header: Text("Where to Save Photos")) {
-                        Picker("How to Save New Photos", selection: $saveToPhoto) {
-                            Text("Save to Photos Library and MyStep").tag(true)
-                            Text("Save to just MyStep").tag(false)
+                        
+                        // Keyboard toolbar
+                        ToolbarItemGroup(placement: .keyboard) {
+                            
+                            Spacer()
+                            
+                            Button("Done") {
+                                workoutsFieldFocused = false
+                            }
                         }
-                    }
-
-                    Button {
-                        showResetAccountConfirmation = true
-                    } label: {
-                        Text("Reset App Setup")
-                    }
-                    .confirmationDialog(
-                        "Reset Account only",
-                        isPresented: $showResetAccountConfirmation,
-                        titleVisibility: .visible
-                    ) {
-                        Button("Reset the account but save the data") {
-                            hasCompletedSetup = false
-                        }
-
-                        Button("Cancel", role: .cancel) {}
-                    } message: {
-                        Text("This will clear account information and return you to the setup form.")
-                    }
-
-                    Button(role: .destructive) {
-                        showResetConfirmation = true
-                    } label: {
-                        Text("Reset App")
-                    }
-                    .confirmationDialog(
-                        "Reset the app?",
-                        isPresented: $showResetConfirmation,
-                        titleVisibility: .visible
-                    ) {
-                        Button("Reset and Restart Setup", role: .destructive) {
-                            resetEntireApp()
-                        }
-
-                        Button("Cancel", role: .cancel) { }
-
-                    } message: {
-                        Text("This will clear all saved settings and return you to the initial setup.")
                     }
                     
-                    Section(){
-                        VStack(spacing: 4) {
-
-                            Text("MyStep")
-                                .font(.headline)
-
-                            Text("Version \(appVersion)")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color(.systemGroupedBackground))
-                    }
-                    .listRowBackground(Color(.systemGroupedBackground))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbarBackground(Color.blue, for: .navigationBar)
+                    .toolbarBackground(.visible, for: .navigationBar)
                 }
-
-                .toolbar {
-
-                    ToolbarItem(placement: .principal) {
-                        Text("Settings")
-                            .font(.largeTitle).bold()
-                            .foregroundStyle(.white)
-                    }
-
-                    // Keyboard toolbar
-                    ToolbarItemGroup(placement: .keyboard) {
-
-                        Spacer()
-
-                        Button("Done") {
-                            workoutsFieldFocused = false
-                        }
-                    }
-                }
-
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackground(Color.blue, for: .navigationBar)
-                .toolbarBackground(.visible, for: .navigationBar)
             }
         }
     }
@@ -161,10 +180,65 @@ struct SettingsView: View {
     }
 }
 
+struct SettingsCard<Content: View>: View {
+
+    let title: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+
+        VStack(alignment: .leading, spacing: 14) {
+
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(.secondary)
+
+            VStack(spacing: 16) {
+                content
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: 24,
+                    style: .continuous
+                )
+            )
+        }
+    }
+}
+
+struct SettingsRow<Content: View>: View {
+
+    let icon: String
+    let title: String
+
+    @ViewBuilder let trailing: Content
+
+    var body: some View {
+
+        HStack(spacing: 14) {
+
+            Image(systemName: icon)
+                .font(.title3)
+                .frame(width: 28)
+                .foregroundStyle(.blue)
+
+            Text(title)
+                .font(.body)
+
+            Spacer()
+
+            trailing
+        }
+    }
+}
+
 // Function to get the apps version
 private var appVersion: String {
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
 }
+
 #Preview {
     SettingsView()
 }
