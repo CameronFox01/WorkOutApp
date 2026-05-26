@@ -69,7 +69,7 @@ struct TimerView: View {
                 VStack(spacing: 2) {
 
                     Text(stopWatchString)
-                        .font(.system(size: 22,
+                        .font(.system(size: 25,
                                       weight: .bold,
                                       design: .rounded))
                         .monospacedDigit()
@@ -107,10 +107,29 @@ struct TimerView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
+            .frame(
+                maxWidth: .infinity,
+                alignment: .topLeading
+            )
             .background(
-                RoundedRectangle(cornerRadius: 16,
-                                 style: .continuous)
-                    .fill(Color(.secondarySystemBackground))
+                RoundedRectangle(
+                    cornerRadius: 28,
+                    style: .continuous
+                )
+                .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 28)
+                    .stroke(
+                        Color.white.opacity(0.12),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(
+                color: .black.opacity(0.08),
+                radius: 12,
+                x: 0,
+                y: 5
             )
 
             // FIXED
@@ -217,8 +236,29 @@ struct TimerView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background( RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+            .frame(
+                maxWidth: .infinity,
+                alignment: .topLeading
+            )
+            .background(
+                RoundedRectangle(
+                    cornerRadius: 28,
+                    style: .continuous
+                )
+                .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 28)
+                    .stroke(
+                        Color.white.opacity(0.12),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(
+                color: .black.opacity(0.08),
+                radius: 12,
+                x: 0,
+                y: 5
             )
             .onReceive(countdownTimer) { _ in
                 guard isCountdownRunning else { return }

@@ -60,218 +60,364 @@ struct HomeView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(alignment: .leading) {
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
-                        ],
-                        spacing: 16
+            ZStack{
+                LinearGradient(
+                           colors: [
+                                Color.blue.opacity(1.0),
+                                Color.cyan.opacity(0.6),
+                                Color(.systemBackground)
+                           ],
+                           startPoint: .top,
+                           endPoint: .bottom
+                       )
+                       .ignoresSafeArea()
+                ScrollView {
+                    Spacer()
+                    VStack(alignment: .leading, spacing: 24) {
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ],
+                            spacing: 16
                             
-                    ){
-                        // Weight Section
-                        Button { isPresentingWeightSheet = true; newWeightInput = weight } label: {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Weight")
-                                    .font(.headline)
-                                // Current weight prominent
-                                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                    Text(weight.isEmpty ? "—" : weight)
-                                        .font(.system(size: 34, weight: .bold))
-                                    Text(weightUnit)
-                                        .font(.headline)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                // Target
-                                HStack(spacing: 6) {
-                                    Image(systemName: "target")
-                                        .foregroundStyle(.secondary)
-                                    Text("Target: \(targetWeight.isEmpty ? "—" : targetWeight) \(weightUnit)")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                // Progress percentage from original weight
-                                if let pct = progressPercentText, let color = progressColor {
+                        ){
+                            // Weight Section
+                            Button {
+                                isPresentingWeightSheet = true; newWeightInput = weight
+                            } label: {
+                                VStack(alignment: .center, spacing: 8) {
+                                    Text("Weight")
+                                        .font(.title2.bold())
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .foregroundStyle(.black)
+                                    // Current weight prominent
+                                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                        Text(weight.isEmpty ? "—" : weight)
+                                            .font(.system(size: 34, weight: .bold))
+                                            .foregroundStyle(.black)
+                                        Text(weightUnit)
+                                            .font(.headline)
+                                            .foregroundStyle(.black)
+                                    }
+                                    
+                                    // Target
                                     HStack(spacing: 6) {
-                                        Image(systemName: "chart.line.uptrend.xyaxis")
-                                            .foregroundStyle(color)
-                                        Text(pct)
-                                            .font(.subheadline).bold()
-                                            .foregroundStyle(color)
+                                        Image(systemName: "target")
+                                            .foregroundStyle(.black)
+                                        Text("Target: \(targetWeight.isEmpty ? "—" : targetWeight) \(weightUnit)")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.black)
                                     }
-                                } else {
-                                    Text("Set target weight to see progress")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
+                                    
+                                    // Progress percentage from original weight
+                                    if let pct = progressPercentText, let color = progressColor {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "chart.line.uptrend.xyaxis")
+                                                .foregroundStyle(color)
+                                            Text(pct)
+                                                .font(.subheadline).bold()
+                                                .foregroundStyle(color)
+                                        }
+                                    } else {
+                                        Text("Set target weight to see progress")
+                                            .font(.footnote)
+                                            .foregroundStyle(.black)
+                                    }
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 4)
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 4)
-                            .background(Color(.systemBackground))
+                            .cardStyle()
+                            
+                            // Calorie Section
+                            NavigationLink(destination: CaloriesDetailView(unitSystem: unitSystem)
+                                .environmentObject(Hmanager)) {
+                                    VStack(alignment: .center, spacing: 8) {
+                                        Text("Calories Today")
+                                            .font(.title2.bold())
+                                            .frame(maxWidth: .infinity, alignment: .center)
+
+                                        
+                                        Text("\(Int(Hmanager.activeCalories)) kcal")
+                                            .font(.title2).bold()
+                                        
+                                        if !lastFiveDaysCalories.isEmpty {
+                                            FiveDayCaloriesBarChart(data: lastFiveDaysCalories)
+                                                .frame(height: 60)
+                                                .padding(.top, 4)
+                                            
+                                            HStack {
+                                                Text("5-day avg:")
+                                                    .font(.caption)
+                                                    .foregroundStyle(.secondary)
+                                                Text("\(fiveDayAverageCalories)")
+                                                    .font(.caption)
+                                                    .bold()
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                        } else {
+                                            Text("5-day history unavailable")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                }
+                                .cardStyle()
+                                .buttonStyle(.plain)
                         }
-                        .cardStyle()
-                        .background(Color(.systemBackground))
                         
-                        // Calorie Section
-                        NavigationLink(destination: CaloriesDetailView(unitSystem: unitSystem)
-                                        .environmentObject(Hmanager)) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Calories Today")
-                                    .font(.headline)
+                        // Timer Section
+                        Group{
+                            TimerView()
+                                .padding(.vertical)
+                        }
+                        
+                        //.cardStyle()
+                        
+                        
+                        //Section to get steps and distance
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ],
+                            spacing: 16
+                        ) {
+                            
+                            NavigationLink(destination: DistanceDetailView(unitSystem: unitSystem)
+                                .environmentObject(Hmanager)) {
+                                    VStack(alignment: .center, spacing: 8) {
+                                        Text("Steps Today")
+                                            .font(.title2.bold())
+                                            .frame(maxWidth: .infinity, alignment: .center)
 
-                                Text("\(Int(Hmanager.activeCalories)) kcal")
-                                    .font(.title2).bold()
-
-                                if !lastFiveDaysCalories.isEmpty {
-                                    FiveDayCaloriesBarChart(data: lastFiveDaysCalories)
-                                        .frame(height: 60)
-                                        .padding(.top, 4)
-
-                                    HStack {
-                                        Text("5-day avg:")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text("\(fiveDayAverageCalories)")
-                                            .font(.caption)
+                                        
+                                        Text("\(Hmanager.steps)")
+                                            .font(.title2)
                                             .bold()
-                                            .foregroundStyle(.secondary)
+                                        
+                                        // 5-day mini bar chart
+                                        if !lastFiveDaysSteps.isEmpty {
+                                            FiveDayStepsBarChart(data: lastFiveDaysSteps)
+                                                .frame(height: 60)
+                                                .padding(.top, 4)
+                                            
+                                            HStack {
+                                                Text("5-day avg:")
+                                                    .font(.caption)
+                                                    .foregroundStyle(.secondary)
+                                                Text("\(fiveDayAverageSteps)")
+                                                    .font(.caption)
+                                                    .bold()
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                        } else {
+                                            Text("5-day history unavailable")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
                                     }
-                                } else {
-                                    Text("5-day history unavailable")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
                                 }
-                            }
-                        }
-                        .cardStyle()
-                        .buttonStyle(.plain)
-                    }
-                    
-                    // Timer Section
-                    Group{
-                        TimerView()
-                            .padding(.vertical)
-                    }
-                    
-                    //.cardStyle()
-                    
-                    
-                    //Section to get steps and distance
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
-                        ],
-                        spacing: 16
-                    ) {
+                                .buttonStyle(.plain)
+                                .cardStyle()
+                            
+                            NavigationLink(destination: WorkoutCalendarView(entries: workoutData.entries)) {
+                                VStack(alignment: .leading) {
+                                    Text("Calendar")
+                                        .font(.title2.bold())
+                                        .frame(maxWidth: .infinity, alignment: .center)
 
-                        NavigationLink(destination: DistanceDetailView(unitSystem: unitSystem)
-                                        .environmentObject(Hmanager)) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Steps Today")
-                                    .font(.headline)
-
-                                Text("\(Hmanager.steps)")
-                                    .font(.title2)
-                                    .bold()
-
-                                // 5-day mini bar chart
-                                if !lastFiveDaysSteps.isEmpty {
-                                    FiveDayStepsBarChart(data: lastFiveDaysSteps)
-                                        .frame(height: 60)
-                                        .padding(.top, 4)
-
-                                    HStack {
-                                        Text("5-day avg:")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text("\(fiveDayAverageSteps)")
-                                            .font(.caption)
-                                            .bold()
-                                            .foregroundStyle(.secondary)
-                                    }
-                                } else {
-                                    Text("5-day history unavailable")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .cardStyle()
-
-                        NavigationLink(destination: WorkoutCalendarView(entries: workoutData.entries)) {
-                            VStack(alignment: .leading) {
-                                Text("Calendar")
-                                    .font(.headline)
-                                WorkoutHeatMapView(entries: workoutData.entries)
-                                    .frame(height: 80)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
-                            //.background(Color(.systemGray6))
-                            .cornerRadius(10)
-                        }
-                        .buttonStyle(.plain)
-                        .cardStyle()
-                    }
-                    .padding(.horizontal)
-                    //Divider().padding(.vertical)
-
-                    //Section for Pasted Worked Outs
-                    Text("Recent Workouts")
-                        .font(.largeTitle)
-                        .bold()
-                        .padding(.leading)
-                    //Creating the boxs for the workouts to be clicked on and carry you to more info on that workout
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
-                        ],
-                        spacing: 16
-                    ) {
-                        ForEach(lastEntryPerWorkoutType(from: workoutData.entries)) { entry in
-                            NavigationLink(
-                                destination: WorkoutChartView(
-                                    workoutName: entry.workoutType,
-                                    entries: workoutData.entries
-                                )
-                            ) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(entry.workoutType)
-                                        .font(.headline)
-
-                                    Text("\(entry.reps) reps at \(entry.weight) \(weightUnit)")
-                                        .foregroundColor(.gray)
-
-                                    Text(entry.date.formatted(date: .abbreviated, time: .omitted))
-                                        .font(.subheadline)
+                                    WorkoutHeatMapView(entries: workoutData.entries)
+                                        .frame(height: 80)
                                 }
                                 .padding()
                                 .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
-                                .background(Color(.systemGray6))
+                                //.background(Color(.systemGray6))
                                 .cornerRadius(10)
-                                
                             }
                             .buttonStyle(.plain)
+                            .cardStyle()
                         }
+                        .padding(.horizontal)
+                        //Divider().padding(.vertical)
+                        
+                        //Section for Pasted Worked Outs
+                        HStack {
+
+                            VStack(alignment: .leading, spacing: 4) {
+
+                                Text("Recent Workouts")
+                                    .font(.system(size: 30, weight: .bold))
+
+                                Text("Your latest progress")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "flame.fill")
+                                .font(.title2)
+                                .foregroundStyle(.orange)
+                        }
+                        .padding(.horizontal)
+                        //Creating the boxs for the workouts to be clicked on and carry you to more info on that workout
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ],
+                            spacing: 16
+                        ) {
+                            ForEach(lastEntryPerWorkoutType(from: workoutData.entries)) { entry in
+                                NavigationLink(
+                                    destination: WorkoutChartView(
+                                        workoutName: entry.workoutType,
+                                        entries: workoutData.entries
+                                    )
+                                ) {
+                                    VStack(alignment: .leading, spacing: 14) {
+
+                                        // TOP
+                                        HStack {
+
+                                            VStack(alignment: .leading, spacing: 4) {
+
+                                                Text(entry.workoutType)
+                                                    .font(.headline.bold())
+                                                    .foregroundStyle(.white)
+
+                                                Text(
+                                                    entry.date.formatted(
+                                                        date: .abbreviated,
+                                                        time: .omitted
+                                                    )
+                                                )
+                                                .font(.caption)
+                                                .foregroundStyle(.white.opacity(0.75))
+                                            }
+
+                                            Spacer()
+
+                                            ZStack {
+
+                                                Circle()
+                                                    .fill(.white.opacity(0.15))
+                                                    .frame(width: 42, height: 42)
+
+                                                Image(systemName: "dumbbell.fill")
+                                                    .foregroundStyle(.white)
+                                            }
+                                        }
+
+                                        Spacer()
+
+                                        // BOTTOM STATS
+                                        VStack(alignment: .leading, spacing: 6) {
+
+                                            Label(
+                                                "\(entry.reps) reps",
+                                                systemImage: "figure.strengthtraining.traditional"
+                                            )
+
+                                            Label(
+                                                "\(entry.weight) \(weightUnit)",
+                                                systemImage: "scalemass.fill"
+                                            )
+                                        }
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(.white.opacity(0.92))
+                                    }
+                                    .padding(18)
+                                    .frame(
+                                        maxWidth: .infinity,
+                                        minHeight: 165,
+                                        alignment: .topLeading
+                                    )
+                                    .background(
+                                        LinearGradient(
+                                            colors: [
+                                                Color.blue.opacity(0.95),
+                                                Color.cyan.opacity(0.5)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .clipShape(
+                                        RoundedRectangle(
+                                            cornerRadius: 28,
+                                            style: .continuous
+                                        )
+                                    )
+                                    .shadow(
+                                        color: .blue.opacity(0.22),
+                                        radius: 10,
+                                        x: 0,
+                                        y: 6
+                                    )
+                                    
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        // Seeing all workouts that have been entered
+                        Spacer().frame(height: 50)
+                        
+                        NavigationLink {
+
+                            AllImportedWorkoutsView()
+
+                        } label: {
+
+                            HStack(spacing: 12) {
+
+                                Image(systemName: "list.bullet")
+
+                                Text("See all imported workouts")
+                                    .fontWeight(.semibold)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 22)
+                                    .fill(.ultraThinMaterial)
+                            )
+                        }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Home")
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: AccountView()) {
                         if let uiImage = profileImage {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 50, height: 50)
+                                .frame(width: 46, height: 46)
                                 .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            Color.white.opacity(0.4),
+                                            lineWidth: 2
+                                        )
+                                )
                         } else {
                             Image(systemName: "person.circle")
                                 .font(.title)
@@ -280,16 +426,19 @@ struct HomeView: View {
                     }
                 }
             }
-            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.75),
+                        Color.cyan.opacity(0.45)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
+                for: .navigationBar
+            )
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Home")
-                        .font(.largeTitle).bold()
-                        .foregroundStyle(.white)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(isPresented: $isPresentingWeightSheet) {
                 WeightUpdateSheet(
                     unitSystem: unitSystem,
@@ -584,14 +733,36 @@ private struct WorkoutHeatMapView: View {
 }
 
 struct CardStyle: ViewModifier {
+
     func body(content: Content) -> some View {
+
         content
-            .padding(8)
-            .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 3)
-         
+            //.padding(18)
+            .frame(
+                maxWidth: .infinity,
+                minHeight: 120,
+                alignment: .topLeading
+            )
+            .background(
+                RoundedRectangle(
+                    cornerRadius: 28,
+                    style: .continuous
+                )
+                .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 28)
+                    .stroke(
+                        Color.white.opacity(0.12),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(
+                color: .black.opacity(0.08),
+                radius: 12,
+                x: 0,
+                y: 5
+            )
     }
 }
 

@@ -10,21 +10,28 @@ import SwiftUI
 //The view for the big Screen
 struct TimeViewBig: View {
     @Environment(\.dismiss) private var dismiss
-    
-    // Everything needed for counting down
+
+    // Countdown
     @Binding var totalSeconds: Int
     @Binding var remainingSeconds: Int
     @Binding var isTimerRunning: Bool
-    
-    // Everything Needed for counting up
+
+    // Stopwatch
     @Binding var isStopWatchRunning: Bool
     @Binding var startTime: Date
     @Binding var stopWatchString: String
-    
+
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let stopWatch = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
-    
-    init(totalSeconds: Binding<Int>, remainingSeconds: Binding<Int>, isTimerRunning: Binding<Bool>, isStopWatchRunning: Binding<Bool>, startTime: Binding<Date>, timerString: Binding<String>) {
+
+    init(
+        totalSeconds: Binding<Int>,
+        remainingSeconds: Binding<Int>,
+        isTimerRunning: Binding<Bool>,
+        isStopWatchRunning: Binding<Bool>,
+        startTime: Binding<Date>,
+        timerString: Binding<String>
+    ) {
         self._totalSeconds = totalSeconds
         self._remainingSeconds = remainingSeconds
         self._isTimerRunning = isTimerRunning
@@ -36,151 +43,202 @@ struct TimeViewBig: View {
     var body: some View {
         NavigationStack {
 
-            VStack(spacing: 32) {
+            ZStack {
 
-                // Optional mini timer view (kept as-is)
-                HStack(spacing: 16) {
-
-                    // MARK: - Stop
-                    Button {
-                        if isStopWatchRunning {
-                            isStopWatchRunning = false
-                        } else {
-                            stopWatchString = "00:00"
-                        }
-                    } label: {
-                        Image(systemName: "stop.fill")
-                            .font(.system(size: 18, weight: .bold))
-                            .frame(width: 44, height: 44)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
-
-                    Spacer()
-
-                    // MARK: - Timer Display (tap to expand)
-                    VStack(spacing: 2) {
-                        Text(stopWatchString)
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .monospacedDigit()
-                    }
-
-                    Spacer()
-
-                    // MARK: - Start / Reset
-                    Button {
-                        if !isStopWatchRunning {
-                            stopWatchString = "00:00"
-                            startTime = Date()
-                            isStopWatchRunning = true
-                        }
-                    } label: {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 18, weight: .bold))
-                            .frame(width: 44, height: 44)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Color(.secondarySystemBackground))
+                // MARK: - Background
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.9),
+                        Color.black
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
-                .onReceive(stopWatch) { _ in
-                    guard isStopWatchRunning else { return }
+                .ignoresSafeArea()
 
-                    let elapsed = Date().timeIntervalSince(startTime)
+                ScrollView {
+                    VStack(spacing: 28) {
 
-                    let minutes = Int(elapsed) / 60
-                    let seconds = Int(elapsed) % 60
+                        // MARK: - Main Timer Hero
+                        VStack(spacing: 16) {
 
-                    stopWatchString = String(format: "%02d:%02d", minutes, seconds)
-                }
+                            ZStack {
 
-                // MARK: - Timer Display Card
-                VStack(spacing: 12) {
+                                Circle()
+                                    .stroke(
+                                        Color.white.opacity(0.15),
+                                        lineWidth: 18
+                                    )
+                                    .frame(width: 280, height: 280)
 
-                    Text(formatTime(remainingSeconds))
-                        .font(.system(size: 54, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .padding(.vertical, 10)
+                                Circle()
+                                    .trim(
+                                        from: 0,
+                                        to: progress
+                                    )
+                                    .stroke(
+                                        AngularGradient(
+                                            colors: [.green, .blue],
+                                            center: .center
+                                        ),
+                                        style: StrokeStyle(
+                                            lineWidth: 18,
+                                            lineCap: .round
+                                        )
+                                    )
+                                    .rotationEffect(.degrees(-90))
+                                    .frame(width: 280, height: 280)
 
-                    Text("Remaining Time")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 24)
-                .background(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(Color(.secondarySystemBackground))
-                )
-                .padding(.horizontal)
+                                VStack(spacing: 8) {
 
-                // MARK: - Time Controls (+ / -)
-                HStack(spacing: 40) {
+                                    Text(formatTime(remainingSeconds))
+                                        .font(
+                                            .system(
+                                                size: 64,
+                                                weight: .bold,
+                                                design: .rounded
+                                            )
+                                        )
+                                        .monospacedDigit()
+                                        .foregroundStyle(.white)
 
-                    Button {
-                        totalSeconds = max(0, totalSeconds - 30)
-                        remainingSeconds = max(0, remainingSeconds - 30)
-                    } label: {
-                        Image(systemName: "minus.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundStyle(.red)
-                    }
+                                    Text("Remaining")
+                                        .foregroundStyle(.white.opacity(0.7))
+                                }
+                            }
 
-                    VStack(spacing: 4) {
-                        Text("Adjust Time")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            // MARK: - Timer Controls
+                            HStack(spacing: 28) {
 
-                        Text("+ / - 30 sec")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
+                                controlButton(
+                                    icon: "minus",
+                                    color: .orange
+                                ) {
+                                    totalSeconds = max(0, totalSeconds - 30)
+                                    remainingSeconds = max(0, remainingSeconds - 30)
+                                }
 
-                    Button {
-                        totalSeconds += 30
-                        remainingSeconds += 30
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundStyle(.green)
-                    }
-                }
+                                controlButton(
+                                    icon: isTimerRunning ? "pause.fill" : "play.fill",
+                                    color: .green
+                                ) {
+                                    isTimerRunning.toggle()
+                                }
+                                .scaleEffect(1.2)
 
-                // MARK: - Start / Stop Controls
-                HStack(spacing: 16) {
-
-                    Button {
-                        if isTimerRunning {
-                            isTimerRunning = false
-                        } else {
-                            totalSeconds = 60
-                            remainingSeconds = 60
+                                controlButton(
+                                    icon: "plus",
+                                    color: .blue
+                                ) {
+                                    totalSeconds += 30
+                                    remainingSeconds += 30
+                                }
+                            }
                         }
-                    } label: {
-                        Label("Stop", systemImage: "stop.fill")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
+                        .padding(.top, 20)
 
-                    Button {
-                        isTimerRunning = true
-                    } label: {
-                        Label("Start", systemImage: "play.fill")
-                            .frame(maxWidth: .infinity)
+                        // MARK: - Stopwatch Card
+                        VStack(alignment: .leading, spacing: 18) {
+
+                            HStack {
+
+                                Label(
+                                    "Stopwatch",
+                                    systemImage: "stopwatch.fill"
+                                )
+                                .font(.headline)
+
+                                Spacer()
+
+                                Circle()
+                                    .fill(
+                                        isStopWatchRunning
+                                        ? .green
+                                        : .gray.opacity(0.5)
+                                    )
+                                    .frame(width: 10, height: 10)
+                            }
+                            .foregroundStyle(.white)
+
+                            Text(stopWatchString)
+                                .font(
+                                    .system(
+                                        size: 42,
+                                        weight: .bold,
+                                        design: .rounded
+                                    )
+                                )
+                                .monospacedDigit()
+                                .foregroundStyle(.white)
+
+                            HStack(spacing: 16) {
+
+                                Button {
+
+                                    if !isStopWatchRunning {
+                                        startTime = Date()
+                                        isStopWatchRunning = true
+                                    }
+
+                                } label: {
+
+                                    Label("Start", systemImage: "play.fill")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(.green)
+
+                                Button {
+
+                                    if isStopWatchRunning {
+                                        isStopWatchRunning = false
+                                    } else {
+                                        stopWatchString = "00:00"
+                                    }
+
+                                } label: {
+
+                                    Label("Stop", systemImage: "stop.fill")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(.red)
+                            }
+                        }
+                        .padding(24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(.white.opacity(0.12))
+                                .background(.ultraThinMaterial)
+                        )
+                        .padding(.horizontal)
+
+                        Spacer(minLength: 40)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
                 }
-                .padding(.horizontal)
             }
-            .padding(.top, 20)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                
+                ToolbarItem(placement: .principal) {
+                    Text("Timer")
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
+                }
+
+                ToolbarItem(placement: .topBarLeading) {
+
+                    Button {
+                        dismiss()
+                    } label: {
+
+                        Image(systemName: "xmark")
+                            .foregroundStyle(.white)
+                    }
+                }
+            }
             .onReceive(timer) { _ in
+
                 guard isTimerRunning else { return }
 
                 if remainingSeconds > 0 {
@@ -189,32 +247,58 @@ struct TimeViewBig: View {
                     isTimerRunning = false
                 }
             }
+            .onReceive(stopWatch) { _ in
 
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.blue, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
+                guard isStopWatchRunning else { return }
 
-                ToolbarItem(placement: .cancellationAction) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                }
+                let elapsed = Date().timeIntervalSince(startTime)
 
-                ToolbarItem(placement: .principal) {
-                    Text("Timer")
-                        .font(.largeTitle.bold())
-                        .foregroundStyle(.white)
-                }
+                let minutes = Int(elapsed) / 60
+                let seconds = Int(elapsed) % 60
+
+                stopWatchString = String(
+                    format: "%02d:%02d",
+                    minutes,
+                    seconds
+                )
             }
         }
     }
 
+    // MARK: - Progress Ring
+    var progress: CGFloat {
+
+        guard totalSeconds > 0 else { return 0 }
+
+        return CGFloat(remainingSeconds)
+        / CGFloat(totalSeconds)
+    }
+
+    // MARK: - Reusable Control Button
+    func controlButton(
+        icon: String,
+        color: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+
+        Button(action: action) {
+
+            Image(systemName: icon)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 68, height: 68)
+                .background(color.gradient)
+                .clipShape(Circle())
+                .shadow(radius: 8)
+        }
+    }
+
+    // MARK: - Time Formatter
     func formatTime(_ seconds: Int) -> String {
+
         let minutes = seconds / 60
         let sec = seconds % 60
+
         return String(format: "%02d:%02d", minutes, sec)
     }
 }

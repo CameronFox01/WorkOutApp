@@ -155,15 +155,7 @@ struct ImportView: View {
     var body: some View {
         NavigationView {
             List {
-                NavigationLink{
-                    AllImportedWorkoutsView()
-                } label:{
-                    HStack{
-                        Image(systemName: "list.bullet")
-                        Text("See all imported workouts")
-                    }
-                }
-                
+                // All of the Types of workouts
                 Section() {
                     ForEach(WorkoutCategory.allCases) { category in
                         NavigationLink(destination: CategoryDetailView(
@@ -195,6 +187,15 @@ struct ImportView: View {
                                 }
                             }
                         }
+                    }
+                }
+                // Seeing all workouts that have been entered
+                NavigationLink{
+                    AllImportedWorkoutsView()
+                } label:{
+                    HStack{
+                        Image(systemName: "list.bullet")
+                        Text("See all imported workouts")
                     }
                 }
             }
