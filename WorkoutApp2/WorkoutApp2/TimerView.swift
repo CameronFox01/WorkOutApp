@@ -40,7 +40,7 @@ struct TimerView: View {
     @State private var showBigTimer = false
 
     @AppStorage("showStopWatch")
-    private var showStopWatch: Bool = true
+    private var showStopWatch: Bool = false
 
     var body: some View {
 
@@ -142,15 +142,18 @@ struct TimerView: View {
 
         } else {
             // section to show compact countdown
-            HStack(spacing: 12) { // Decrease time
+            HStack(spacing: 10) {
+                // Decrease time
                 Button{
                     guard !isCountdownRunning else { return }
                     adjustTime(by: -30)
                 } label: {
                     Image(systemName: "minus.circle.fill")
-                        .font(.system(size: 20, weight: .bold))
-                    .frame(width: 36, height: 36) } .tint(.orange)
-                    .buttonStyle(.bordered)
+                        .font(.system(size: 18, weight: .bold))
+                 //       .frame(width: 36, height: 36)
+                }
+                .tint(.orange)
+                .buttonStyle(.bordered)
                 
                 // Time display (tap to expand big view)
                 VStack(spacing: 2) {

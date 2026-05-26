@@ -153,7 +153,7 @@ struct HomeView: View {
                     // Timer Section
                     Group{
                         TimerView()
-                            .padding(30)
+                            .padding(.vertical)
                     }
                     
                     //.cardStyle()
