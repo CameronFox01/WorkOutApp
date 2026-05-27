@@ -191,6 +191,38 @@ struct WorkoutChartView: View {
             }
         }
     }
+    
+    private var graphMetricName: String {
+        if isDistanceCardio {
+            return UnitSystem(rawValue: unitSystemRaw) == .imperial ? "Distance (mi)" : "Distance (km)"
+        } else if isTimeCardio {
+            return "Time (min)"
+        } else {
+            return "Reps"
+        }
+    }
+
+    private func graphValue(for entry: WorkoutEntry) -> Double {
+        if isDistanceCardio {
+            return Double(entry.weight) ?? 0
+        } else if isTimeCardio {
+            return Double(entry.reps) ?? 0
+        } else {
+            return Double(entry.reps) ?? 0
+        }
+    }
+
+    private var isDistanceCardio: Bool {
+        DistanceCardioWorkout.allCases
+            .map(\.rawValue)
+            .contains(workoutName)
+    }
+
+    private var isTimeCardio: Bool {
+        TimeCardioWorkout.allCases
+            .map(\.rawValue)
+            .contains(workoutName)
+    }
 
     private func highlightPill(icon: String, label: String, value: String) -> some View {
         VStack(spacing: 6) {
@@ -236,6 +268,7 @@ struct WorkoutChartView: View {
             : String(format: "%.1f", value)
     }
 }
+
 #Preview {
     let sampleEntries: [WorkoutEntry] = [
         WorkoutEntry(workoutType: "Bench Press", weight: "135", reps: "8", sets: "2", date: .now.addingTimeInterval(-86400 * 6), note: "Felt sore"),

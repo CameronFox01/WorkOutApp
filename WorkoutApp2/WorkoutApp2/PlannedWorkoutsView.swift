@@ -243,7 +243,7 @@ struct PlannedWorkoutsView: View {
                         let cat = idx < plannedItemCategories.count
                             ? plannedItemCategories[idx]
                             : .bodyweight
-                        ForEach(cat.workouts, id: \.self) { name in
+                        ForEach(cat.workouts(), id: \.self) { name in
                             Button(name) { plannedItems[idx] = name }
                         }
                     } label: {

@@ -113,7 +113,7 @@ struct AllImportedWorkoutsView: View {
     let workoutCategoryLookup: [String: WorkoutCategory] = {
         var lookup: [String: WorkoutCategory] = [:]
         for category in WorkoutCategory.allCases {
-            for workout in category.workouts {
+            for workout in category.workouts() {
                 lookup[workout] = category
             }
         }

@@ -40,21 +40,50 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
         }
     }
 
-    var workouts: [String] {
+    func workouts() -> [String] {
+        let builtIn: [String]
+
         switch self {
-        case .abs: return AbsWorkout.allCases.map(\.rawValue)
-        case .bicep: return BicepWorkout.allCases.map(\.rawValue)
-        case .bodyweight: return BodyweightWorkout.allCases.map(\.rawValue)
-        case .push: return PushWorkout.allCases.map(\.rawValue)
-        case .pull: return PullWorkout.allCases.map(\.rawValue)
-        case .leg: return LegWorkout.allCases.map(\.rawValue)
-        case .glute: return GluteWorkout.allCases.map(\.rawValue)
-        case .tricep: return TricepWorkout.allCases.map(\.rawValue)
-        case .distanceCardio: return DistanceCardioWorkout.allCases.map(\.rawValue)
-        case .timeCardio: return TimeCardioWorkout.allCases.map(\.rawValue)
-        case .sports: return SportsWorkout.allCases.map(\.rawValue)
-        case .stretch: return StretchRoutine.allCases.map(\.rawValue)
+        case .abs:
+            builtIn = AbsWorkout.allCases.map(\.rawValue)
+
+        case .bicep:
+            builtIn = BicepWorkout.allCases.map(\.rawValue)
+
+        case .bodyweight:
+            builtIn = BodyweightWorkout.allCases.map(\.rawValue)
+
+        case .push:
+            builtIn = PushWorkout.allCases.map(\.rawValue)
+
+        case .pull:
+            builtIn = PullWorkout.allCases.map(\.rawValue)
+
+        case .leg:
+            builtIn = LegWorkout.allCases.map(\.rawValue)
+
+        case .glute:
+            builtIn = GluteWorkout.allCases.map(\.rawValue)
+
+        case .tricep:
+            builtIn = TricepWorkout.allCases.map(\.rawValue)
+
+        case .distanceCardio:
+            builtIn = DistanceCardioWorkout.allCases.map(\.rawValue)
+
+        case .timeCardio:
+            builtIn = TimeCardioWorkout.allCases.map(\.rawValue)
+
+        case .sports:
+            builtIn = SportsWorkout.allCases.map(\.rawValue)
+
+        case .stretch:
+            builtIn = StretchRoutine.allCases.map(\.rawValue)
         }
+
+        let custom = loadCustomWorkouts(for: self)
+
+        return (builtIn + custom).sorted()
     }
 
     // Categories where weight is typically not entered
@@ -104,6 +133,10 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
             return "figure.yoga"
      
         }
+    }
+    
+    var customKey: String {
+        "custom_\(rawValue)"
     }
 }
 
@@ -224,7 +257,7 @@ struct ImportView: View {
 
                   for category in WorkoutCategory.allCases {
                       if selections[category] == nil {
-                          selections[category] = category.workouts.first ?? ""
+                          selections[category] = category.workouts().first ?? ""
                       }
                   }
 
@@ -281,6 +314,9 @@ struct ImportView: View {
         @Binding var entries: [WorkoutEntry]
         @Binding var notes: [WorkoutCategory: String]
 
+        @State private var showingAddWorkout = false
+        @State private var newWorkoutName = ""
+        
         @Environment(\.dismiss) private var dismiss
         @Environment(\.colorScheme) private var colorScheme
 
@@ -314,7 +350,7 @@ struct ImportView: View {
         // MARK: - Bindings
         private var selectionBinding: Binding<String> {
             Binding(
-                get: { selections[category] ?? category.workouts.first ?? "" },
+                get: { selections[category] ?? category.workouts().first ?? "" },
                 set: { selections[category] = $0 }
             )
         }
@@ -383,10 +419,33 @@ struct ImportView: View {
                         statsCard
                         notesCard
                         saveButton
+                        
+                        Button {
+                            showingAddWorkout = true
+                        } label: {
+                            Label("Add Custom Workout", systemImage: "plus")
+                        }
                     }
                     .padding(.horizontal)
                     .padding(.top, 10)
                     .padding(.bottom, 24)
+                    .alert("New Workout", isPresented: $showingAddWorkout) {
+                        TextField("Workout Name", text: $newWorkoutName)
+
+                        Button("Save") {
+                            let trimmed = newWorkoutName.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                            guard !trimmed.isEmpty else { return }
+
+                            saveCustomWorkout(trimmed, for: category)
+
+                            selections[category] = trimmed
+
+                            newWorkoutName = ""
+                        }
+
+                        Button("Cancel", role: .cancel) {}
+                    }
                 }
             }
             .navigationTitle(category.title)
@@ -422,7 +481,7 @@ struct ImportView: View {
             VStack(alignment: .leading, spacing: 12) {
 
                 Picker("Workout", selection: selectionBinding) {
-                    ForEach(category.workouts, id: \.self) { workout in
+                    ForEach(category.workouts(), id: \.self) { workout in
                         Text(workout).tag(workout)
                     }
                 }
@@ -563,7 +622,7 @@ struct ImportView: View {
         notes.removeAll()
         // Re-add default workout selections
         for category in WorkoutCategory.allCases {
-            selections[category] = category.workouts.first ?? ""
+            selections[category] = category.workouts().first ?? ""
         }
     }
     // MARK: - Save / Storage

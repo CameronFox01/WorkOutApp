@@ -34,13 +34,37 @@ struct WorkoutProgressChart: View {
         let displayValue = displayImperial ? (kg * 2.20462) : kg
         return displayValue
     }
+    
+    private var isDistanceCardio: Bool {
+        DistanceCardioWorkout.allCases
+            .map(\.rawValue)
+            .contains(workoutName)
+    }
+
+    private var isTimeCardio: Bool {
+        TimeCardioWorkout.allCases
+            .map(\.rawValue)
+            .contains(workoutName)
+    }
+    
+    private var isBodyWeightScale: Bool {
+        workoutName == "Body Weight"
+    }
+    
+    private var isWeightWorkout: Bool {
+        !isDistanceCardio &&
+        !isTimeCardio &&
+        !isBodyWeightScale &&
+        !BodyweightWorkout.allCases.map(\.rawValue).contains(workoutName)
+    }
 
     private var unitLabel: String {
-        // If any entry for this workout has non-empty weight, treat as weight-based; else reps
-        let isWeightBased = entriesForWorkout.contains { !$0.weight.isEmpty }
-        if isWeightBased {
-            let unit = UnitSystem(rawValue: unitSystemRaw) == .imperial ? "lbs" : "kg"
-            return unit
+        if isDistanceCardio {
+            return UnitSystem(rawValue: unitSystemRaw) == .imperial ? "mi" : "km"
+        } else if isTimeCardio {
+            return "min"
+        } else if isBodyWeightScale || isWeightWorkout {
+            return UnitSystem(rawValue: unitSystemRaw) == .imperial ? "lbs" : "kg"
         } else {
             return "reps"
         }
@@ -53,21 +77,57 @@ struct WorkoutProgressChart: View {
     }
 
     private var points: [WorkoutDataPoint] {
-        let isWeightBased = entriesForWorkout.contains { !$0.weight.isEmpty }
         let displayImperial = UnitSystem(rawValue: unitSystemRaw) == .imperial
+
         return entriesForWorkout.compactMap { entry in
-            if isWeightBased, let raw = Double(entry.weight), !entry.weight.isEmpty {
-                // Normalize to kg first: we don't know the unit the entry was saved in, but we will assume it was saved in the unit active at that time.
-                // Since we don't persist per-entry unit, we approximate by converting all values from the CURRENT unit to kg, then back to display unit.
-                // This keeps the chart consistent when toggling units.
-                let kgFromCurrent: Double = displayImperial ? (raw / 2.20462) : raw
-                let displayValue: Double = displayImperial ? (kgFromCurrent * 2.20462) : kgFromCurrent
-                return WorkoutDataPoint(date: entry.date, value: displayValue)
-            } else if let repsVal = Double(entry.reps), !entry.reps.isEmpty {
-                return WorkoutDataPoint(date: entry.date, value: repsVal)
-            } else {
-                return nil
+
+            // DISTANCE CARDIO
+            if isDistanceCardio,
+               let distance = Double(entry.weight) {
+
+                let displayValue: Double = displayImperial
+                    ? (distance / 1.60934)
+                    : distance
+
+                return WorkoutDataPoint(
+                    date: entry.date,
+                    value: displayValue
+                )
             }
+
+            // TIME CARDIO
+            if isTimeCardio,
+               let time = Double(entry.reps) {
+
+                return WorkoutDataPoint(
+                    date: entry.date,
+                    value: time
+                )
+            }
+
+            // WEIGHT WORKOUTS
+            if (isWeightWorkout || isBodyWeightScale),
+               let weight = Double(entry.weight) {
+
+                let displayValue: Double = displayImperial
+                    ? weight
+                    : weight
+
+                return WorkoutDataPoint(
+                    date: entry.date,
+                    value: displayValue
+                )
+            }
+
+            // EVERYTHING ELSE → REPS
+            if let reps = Double(entry.reps) {
+                return WorkoutDataPoint(
+                    date: entry.date,
+                    value: reps
+                )
+            }
+
+            return nil
         }
     }
 

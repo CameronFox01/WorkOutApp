@@ -579,7 +579,7 @@ struct WorkoutCalendarView: View {
 
         for category in WorkoutCategory.allCases {
 
-            if category.workouts.contains(workout) {
+            if category.workouts().contains(workout) {
                 return category
             }
         }

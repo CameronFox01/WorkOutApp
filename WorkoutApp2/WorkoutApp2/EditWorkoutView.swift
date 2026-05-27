@@ -32,7 +32,7 @@ struct EditWorkoutView: View {
     private let workoutCategoryLookup: [String: WorkoutCategory] = {
         var lookup: [String: WorkoutCategory] = [:]
         for category in WorkoutCategory.allCases {
-            for workout in category.workouts {
+            for workout in category.workouts() {
                 lookup[workout] = category
             }
         }
@@ -105,15 +105,20 @@ struct EditWorkoutView: View {
                                 icon: "figure.strengthtraining.traditional",
                                 value: workoutType.isEmpty ? "Select" : workoutType
                             ) {
+
+                                let workouts = selectedCategory.workouts()
+
                                 List {
-                                    ForEach(selectedCategory.workouts, id: \.self) { workout in
+                                    ForEach(workouts, id: \.self) { workout in
                                         Button {
                                             workoutType = workout
                                         } label: {
                                             HStack {
                                                 Text(workout)
+
                                                 if workoutType == workout {
                                                     Spacer()
+
                                                     Image(systemName: "checkmark")
                                                         .foregroundStyle(.blue)
                                                 }
@@ -225,8 +230,8 @@ struct EditWorkoutView: View {
             }
         }
         .onChange(of: selectedCategory) { _, newCategory in
-            if !newCategory.workouts.contains(workoutType) {
-                workoutType = newCategory.workouts.first ?? workoutType
+            if !newCategory.workouts().contains(workoutType) {
+                workoutType = newCategory.workouts().first ?? workoutType
             }
         }
         .confirmationDialog(

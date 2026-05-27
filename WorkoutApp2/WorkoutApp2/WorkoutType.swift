@@ -5,6 +5,24 @@
 //  Created by Cameron Fox on 6/6/25.
 //
 
+import Foundation
+
+func loadCustomWorkouts(for category: WorkoutCategory) -> [String] {
+    UserDefaults.standard.stringArray(forKey: category.customKey) ?? []
+}
+
+func saveCustomWorkout(_ workout: String, for category: WorkoutCategory) {
+    var workouts = loadCustomWorkouts(for: category)
+
+    // Prevent duplicates
+    guard !workouts.contains(workout) else { return }
+
+    workouts.append(workout)
+    workouts.sort()
+
+    UserDefaults.standard.set(workouts, forKey: category.customKey)
+}
+
 // Bodyweight-only workouts
 enum BodyweightWorkout: String, CaseIterable, Identifiable, Hashable {
     case airSquats = "Air Squats"
@@ -66,7 +84,7 @@ enum AbsWorkout: String, CaseIterable, Identifiable, Hashable {
     case abdominalVacuum = "Abdominal Vacuum", abWheelRollout = "Ab Wheel Rollout"
     case barbellRollout = "Barbell Rollout", bicycleCrunches = "Bicycle Crunches", birdDog = "Bird Dog"
     case boatPose = "Boat Pose", cableCrunches = "Cable Crunches", climberKicks = "Climber Kicks"
-    case coreHold = "Core Hold", crossBodyCrunch = "Cross-Body Crunch", deadBug = "Dead Bug"
+    case coreHold = "Core Hold", crossBodyCrunch = "Cross-Body Crunch", crunches = "Crunches", deadBug = "Dead Bug"
     case declineCrunches = "Decline Crunches", dragonFlag = "Dragon Flag", elevatedPlank = "Elevated Plank"
     case flutterKickHolds = "Flutter Kick Holds", flutterKicks = "Flutter Kicks", hangingKneeRaises = "Hanging Knee Raises"
     case hangingLegRaises = "Hanging Leg Raises", heelTaps = "Heel Taps", hollowBodyHold = "Hollow Body Hold"
@@ -201,7 +219,8 @@ enum LegWorkout: String, CaseIterable, Identifiable, Hashable {
     case cableLegExtension = "Cable Leg Extension", cablePullThrough = "Cable Pull Through"
     case curtsyLunges = "Curtsy Lunges", deadlift = "Deadlift", donkeyCalfRaise = "Donkey Calf Raise"
     case dumbbellSquat = "Dumbbell Squat", frontSquat = "Front Squat", gluteBridge = "Glute Bridge"
-    case gobletSquat = "Goblet Squat", hackSquat = "Hack Squat", jeffersonSquat = "Jefferson Squat"
+    case gobletSquat = "Goblet Squat", hackSquat = "Hack Squat", hipAdductorClosing = "Adductor Machine (Closing)"
+    case hipAdductorOpening = "Adductor Machine (Opening)", jeffersonSquat = "Jefferson Squat"
     case jumpingLunges = "Jumping Lunges", lateralStepUps = "Lateral Step-ups", legCurl = "Leg Curl"
     case legExtension = "Leg Extension", legPress = "Leg Press", legPressCalfRaise = "Leg Press Calf Raise"
     case legPressVariations = "Leg Press Variations", lunges = "Lunges", lyingLegCurl = "Lying Leg Curl"
