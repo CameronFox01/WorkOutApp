@@ -280,7 +280,9 @@ struct ImportView: View {
         @Binding var times: [WorkoutCategory: String]
         @Binding var entries: [WorkoutEntry]
         @Binding var notes: [WorkoutCategory: String]
+
         @Environment(\.dismiss) private var dismiss
+        @Environment(\.colorScheme) private var colorScheme
 
         let save: () -> Void
         let increment: (inout [WorkoutCategory: String], Double) -> Void
@@ -290,64 +292,61 @@ struct ImportView: View {
         @Binding var showSavedToast: Bool
         let resetParent: () -> Void
 
-        // The view for the logging. It calls "card" to do all of the heavy lifting
-        var body: some View {
-            ScrollView {
-                VStack(spacing: 16) {
-                    card
-                }
-                .padding(16)
-            }
-            .background(Color(.systemGroupedBackground))
-            .navigationTitle(category.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .overlay(alignment: .top) {
-                if showSavedToast { savedToast }
-            }
-            .onAppear() {
-                resetParent()
-            }
+        // MARK: - Colors (match other views)
+        private var cardColor: Color {
+            colorScheme == .dark ? Color(.systemGray6) : .white
         }
-        
-        private var noteBinding: Binding<String> {
-            Binding(
-                get: { notes[category] ?? "" },
-                set: { notes[category] = $0 }
-            )
+
+        private var secondaryCardColor: Color {
+            colorScheme == .dark ? Color(.systemGray5) : Color(.systemGray6)
+        }
+
+        private var textColor: Color {
+            colorScheme == .dark ? .white : .primary
+        }
+
+        private var bgColor: Color {
+            colorScheme == .dark ? Color.black : Color("#F3F4F6")
         }
 
         private var weightUnit: String { weightUnitProvider() }
 
+        // MARK: - Bindings
         private var selectionBinding: Binding<String> {
             Binding(
                 get: { selections[category] ?? category.workouts.first ?? "" },
                 set: { selections[category] = $0 }
             )
         }
+
         private var weightBinding: Binding<String> {
             Binding(
                 get: { weights[category] ?? "" },
                 set: { weights[category] = $0 }
             )
         }
+
         private var repsBinding: Binding<String> {
             Binding(
                 get: { reps[category] ?? "" },
                 set: { reps[category] = $0 }
             )
         }
+
         private var setsBinding: Binding<String> {
             Binding(
                 get: { sets[category] ?? "" },
                 set: { sets[category] = $0 }
             )
         }
+
         private var distanceBinding: Binding<String> {
             Binding(
                 get: { distances[category] ?? "" },
                 set: { distances[category] = $0 }
             )
         }
+
         private var timeBinding: Binding<String> {
             Binding(
                 get: { times[category] ?? "" },
@@ -355,174 +354,192 @@ struct ImportView: View {
             )
         }
 
-        // This does all of the real work to create the logging screen
-        @ViewBuilder private var card: some View {
+        private var noteBinding: Binding<String> {
+            Binding(
+                get: { notes[category] ?? "" },
+                set: { notes[category] = $0 }
+            )
+        }
+
+        // MARK: - Body
+        var body: some View {
+            ZStack {
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(1.0),
+                        Color.cyan.opacity(0.6),
+                        Color(.systemBackground)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 18) {
+
+                        headerCard
+                        workoutCard
+                        statsCard
+                        notesCard
+                        saveButton
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 10)
+                    .padding(.bottom, 24)
+                }
+            }
+            .navigationTitle(category.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .overlay(alignment: .top) {
+                if showSavedToast { savedToast }
+            }
+            .onAppear {
+                resetParent()
+            }
+        }
+
+        // MARK: - Cards
+
+        private var headerCard: some View {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(category.title)
+                    .font(.title2.bold())
+                    .foregroundStyle(textColor)
+
+                Text("Log your \(category.title.lowercased()) workout")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
+            .shadow(color: colorScheme == .dark ? .clear : .black.opacity(0.05),
+                    radius: 8, x: 0, y: 4)
+        }
+
+        private var workoutCard: some View {
             VStack(alignment: .leading, spacing: 12) {
+
                 Picker("Workout", selection: selectionBinding) {
                     ForEach(category.workouts, id: \.self) { workout in
                         Text(workout).tag(workout)
                     }
                 }
-                .pickerStyle(MenuPickerStyle())
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-
-                if category.usesWeight && category != .distanceCardio && category != .timeCardio{
-                    HStack(spacing: 12) {
-                        Image(systemName: "scalemass")
-                            .foregroundStyle(.secondary)
-                        TextField("Weight (\(weightUnit))", text: weightBinding)
-                            .keyboardType(.decimalPad)
-                        Spacer()
-                        Stepper("", onIncrement: {
-                            increment(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
-                        }, onDecrement: {
-                            decrement(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
-                        })
-                        .labelsHidden()
-                    }
-                    .padding(12)
-                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-
-                if category == .distanceCardio {
-                    HStack(spacing: 12) {
-                        Image(systemName: "ruler")
-                            .foregroundStyle(.secondary)
-                        TextField("Distance (\(UnitSystem(rawValue: unitSystemRaw) == .imperial ? "mi" : "km"))", text: distanceBinding)
-                            .keyboardType(.decimalPad)
-                        Spacer()
-                        Stepper("", onIncrement: {
-                            increment(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
-                        }, onDecrement: {
-                            decrement(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
-                        })
-                        .labelsHidden()
-                    }
-                    .padding(12)
-                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-                
-                if category == .timeCardio {
-                    HStack(spacing: 12) {
-                        Image(systemName: "timer")
-                            .foregroundStyle(.secondary)
-                        TextField("Time (min)", text: timeBinding)
-                            .keyboardType(.decimalPad)
-                        Spacer()
-                        Stepper("", onIncrement: {
-                            increment(&times, 1)
-                        }, onDecrement: {
-                            decrement(&times, 1)
-                        })
-                        .labelsHidden()
-                    }
-                    .padding(12)
-                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-
-                if category != .distanceCardio {
-                    HStack(spacing: 12) {
-                        Image(systemName: "number")
-                            .foregroundStyle(.secondary)
-                        TextField("Reps", text: repsBinding)
-                            .keyboardType(.numberPad)
-                        Spacer()
-                        Stepper("", onIncrement: {
-                            increment(&reps, 1)
-                        }, onDecrement: {
-                            decrement(&reps, 1)
-                        })
-                        .labelsHidden()
-                    }
-                    .padding(12)
-                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-
-                if category != .distanceCardio {
-                    HStack(spacing: 12) {
-                        Image(systemName: "square.grid.2x2")
-                            .foregroundStyle(.secondary)
-                        TextField("Sets", text: setsBinding)
-                            .keyboardType(.numberPad)
-                        Spacer()
-                        Stepper("", onIncrement: {
-                            increment(&sets, 1)
-                        }, onDecrement: {
-                            decrement(&sets, 1)
-                        })
-                        .labelsHidden()
-                    }
-                    .padding(12)
-                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-
-                if category == .distanceCardio {
-                    HStack(spacing: 12) {
-                        Image(systemName: "clock")
-                            .foregroundStyle(.secondary)
-                        TextField("Time (min)", text: timeBinding)
-                            .keyboardType(.numberPad)
-                        Spacer()
-                        Stepper("", onIncrement: {
-                            increment(&times, 1)
-                        }, onDecrement: {
-                            decrement(&times, 1)
-                        })
-                        .labelsHidden()
-                    }
-                    .padding(12)
-                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-                
-                HStack(spacing: 12) {
-                    Image(systemName: "note.text")
-                        .foregroundStyle(.secondary)
-                    
-                    // Using a TextField for a single line, or TextEditor for multi-line
-                    TextEditor(text: noteBinding)
-                        .overlay(
-                            Group {
-                                if noteBinding.wrappedValue.isEmpty {
-                                    Text("Add a note...")
-                                        .foregroundStyle(.secondary)
-                                        .padding(.leading, 4)
-                                        .padding(.top, 8)
-                                        .allowsHitTesting(false)
-                                }
-                            },
-                            alignment: .topLeading
-                        )
-                }
+                .pickerStyle(.menu)
                 .padding(12)
-                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-
-                Button {
-                    save()
-
-                    if goHomeAfterSave {
-                        dismiss()
-                    }
-                } label: {
-                    HStack {
-                        Image(systemName: "tray.and.arrow.down.fill")
-                        Text("Save \(category.title)").fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.accentColor)
+                .background(secondaryCardColor, in: RoundedRectangle(cornerRadius: 12))
             }
-            .padding(14)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+            .padding(16)
+            .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
+            .shadow(color: colorScheme == .dark ? .clear : .black.opacity(0.05),
+                    radius: 8, x: 0, y: 4)
         }
 
+        private var statsCard: some View {
+            VStack(spacing: 12) {
+
+                if category.usesWeight && category != .distanceCardio && category != .timeCardio {
+                    statRow("scalemass", "Weight (\(weightUnit))", weightBinding) {
+                        increment(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
+                    } dec: {
+                        decrement(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
+                    }
+                }
+
+                if category == .distanceCardio {
+                    statRow("ruler", "Distance", distanceBinding) {
+                        increment(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
+                    } dec: {
+                        decrement(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
+                    }
+                }
+
+                if category == .timeCardio {
+                    statRow("timer", "Time (min)", timeBinding) {
+                        increment(&times, 1)
+                    } dec: {
+                        decrement(&times, 1)
+                    }
+                }
+
+                statRow("number", "Reps", repsBinding) {
+                    increment(&reps, 1)
+                } dec: {
+                    decrement(&reps, 1)
+                }
+
+                statRow("square.grid.2x2", "Sets", setsBinding) {
+                    increment(&sets, 1)
+                } dec: {
+                    decrement(&sets, 1)
+                }
+            }
+            .padding(16)
+            .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
+            .shadow(color: colorScheme == .dark ? .clear : .black.opacity(0.05),
+                    radius: 8, x: 0, y: 4)
+        }
+
+        private var notesCard: some View {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Notes")
+                    .font(.headline.bold())
+                    .foregroundStyle(textColor)
+
+                TextEditor(text: noteBinding)
+                    .frame(minHeight: 90)
+                    //.padding(10)
+                    .background(secondaryCardColor, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .padding(16)
+            .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
+            .shadow(color: colorScheme == .dark ? .clear : .black.opacity(0.05),
+                    radius: 8, x: 0, y: 4)
+        }
+
+        private var saveButton: some View {
+            Button {
+                save()
+                if goHomeAfterSave { dismiss() }
+            } label: {
+                Text("Save \(category.title)")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.accentColor)
+        }
+
+        // MARK: - Row Builder
+        private func statRow(
+            _ icon: String,
+            _ title: String,
+            _ binding: Binding<String>,
+            inc: @escaping () -> Void,
+            dec: @escaping () -> Void
+        ) -> some View {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .foregroundStyle(.secondary)
+
+                TextField(title, text: binding)
+                    .keyboardType(.decimalPad)
+
+                Spacer()
+
+                Stepper("", onIncrement: inc, onDecrement: dec)
+                    .labelsHidden()
+            }
+            .padding(12)
+            .background(secondaryCardColor, in: RoundedRectangle(cornerRadius: 12))
+        }
+
+        // MARK: - Toast
         private var savedToast: some View {
             Text("Saved ✔︎")
-                .font(.subheadline).bold()
+                .font(.subheadline.bold())
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(.ultraThinMaterial, in: Capsule())
@@ -530,7 +547,9 @@ struct ImportView: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
                 .onAppear {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                        withAnimation(.spring()) { showSavedToast = false }
+                        withAnimation(.spring()) {
+                            showSavedToast = false
+                        }
                     }
                 }
         }

@@ -7,131 +7,326 @@
 import SwiftUI
 
 struct CaloriesDetailView: View {
+
     @EnvironmentObject var Hmanager: HealthManager
+    @Environment(\.dismiss) private var dismiss
+
     let unitSystem: UnitSystem
 
-    @AppStorage("dailyCaloriesGoal") private var dailyCaloriesGoal: Int = 500
+    @AppStorage("dailyCaloriesGoal")
+    private var dailyCaloriesGoal: Int = 500
 
-    private var lastFiveDaysSteps: [(date: Date, steps: Int)] { Hmanager.lastFiveDaysSteps }
+    private var lastFiveDaysSteps: [(date: Date, steps: Int)] {
+        Hmanager.lastFiveDaysSteps
+    }
 
     private var lastFiveDaysCalories: [(date: Date, calories: Int)] {
-        lastFiveDaysSteps.map { ($0.date, Int(Double($0.steps) * 0.04)) }
+        lastFiveDaysSteps.map {
+            ($0.date, Int(Double($0.steps) * 0.04))
+        }
     }
 
     private var fiveDayAverageCalories: Int {
-        let total = lastFiveDaysCalories.reduce(0) { $0 + $1.calories }
-        return lastFiveDaysCalories.isEmpty ? 0 : total / lastFiveDaysCalories.count
+
+        let total = lastFiveDaysCalories.reduce(0) {
+            $0 + $1.calories
+        }
+
+        return lastFiveDaysCalories.isEmpty
+        ? 0
+        : total / lastFiveDaysCalories.count
     }
 
-    private var estimatedCaloriesToday: Int { Int(Double(Hmanager.steps) * 0.04) }
+    private var estimatedCaloriesToday: Int {
+        Int(Double(Hmanager.steps) * 0.04)
+    }
+
+    private var progress: CGFloat {
+
+        guard dailyCaloriesGoal > 0 else {
+            return 0
+        }
+
+        return min(
+            CGFloat(estimatedCaloriesToday)
+            / CGFloat(dailyCaloriesGoal),
+            1
+        )
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                GroupBox(label: Text("Today")) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Calories")
+
+        NavigationStack {
+
+            ZStack {
+
+                // MARK: - Background
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.9),
+                        Color.black
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                ScrollView {
+
+                    VStack(spacing: 28) {
+
+                        // MARK: - Hero Ring
+                        VStack(spacing: 18) {
+
+                            ZStack {
+
+                                Circle()
+                                    .stroke(
+                                        Color.white.opacity(0.15),
+                                        lineWidth: 18
+                                    )
+                                    .frame(width: 280, height: 280)
+
+                                Circle()
+                                    .trim(from: 0, to: progress)
+                                    .stroke(
+                                        AngularGradient(
+                                            colors: [.orange, .red],
+                                            center: .center
+                                        ),
+                                        style: StrokeStyle(
+                                            lineWidth: 18,
+                                            lineCap: .round
+                                        )
+                                    )
+                                    .rotationEffect(.degrees(-90))
+                                    .frame(width: 280, height: 280)
+
+                                VStack(spacing: 10) {
+
+                                    Text("\(estimatedCaloriesToday)")
+                                        .font(
+                                            .system(
+                                                size: 60,
+                                                weight: .bold,
+                                                design: .rounded
+                                            )
+                                        )
+                                        .foregroundStyle(.white)
+                                        .monospacedDigit()
+
+                                    Text("kcal")
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundStyle(
+                                            .white.opacity(0.7)
+                                        )
+
+                                    Text("Calories Burned")
+                                        .foregroundStyle(
+                                            .white.opacity(0.6)
+                                        )
+                                }
+                            }
+
+                            // MARK: - Goal Controls
+                            HStack(spacing: 28) {
+
+                                controlButton(
+                                    icon: "minus",
+                                    color: .orange
+                                ) {
+
+                                    dailyCaloriesGoal = max(
+                                        100,
+                                        dailyCaloriesGoal - 50
+                                    )
+                                }
+
+                                VStack(spacing: 4) {
+
+                                    Text("Goal")
+
+                                    Text("\(dailyCaloriesGoal)")
+
+                                }
+                                .font(.headline.bold())
+                                .foregroundStyle(.white)
+
+                                controlButton(
+                                    icon: "plus",
+                                    color: .blue
+                                ) {
+
+                                    dailyCaloriesGoal += 50
+                                }
+                            }
+                        }
+                        .padding(.top, 20)
+
+                        // MARK: - Analytics Card
+                        VStack(alignment: .leading, spacing: 18) {
+
+                            HStack {
+
+                                Label(
+                                    "Calories Analytics",
+                                    systemImage: "flame.fill"
+                                )
                                 .font(.headline)
-                            Text("\(Int(Hmanager.activeCalories)) kcal")
-                                .font(.title2).bold()
-                            Text("Goal: \(dailyCaloriesGoal) kcal")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                    }
-                    .padding()
-                }
 
-                GroupBox(label: Text("Last 5 Days")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if !lastFiveDaysCalories.isEmpty {
-                            FiveDayCaloriesBarChart(data: lastFiveDaysCalories)
-                                .frame(maxWidth: .infinity, minHeight: 200)
-                                .padding(.top, 4)
-
-                            HStack {
-                                Text("5-day avg:")
-                                    .font(.body)
-                                    .foregroundStyle(.secondary)
-                                Text("\(fiveDayAverageCalories)")
-                                    .font(.body)
-                                    .bold()
-                                    .foregroundStyle(.secondary)
                                 Spacer()
-                            }
 
-                            let met = estimatedCaloriesToday >= dailyCaloriesGoal
-                            HStack {
-                                Label(met ? "Goal met" : "Goal not met", systemImage: met ? "checkmark.circle" : "xmark.circle")
-                                    .font(.headline)
-                                    .foregroundStyle(met ? .green : .red)
-                                Spacer()
+                                Circle()
+                                    .fill(
+                                        estimatedCaloriesToday
+                                        >= dailyCaloriesGoal
+                                        ? .green
+                                        : .orange
+                                    )
+                                    .frame(width: 10, height: 10)
                             }
-                        } else {
-                            Text("5-day history unavailable")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom)
-                }
+                            .foregroundStyle(.white)
 
-                GroupBox(label: Text("Daily Calories Goal")) {
-                    HStack(spacing: 12) {
-                        Stepper(value: $dailyCaloriesGoal, in: 500...10000, step: 50) {
-                            Text("Goal: \(dailyCaloriesGoal) kcal")
-                                .font(.subheadline)
+                            VStack(alignment: .leading, spacing: 10) {
+
+                                HStack {
+
+                                    Text("Today's Calories")
+                                        .foregroundStyle(
+                                            .white.opacity(0.7)
+                                        )
+
+                                    Spacer()
+
+                                    Text("\(estimatedCaloriesToday) kcal")
+                                        .bold()
+                                }
+
+                                HStack {
+
+                                    Text("5-Day Average")
+                                        .foregroundStyle(
+                                            .white.opacity(0.7)
+                                        )
+
+                                    Spacer()
+
+                                    Text("\(fiveDayAverageCalories)")
+                                        .bold()
+                                }
+
+                                HStack {
+
+                                    Text("Goal Status")
+                                        .foregroundStyle(
+                                            .white.opacity(0.7)
+                                        )
+
+                                    Spacer()
+
+                                    Label(
+                                        estimatedCaloriesToday
+                                        >= dailyCaloriesGoal
+                                        ? "Met"
+                                        : "In Progress",
+                                        systemImage:
+                                            estimatedCaloriesToday
+                                            >= dailyCaloriesGoal
+                                            ? "checkmark.circle.fill"
+                                            : "clock.fill"
+                                    )
+                                    .foregroundStyle(
+                                        estimatedCaloriesToday
+                                        >= dailyCaloriesGoal
+                                        ? .green
+                                        : .orange
+                                    )
+                                }
+                            }
+                            .foregroundStyle(.white)
+
+                            Divider()
+                                .overlay(
+                                    Color.white.opacity(0.15)
+                                )
+
+                            // MARK: - Chart
+                            if !lastFiveDaysCalories.isEmpty {
+
+                                FiveDayCaloriesBarChart(
+                                    data: lastFiveDaysCalories
+                                )
+                                .frame(height: 220)
+                            } else {
+
+                                VStack(spacing: 12) {
+
+                                    Image(systemName: "chart.bar.xaxis")
+                                        .font(.largeTitle)
+
+                                    Text("No calorie history available")
+                                        .foregroundStyle(
+                                            .white.opacity(0.7)
+                                        )
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 30)
+                            }
                         }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    Text("This is your target active calories burned per day.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .padding(24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(.white.opacity(0.12))
+                                .background(.ultraThinMaterial)
+                        )
                         .padding(.horizontal)
-                        .padding(.bottom, 8)
+
+                        Spacer(minLength: 40)
+                    }
                 }
             }
-            .padding()
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Color.blue, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Calories")
-                    .font(.largeTitle).bold()
-                    .foregroundStyle(.white)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+
+                ToolbarItem(placement: .principal) {
+
+                    Text("Calories")
+                        .font(.largeTitle.bold())
+                        .foregroundStyle(.white)
+                }
+            }
+            .onAppear {
+
+                Hmanager.fetchSteps()
+                Hmanager.fetchLastFiveDaysSteps()
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            Hmanager.fetchSteps()
-            Hmanager.fetchLastFiveDaysSteps()
+    }
+
+    // MARK: - Control Button
+    func controlButton(
+        icon: String,
+        color: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+
+        Button(action: action) {
+
+            Image(systemName: icon)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 68, height: 68)
+                .background(color.gradient)
+                .clipShape(Circle())
+                .shadow(radius: 8)
         }
     }
 }
 
 #Preview {
-    struct PreviewWrapper: View {
-        @State var current = "180"
-        @State var input = "180"
-
-        var body: some View {
-            WeightUpdateSheet(
-                unitSystem: .metric,
-                weightUnit: "kg",
-                currentWeight: $current,
-                newWeightInput: $input,
-                entries: [],
-                onSave: { _ in },
-                unitSystemRaw: UnitSystem.metric.rawValue
-            )
-        }
+    // 1. Create a NavigationStack (needed for the toolbar to show correctly)
+    NavigationStack {
+        CaloriesDetailView(unitSystem: .metric)
+            .environmentObject(HealthManager()) // 2. Inject your manager here
     }
-
-    return PreviewWrapper()
 }

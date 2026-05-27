@@ -302,6 +302,7 @@ struct TimeViewBig: View {
         return String(format: "%02d:%02d", minutes, sec)
     }
 }
+
 #Preview {
     TimeViewBig(
         totalSeconds: .constant(300),

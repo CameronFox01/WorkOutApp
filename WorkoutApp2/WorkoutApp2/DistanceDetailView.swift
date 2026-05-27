@@ -6,133 +6,321 @@
 //
 import SwiftUI
 
- struct DistanceDetailView: View {
+struct DistanceDetailView: View {
+
     @EnvironmentObject var Hmanager: HealthManager
     let unitSystem: UnitSystem
-    
-    @AppStorage("dailyStepsGoal") private var dailyStepsGoal: Int = 10000
-    
-    private var lastFiveDaysSteps: [(date: Date, steps: Int)] { Hmanager.lastFiveDaysSteps }
-    private var fiveDayAverageSteps: Int {
-        let total = lastFiveDaysSteps.reduce(0) { $0 + $1.steps }
-        return lastFiveDaysSteps.isEmpty ? 0 : total / lastFiveDaysSteps.count
+
+    @AppStorage("dailyStepsGoal")
+    private var dailyStepsGoal: Int = 10000
+
+    private var lastFiveDaysSteps: [(date: Date, steps: Int)] {
+        Hmanager.lastFiveDaysSteps
     }
-    
-    var formattedDistance: String {
+
+    private var fiveDayAverageSteps: Int {
+
+        let total = lastFiveDaysSteps.reduce(0) { $0 + $1.steps }
+
+        return lastFiveDaysSteps.isEmpty
+        ? 0
+        : total / lastFiveDaysSteps.count
+    }
+
+    private var formattedDistance: String {
+
         if unitSystem == .metric {
+
             let km = Hmanager.distance / 1000
+
             return String(format: "%.2f km", km)
+
         } else {
+
             let miles = Hmanager.distance / 1609.34
+
             return String(format: "%.2f mi", miles)
         }
     }
 
+    private var progress: CGFloat {
+
+        guard dailyStepsGoal > 0 else { return 0 }
+
+        return min(
+            CGFloat(Hmanager.steps)
+            / CGFloat(dailyStepsGoal),
+            1
+        )
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                GroupBox(label: Text("Today")) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Steps")
-                                .font(.headline)
-                            Text("\(Hmanager.steps)")
-                                .font(.title2).bold()
-                            Text("Goal: \(dailyStepsGoal)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+
+        NavigationStack {
+
+            ZStack {
+
+                // MARK: - Background
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.9),
+                        Color.black
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                ScrollView {
+
+                    VStack(spacing: 28) {
+
+                        // MARK: - Header
+                        HStack {
+
+                            Label(
+                                "Daily Activity",
+                                systemImage: "figure.walk"
+                            )
+                            .font(.headline)
+
+                            Spacer()
+
+                            Circle()
+                                .fill(
+                                    Hmanager.steps >= dailyStepsGoal
+                                    ? .green
+                                    : .orange
+                                )
+                                .frame(width: 10, height: 10)
                         }
-                        Spacer()
-                        VStack(alignment: .center, spacing: 27){
-                            Text("Flights Climbed")
-                                .font(.headline)
-                            Text("\(Hmanager.flightsClimbed)")
-                                .font(.title2).bold()
+                        .foregroundStyle(.white)
+
+                        // MARK: - Hero Ring
+                        VStack(spacing: 18) {
+
+                            ZStack {
+
+                                Circle()
+                                    .stroke(
+                                        Color.white.opacity(0.15),
+                                        lineWidth: 18
+                                    )
+                                    .frame(width: 280, height: 280)
+
+                                Circle()
+                                    .trim(from: 0, to: progress)
+                                    .stroke(
+                                        AngularGradient(
+                                            colors: [.green, .blue],
+                                            center: .center
+                                        ),
+                                        style: StrokeStyle(
+                                            lineWidth: 18,
+                                            lineCap: .round
+                                        )
+                                    )
+                                    .rotationEffect(.degrees(-90))
+                                    .frame(width: 280, height: 280)
+
+                                VStack(spacing: 10) {
+
+                                    Text("\(Hmanager.steps)")
+                                        .font(
+                                            .system(
+                                                size: 52,
+                                                weight: .bold,
+                                                design: .rounded
+                                            )
+                                        )
+                                        .foregroundStyle(.white)
+                                        .monospacedDigit()
+
+                                    Text("Steps")
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundStyle(.white.opacity(0.7))
+
+                                    Text("Goal: \(dailyStepsGoal)")
+                                        .foregroundStyle(.white.opacity(0.6))
+                                }
+                            }
+
+                            // MARK: - Quick Goal Controls
+                            HStack(spacing: 28) {
+
+                                controlButton(
+                                    icon: "minus",
+                                    color: .orange
+                                ) {
+
+                                    dailyStepsGoal = max(
+                                        1000,
+                                        dailyStepsGoal - 500
+                                    )
+                                }
+
+                                controlButton(
+                                    icon: "plus",
+                                    color: .blue
+                                ) {
+
+                                    dailyStepsGoal += 500
+                                }
+                            }
                         }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 27) {
-                            Text("Distance")
-                                .font(.headline)
-                            Text(formattedDistance)
-                                .font(.title2).bold()
+
+                        // MARK: - Stats Card
+                        VStack(spacing: 18) {
+
+                            HStack(spacing: 20) {
+
+                                VStack(spacing: 10) {
+
+                                    Image(systemName: "figure.stairs")
+                                        .font(.title2)
+
+                                    Text("\(Hmanager.flightsClimbed)")
+                                        .font(.title.bold())
+
+                                    Text("Flights")
+                                        .font(.caption)
+                                        .foregroundStyle(.white.opacity(0.7))
+                                }
+                                .frame(maxWidth: .infinity)
+
+                                Divider()
+                                    .overlay(Color.white.opacity(0.2))
+
+                                VStack(spacing: 10) {
+
+                                    Image(systemName: "location.fill")
+                                        .font(.title2)
+
+                                    Text(formattedDistance)
+                                        .font(.title.bold())
+
+                                    Text("Distance")
+                                        .font(.caption)
+                                        .foregroundStyle(.white.opacity(0.7))
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .foregroundStyle(.white)
+
                         }
+                        .padding(24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(.white.opacity(0.12))
+                                .background(.ultraThinMaterial)
+                        )
+
+                        // MARK: - Chart Card
+                        VStack(alignment: .leading, spacing: 18) {
+
+                            HStack {
+
+                                Label(
+                                    "Last 5 Days",
+                                    systemImage: "chart.bar.fill"
+                                )
+                                .font(.headline)
+
+                                Spacer()
+
+                                Text("Avg \(fiveDayAverageSteps)")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.white.opacity(0.7))
+                            }
+                            .foregroundStyle(.white)
+
+                            if !lastFiveDaysSteps.isEmpty {
+
+                                FiveDayStepsBarChartWithValues(
+                                    data: lastFiveDaysSteps
+                                )
+                                .frame(height: 220)
+
+                                let met =
+                                Hmanager.steps >= dailyStepsGoal
+
+                                HStack {
+
+                                    Label(
+                                        met
+                                        ? "Goal Met"
+                                        : "Goal Not Met",
+                                        systemImage:
+                                            met
+                                            ? "checkmark.circle.fill"
+                                            : "xmark.circle.fill"
+                                    )
+                                    .foregroundStyle(
+                                        met
+                                        ? .green
+                                        : .red
+                                    )
+
+                                    Spacer()
+                                }
+                                .font(.headline)
+
+                            } else {
+
+                                Text("5-day history unavailable")
+                                    .foregroundStyle(
+                                        .white.opacity(0.7)
+                                    )
+                            }
+                        }
+                        .padding(24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(.white.opacity(0.12))
+                                .background(.ultraThinMaterial)
+                        )
+
+                        Spacer(minLength: 40)
                     }
                     .padding()
                 }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
 
-                GroupBox(label: Text("Last 5 Days")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if !lastFiveDaysSteps.isEmpty {
-                            FiveDayStepsBarChartWithValues(data: lastFiveDaysSteps)
-                              
-                                .frame(maxWidth: .infinity, minHeight: 200)
-                                .padding(.top, 4)
+                ToolbarItem(placement: .principal) {
 
-                            HStack {
-                                Text("5-day avg:")
-                                    .font(.body)
-                                    .foregroundStyle(.secondary)
-                                Text("\(fiveDayAverageSteps)")
-                                    .font(.body)
-                                    .bold()
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                            }
-                            
-                            // Move goal status below the chart and avg row
-                            if let latest = lastFiveDaysSteps.last {
-                                let met = latest.steps >= dailyStepsGoal
-                                HStack {
-                                    Label(met ? "Goal met" : "Goal not met", systemImage: met ? "checkmark.circle" : "xmark.circle")
-                                        .font(.headline)
-                                        .foregroundStyle(met ? .green : .red)
-                                    Spacer()
-                                }
-                            }
-                        } else {
-                            Text("5-day history unavailable")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom)
-                }
-
-                GroupBox(label: Text("Daily Step Goal")) {
-                    HStack(spacing: 12) {
-                        Stepper(value: $dailyStepsGoal, in: 1000...50000, step: 500) {
-                            Text("Goal: \(dailyStepsGoal) steps")
-                                .font(.subheadline)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    Text("This goal applies per day and is shown above when comparing recent days.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
+                    Text("Steps")
+                        .font(.largeTitle.bold())
+                        .foregroundStyle(.white)
                 }
             }
-            .padding()
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Color.blue, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Steps")
-                    .font(.largeTitle).bold()
-                    .foregroundStyle(.white)
+            .onAppear {
+
+                Hmanager.fetchSteps()
+                Hmanager.fetchDistance()
+                Hmanager.fetchLastFiveDaysSteps()
+                Hmanager.fetchFlightsClimbed()
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            Hmanager.fetchSteps()
-            Hmanager.fetchDistance()
-            Hmanager.fetchLastFiveDaysSteps()
-            Hmanager.fetchFlightsClimbed()
+    }
+
+    // MARK: - Control Button
+    func controlButton(
+        icon: String,
+        color: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+
+        Button(action: action) {
+
+            Image(systemName: icon)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 68, height: 68)
+                .background(color.gradient)
+                .clipShape(Circle())
+                .shadow(radius: 8)
         }
     }
 }

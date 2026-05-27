@@ -6,59 +6,106 @@
 //
 import SwiftUI
 
- struct WorkoutCalendarView: View {
-    let entries: [WorkoutEntry]
-    @State private var currentMonthOffset: Int = 0
-    @State private var selectedDate: Date = Calendar.current.startOfDay(for: Date())
+struct WorkoutCalendarView: View {
 
-    private var calendar: Calendar { Calendar.current }
-     
-     enum Weekday: String, CaseIterable, Identifiable {
-         case sun, mon, tue, wed, thu, fri, sat
-         var id: String { rawValue }
-         var display: String {
-             switch self {
-             case .sun: return "Sun"
-             case .mon: return "Mon"
-             case .tue: return "Tue"
-             case .wed: return "Wed"
-             case .thu: return "Thu"
-             case .fri: return "Fri"
-             case .sat: return "Sat"
-             }
-         }
-     }
+    let entries: [WorkoutEntry]
+
+    @State private var currentMonthOffset: Int = 0
+    @State private var selectedDate: Date =
+        Calendar.current.startOfDay(for: Date())
+
+    @EnvironmentObject var workoutData: WorkoutData
+    private var calendar: Calendar { .current }
+
+    enum Weekday: String, CaseIterable, Identifiable {
+
+        case sun, mon, tue, wed, thu, fri, sat
+
+        var id: String { rawValue }
+
+        var display: String {
+
+            switch self {
+            case .sun: return "Sun"
+            case .mon: return "Mon"
+            case .tue: return "Tue"
+            case .wed: return "Wed"
+            case .thu: return "Thu"
+            case .fri: return "Fri"
+            case .sat: return "Sat"
+            }
+        }
+    }
 
     private var monthStart: Date {
-        let base = calendar.date(byAdding: .month, value: currentMonthOffset, to: Date()) ?? Date()
-        let comps = calendar.dateComponents([.year, .month], from: base)
+
+        let base =
+        calendar.date(
+            byAdding: .month,
+            value: currentMonthOffset,
+            to: Date()
+        ) ?? Date()
+
+        let comps =
+        calendar.dateComponents([.year, .month], from: base)
+
         return calendar.date(from: comps) ?? Date()
     }
 
     private var daysInMonth: [Date] {
-        guard let range = calendar.range(of: .day, in: .month, for: monthStart) else { return [] }
+
+        guard let range =
+                calendar.range(
+                    of: .day,
+                    in: .month,
+                    for: monthStart
+                )
+        else {
+            return []
+        }
+
         return range.compactMap { day -> Date? in
-            var comps = calendar.dateComponents([.year, .month], from: monthStart)
+
+            var comps =
+            calendar.dateComponents(
+                [.year, .month],
+                from: monthStart
+            )
+
             comps.day = day
+
             return calendar.date(from: comps)
         }
     }
 
     private var countsByDay: [Date: Int] {
-        let grouped = Dictionary(grouping: entries) { e in calendar.startOfDay(for: e.date) }
+
+        let grouped = Dictionary(
+            grouping: entries
+        ) { e in
+            calendar.startOfDay(for: e.date)
+        }
+
         return grouped.mapValues { $0.count }
     }
-    
+
     private var entriesByDay: [Date: [WorkoutEntry]] {
-        Dictionary(grouping: entries) { calendar.startOfDay(for: $0.date) }
+
+        Dictionary(grouping: entries) {
+            calendar.startOfDay(for: $0.date)
+        }
     }
 
     private func entries(for day: Date) -> [WorkoutEntry] {
+
         let key = calendar.startOfDay(for: day)
-        return (entriesByDay[key] ?? []).sorted { $0.date < $1.date }
+
+        return (entriesByDay[key] ?? [])
+            .sorted { $0.date < $1.date }
     }
 
     private var lastStoredBodyWeightEntry: WorkoutEntry? {
+
         entries
             .filter { $0.workoutType == "Body Weight" }
             .sorted { $0.date > $1.date }
@@ -66,217 +113,568 @@ import SwiftUI
     }
 
     private func color(for count: Int) -> Color {
+
         switch count {
-        case 0: return Color.gray.opacity(0.15)
-        case 1: return Color.green.opacity(0.4)
-        case 2...3: return Color.green.opacity(0.7)
-        default: return Color.green
+        case 0:
+            return Color.white.opacity(0.08)
+
+        case 1:
+            return Color.green.opacity(0.45)
+
+        case 2...3:
+            return Color.green.opacity(0.7)
+
+        default:
+            return .green
         }
     }
 
     private var monthTitle: String {
-        monthStart.formatted(.dateTime.year().month(.wide))
+
+        monthStart.formatted(
+            .dateTime
+                .year()
+                .month(.wide)
+        )
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 25) {
-                // This entire HStack is for the Arrows and Month/Year
-                HStack {
-                    Button(action: { currentMonthOffset -= 1 }) { Image(systemName: "chevron.left") }
-                        .font(Font.largeTitle.bold())
-                    Spacer()
-                    Text(monthTitle)
-                        .font(Font.largeTitle.bold())
-                    Spacer()
-                    Button(action: { currentMonthOffset += 1 }) { Image(systemName: "chevron.right") }
-                        .font(Font.largeTitle.bold())
-                }
-                .padding(.horizontal)
-                
-                // This is the section for the calendar and heat map itself.
-                let firstWeekday = calendar.component(.weekday, from: monthStart)
-                //let leadingBlanks = (firstWeekday + 5) % 7 // make Monday=1 alignment
-                let leadingBlanks = firstWeekday - 1 // This makes you start on Sundays
-                
-                let cells: [Date?] = Array(repeating: nil, count: leadingBlanks) + daysInMonth
-                
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
-                    ForEach(cells.indices, id: \.self) { idx in
-                        if let day = cells[idx] {
-                            let key = calendar.startOfDay(for: day)
-                            let count = countsByDay[key] ?? 0
-                            VStack {
-                                Button {
-                                    selectedDate = calendar.startOfDay(for: day)
-                                } label: {
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .fill(color(for: count))
-                                        .frame(height: 38)
-                                        .overlay(
-                                            Text("\(calendar.component(.day, from: day))")
-                                                .font(.headline)
-                                                .foregroundColor(.primary)
+
+        NavigationStack {
+
+            ZStack {
+
+                // MARK: - Background
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.9),
+                        Color.black
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                ScrollView {
+
+                    VStack(spacing: 28) {
+
+                        // MARK: - Month Header
+                        HStack {
+
+                            controlButton(
+                                icon: "chevron.left",
+                                color: .orange
+                            ) {
+                                currentMonthOffset -= 1
+                            }
+
+                            Spacer()
+
+                            VStack(spacing: 4) {
+
+                                Text(monthTitle)
+                                    .font(
+                                        .system(
+                                            size: 30,
+                                            weight: .bold,
+                                            design: .rounded
+                                        )
+                                    )
+                                    .foregroundStyle(.white)
+
+                                Text("Workout Activity")
+                                    .foregroundStyle(
+                                        .white.opacity(0.7)
+                                    )
+                            }
+
+                            Spacer()
+
+                            controlButton(
+                                icon: "chevron.right",
+                                color: .blue
+                            ) {
+                                currentMonthOffset += 1
+                            }
+                        }
+
+                        // MARK: - Calendar Card
+                        VStack(spacing: 20) {
+
+                            // Weekday labels
+                            LazyVGrid(
+                                columns: Array(
+                                    repeating: GridItem(.flexible()),
+                                    count: 7
+                                )
+                            ) {
+
+                                ForEach(
+                                    Weekday.allCases
+                                ) { day in
+
+                                    Text(day.display)
+                                        .font(.caption.bold())
+                                        .foregroundStyle(
+                                            .white.opacity(0.7)
                                         )
                                 }
-                                .buttonStyle(.plain)
                             }
-                        } else {
-                            Color.clear.frame(height: 32)
+
+                            let firstWeekday =
+                            calendar.component(
+                                .weekday,
+                                from: monthStart
+                            )
+
+                            let leadingBlanks =
+                            firstWeekday - 1
+
+                            let cells: [Date?] =
+                                Array(
+                                    repeating: nil,
+                                    count: leadingBlanks
+                                ) + daysInMonth
+
+                            LazyVGrid(
+                                columns: Array(
+                                    repeating: GridItem(.flexible()),
+                                    count: 7
+                                ),
+                                spacing: 10
+                            ) {
+
+                                ForEach(
+                                    cells.indices,
+                                    id: \.self
+                                ) { idx in
+
+                                    if let day = cells[idx] {
+
+                                        let key =
+                                        calendar.startOfDay(
+                                            for: day
+                                        )
+
+                                        let count =
+                                        countsByDay[key] ?? 0
+
+                                        let isSelected =
+                                        calendar.isDate(
+                                            selectedDate,
+                                            inSameDayAs: day
+                                        )
+
+                                        Button {
+
+                                            selectedDate =
+                                            calendar.startOfDay(
+                                                for: day
+                                            )
+
+                                        } label: {
+
+                                            ZStack {
+
+                                                RoundedRectangle(
+                                                    cornerRadius: 12
+                                                )
+                                                .fill(
+                                                    isSelected
+                                                    ? .white
+                                                    : color(for: count)
+                                                )
+
+                                                Text(
+                                                    "\(calendar.component(.day, from: day))"
+                                                )
+                                                .font(.headline.bold())
+                                                .foregroundStyle(
+                                                    isSelected
+                                                    ? .black
+                                                    : .white
+                                                )
+                                            }
+                                            .frame(height: 44)
+                                        }
+                                        .buttonStyle(.plain)
+
+                                    } else {
+
+                                        Color.clear
+                                            .frame(height: 44)
+                                    }
+                                }
+                            }
                         }
-                    }
-                }
-                .padding(.horizontal)
-                
-                // Details for selected day
-                VStack(alignment: .leading, spacing: 8) {
-                    let dayEntries = entries(for: selectedDate)
-                    let bodyWeightForDay = dayEntries.first(where: { $0.workoutType == "Body Weight" && !$0.weight.isEmpty })?.weight
-                    let fallbackWeight = lastStoredBodyWeightEntry?.weight
-                    
-                    let workouts = UserDefaults.standard.stringArray(
-                        forKey: keyItems(for: weekday(from: selectedDate))
-                    ) ?? []
-                    
-                    // This is the Hstack for the selected Date and the users body weight on that day.
-                    HStack {
-                        Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
-                            .font(.title.bold())
-                        Spacer()
-                        if let w = bodyWeightForDay ?? fallbackWeight {
-                            Text("Weight: \(w)")
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    //The section for no workouts completed on that day
-                    if dayEntries.isEmpty {
-                        ContentUnavailableView("No workouts", systemImage: "calendar", description: Text("No workouts logged for this day."))
-                    } else { //The section for there being workouts on that day.
-                        ForEach(dayEntries) { e in
-                            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                                Text(e.workoutType)
-                                    .font(.headline).bold()
+                        .padding(24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(.white.opacity(0.12))
+                                .background(.ultraThinMaterial)
+                        )
+
+                        // MARK: - Selected Day Card
+                        VStack(alignment: .leading, spacing: 18) {
+
+                            let dayEntries =
+                            entries(for: selectedDate)
+
+                            let bodyWeightForDay =
+                            dayEntries.first {
+                                $0.workoutType == "Body Weight"
+                                && !$0.weight.isEmpty
+                            }?.weight
+
+                            let fallbackWeight =
+                            lastStoredBodyWeightEntry?.weight
+
+//                            let workouts =
+//                            UserDefaults.standard.stringArray(
+//                                forKey: keyItems(
+//                                    for: weekday(
+//                                        from: selectedDate
+//                                    )
+//                                )
+//                            ) ?? []
+
+                            HStack {
+
+                                VStack(alignment: .leading) {
+
+                                    Text(
+                                        selectedDate.formatted(
+                                            date: .abbreviated,
+                                            time: .omitted
+                                        )
+                                    )
+                                    .font(.title.bold())
+                                    .foregroundStyle(.white)                            
+                                }
+
                                 Spacer()
-                                if !e.weight.isEmpty { Text(e.weight).font(.headline) }
-                                if !e.reps.isEmpty { Text("\(e.reps) reps").font(.headline) }
-                                if !e.sets.isEmpty { Text("\(e.sets) sets").font(.headline) }
+
+                                if let w =
+                                    bodyWeightForDay
+                                    ?? fallbackWeight {
+
+                                    VStack(alignment: .trailing) {
+
+                                        Text("\(w)")
+                                            .font(.title3.bold())
+
+                                        Text("Body Weight")
+                                            .font(.caption)
+                                    }
+                                    .foregroundStyle(.white)
+                                }
                             }
-                            .foregroundColor(.primary)
-                            .padding(.vertical, 8)
+
+                            Divider()
+                                .overlay(
+                                    Color.white.opacity(0.15)
+                                )
+
+                            // MARK: - Workouts
+                            if dayEntries.isEmpty {
+
+                                VStack(spacing: 14) {
+
+                                    Image(systemName: "calendar")
+                                        .font(.largeTitle)
+
+                                    Text("No Workouts")
+                                        .font(.headline.bold())
+
+                                    Text(
+                                        "No workouts logged for this day."
+                                    )
+                                    .foregroundStyle(
+                                        .white.opacity(0.7)
+                                    )
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 30)
+                                .foregroundStyle(.white)
+
+                            } else {
+
+                                ForEach(dayEntries) { e in
+                                    NavigationLink(destination: EditWorkoutView(entry: e)
+                                        .environmentObject(workoutData)
+                                    ) {
+                                        VStack(
+                                            alignment: .leading,
+                                            spacing: 10
+                                        ) {
+                                            HStack {
+                                                Text(e.workoutType)
+                                                    .font(.headline.bold())
+
+                                                Spacer()
+
+                                                if !e.weight.isEmpty {
+                                                    statCapsule(text: e.weight)
+                                                }
+
+                                                if !e.reps.isEmpty {
+                                                    statCapsule(text: "\(e.reps) reps")
+                                                }
+
+                                                if !e.sets.isEmpty {
+                                                    statCapsule(text: "\(e.sets) sets")
+                                                }
+                                            }
+
+                                            if !e.note.isEmpty {
+                                                Text(e.note)
+                                                    .font(.subheadline)
+                                                    .foregroundStyle(.white.opacity(0.75))
+                                            }
+                                        }
+                                        .padding(16)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 18)
+                                                .fill(.white.opacity(0.08))
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
                         }
-                    }
-                    Spacer()
-                    //Section for Schedule to be accessed and displayed here.
-                    VStack(alignment: .leading, spacing: 8){
-                        Text("Planned Workouts")
-                            .font(.title.bold())
-                        if workouts.isEmpty {
-                            Text("No planned workouts")
-                                .foregroundStyle(.secondary)
-                        } else {
-                            ForEach(workouts, id: \.self) { workout in
-                                // Replace the old NavigationLink block with this:
-                                ForEach(workouts, id: \.self) { workout in
+                        .padding(24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(.white.opacity(0.12))
+                                .background(.ultraThinMaterial)
+                        )
+
+                        // MARK: - Planned Workouts
+                        VStack(alignment: .leading, spacing: 18) {
+
+                            Label(
+                                "Planned Workouts",
+                                systemImage: "calendar.badge.plus"
+                            )
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            
+                            let currentWeekday = weekday(from: selectedDate)
+                            
+                            let dayTitle = UserDefaults.standard.string(forKey: keyTitle(for: currentWeekday)) ?? ""
+                            let workouts =
+                            UserDefaults.standard.stringArray(
+                                forKey: keyItems(
+                                    for: weekday(
+                                        from: selectedDate
+                                    )
+                                )
+                            ) ?? []
+
+                            if workouts.isEmpty {
+
+                                Text("No planned workouts")
+                                    .foregroundStyle(
+                                        .white.opacity(0.7)
+                                    )
+
+                            } else {
+                                //Add a text here with the title  of the day
+                                Text(dayTitle.isEmpty ? selectedDate.formatted(date: .complete, time: .omitted) : dayTitle)
+                                            .font(.headline.bold())
+                                            .foregroundStyle(.white.opacity(0.8))
+                                
+                                ForEach(
+                                    workouts,
+                                    id: \.self
+                                ) { workout in
+
                                     PlannedWorkoutDetailLink(
                                         workout: workout,
-                                        category: categoryForWorkout(workout)
+                                        category:
+                                            categoryForWorkout(
+                                                workout
+                                            )
                                     )
                                 }
                             }
                         }
+                        .padding(24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(.white.opacity(0.12))
+                                .background(.ultraThinMaterial)
+                        )
+
+                        Spacer(minLength: 40)
                     }
+                    .padding()
                 }
-                .padding(.horizontal)
-                
-                Spacer()
             }
-        }
-        .navigationTitle("Workout Calendar")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Color.blue, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Workout Calendar")
-                    .font(.title).bold()
-                    .foregroundStyle(.white)
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(destination: PlannedWorkoutsView()) {
-                    Image(systemName: "calendar.badge.plus")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+
+                ToolbarItem(placement: .principal) {
+
+                    Text("Workout Calendar")
+                        .font(.largeTitle.bold())
+                        .foregroundStyle(.white)
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+
+                    NavigationLink(
+                        destination: PlannedWorkoutsView()
+                    ) {
+
+                        Image(
+                            systemName: "calendar.badge.plus"
+                        )
+                        .foregroundStyle(.white)
+                    }
                 }
             }
         }
     }
-     
-     private func categoryForWorkout(_ workout: String) -> WorkoutCategory {
-         for category in WorkoutCategory.allCases {
-             if category.workouts.contains(workout) {
-                 return category
-             }
-         }
+    
+    private func keyTitle(for day: WorkoutCalendarView.Weekday) -> String {
+        "planned_workouts_title_\(day.rawValue)"
+    }
 
-         return .bodyweight
-     }
-     
-     private func keyCount(for day: Weekday) -> String { "planned_workouts_count_\(day.rawValue)" }
-     private func keyItems(for day: Weekday) -> String { "planned_workouts_items_\(day.rawValue)" }
-     private func keyItemCategories(for day: Weekday) -> String { "planned_workouts_categories_\(day.rawValue)" }
-     
-     private func weekday(from date: Date) -> Weekday {
-         let weekdayNumber = calendar.component(.weekday, from: date)
+    // MARK: - Capsule
+    func statCapsule(text: String) -> some View {
 
-         switch weekdayNumber {
-         case 1: return .sun
-         case 2: return .mon
-         case 3: return .tue
-         case 4: return .wed
-         case 5: return .thu
-         case 6: return .fri
-         default: return .sat
-         }
-     }
-     
-     private struct PlannedWorkoutDetailLink: View {
-         let workout: String
-         let category: WorkoutCategory
-         
-         var body: some View {
-             NavigationLink {
-                 ImportView.CategoryDetailView(
-                     category: category,
-                     unitSystemRaw: .constant(UnitSystem.metric.rawValue),
-                     selections: .constant([category: workout]),
-                     weights: .constant([:]),
-                     reps: .constant([:]),
-                     sets: .constant([:]),
-                     distances: .constant([:]),
-                     times: .constant([:]),
-                     entries: .constant([]),
-                     notes: .constant([:]),
-                     save: {},
-                     increment: { _, _ in },
-                     decrement: { _, _ in },
-                     weightUnitProvider: { "lbs" },
-                     goHomeAfterSave: false,
-                     showSavedToast: .constant(false),
-                     resetParent: {}
-                 )
-             } label: {
-                 Text(workout)
-                     .font(.title3.bold())
-             }
-         }
-     }
+        Text(text)
+            .font(.caption.bold())
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.white.opacity(0.15))
+            .clipShape(Capsule())
+            .foregroundStyle(.white)
+    }
+
+    // MARK: - Control Button
+    func controlButton(
+        icon: String,
+        color: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+
+        Button(action: action) {
+
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 52, height: 52)
+                .background(color.gradient)
+                .clipShape(Circle())
+                .shadow(radius: 8)
+        }
+    }
+
+    private func categoryForWorkout(
+        _ workout: String
+    ) -> WorkoutCategory {
+
+        for category in WorkoutCategory.allCases {
+
+            if category.workouts.contains(workout) {
+                return category
+            }
+        }
+
+        return .bodyweight
+    }
+
+    private func keyCount(for day: Weekday) -> String {
+        "planned_workouts_count_\(day.rawValue)"
+    }
+
+    private func keyItems(for day: Weekday) -> String {
+        "planned_workouts_items_\(day.rawValue)"
+    }
+
+    private func keyItemCategories(for day: Weekday) -> String {
+        "planned_workouts_categories_\(day.rawValue)"
+    }
+
+    private func weekday(from date: Date) -> Weekday {
+
+        let weekdayNumber =
+        calendar.component(.weekday, from: date)
+
+        switch weekdayNumber {
+        case 1: return .sun
+        case 2: return .mon
+        case 3: return .tue
+        case 4: return .wed
+        case 5: return .thu
+        case 6: return .fri
+        default: return .sat
+        }
+    }
+
+    private struct PlannedWorkoutDetailLink: View {
+
+        let workout: String
+        let category: WorkoutCategory
+
+        var body: some View {
+
+            NavigationLink {
+
+                ImportView.CategoryDetailView(
+                    category: category,
+                    unitSystemRaw: .constant(
+                        UnitSystem.metric.rawValue
+                    ),
+                    selections: .constant(
+                        [category: workout]
+                    ),
+                    weights: .constant([:]),
+                    reps: .constant([:]),
+                    sets: .constant([:]),
+                    distances: .constant([:]),
+                    times: .constant([:]),
+                    entries: .constant([]),
+                    notes: .constant([:]),
+                    save: {},
+                    increment: { _, _ in },
+                    decrement: { _, _ in },
+                    weightUnitProvider: { "lbs" },
+                    goHomeAfterSave: false,
+                    showSavedToast: .constant(false),
+                    resetParent: {}
+                )
+
+            } label: {
+
+                HStack {
+
+                    Image(systemName: "dumbbell.fill")
+
+                    Text(workout)
+                        .font(.headline.bold())
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption.bold())
+                }
+                .foregroundStyle(.white)
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(.white.opacity(0.08))
+                )
+            }
+        }
+    }
 }
 
 #Preview {
+
     let sampleEntries = [
         WorkoutEntry(
             workoutType: "Bench Press",
@@ -291,7 +689,11 @@ import SwiftUI
             weight: "225",
             reps: "5",
             sets: "5",
-            date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!,
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: Date()
+            )!,
             note: "Felt good, nice form"
         ),
         WorkoutEntry(
@@ -307,12 +709,17 @@ import SwiftUI
             weight: "190",
             reps: "",
             sets: "",
-            date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!,
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: Date()
+            )!,
             note: ""
         )
     ]
 
-    NavigationView {
+    NavigationStack {
         WorkoutCalendarView(entries: sampleEntries)
+            .environmentObject(WorkoutData())
     }
 }

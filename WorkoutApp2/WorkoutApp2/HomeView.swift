@@ -12,6 +12,11 @@ struct HomeView: View {
     @EnvironmentObject var Hmanager: HealthManager
     @EnvironmentObject var workoutData: WorkoutData
     
+    
+    @Environment(\.colorScheme) private var colorScheme
+    private var weightCardColor: Color { colorScheme == .dark ? .white : .black }
+    private var weightCardSecondary: Color { colorScheme == .dark ? Color.white.opacity(0.7) : Color.black.opacity(0.6) }
+    
     @AppStorage("userName") private var name: String = ""
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @AppStorage("userWeight") private var weight: String = ""
@@ -90,24 +95,24 @@ struct HomeView: View {
                                     Text("Weight")
                                         .font(.title2.bold())
                                         .frame(maxWidth: .infinity, alignment: .center)
-                                        .foregroundStyle(.black)
+                                        .foregroundStyle(weightCardColor)
                                     // Current weight prominent
                                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                                         Text(weight.isEmpty ? "—" : weight)
                                             .font(.system(size: 34, weight: .bold))
-                                            .foregroundStyle(.black)
+                                            .foregroundStyle(weightCardColor)
                                         Text(weightUnit)
                                             .font(.headline)
-                                            .foregroundStyle(.black)
+                                            .foregroundStyle(weightCardColor)
                                     }
                                     
                                     // Target
                                     HStack(spacing: 6) {
                                         Image(systemName: "target")
-                                            .foregroundStyle(.black)
+                                            .foregroundStyle(weightCardColor)
                                         Text("Target: \(targetWeight.isEmpty ? "—" : targetWeight) \(weightUnit)")
                                             .font(.subheadline)
-                                            .foregroundStyle(.black)
+                                            .foregroundStyle(weightCardColor)
                                     }
                                     
                                     // Progress percentage from original weight
@@ -122,7 +127,7 @@ struct HomeView: View {
                                     } else {
                                         Text("Set target weight to see progress")
                                             .font(.footnote)
-                                            .foregroundStyle(.black)
+                                            .foregroundStyle(weightCardSecondary)
                                     }
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -551,7 +556,7 @@ struct HomeView: View {
     // Then your function works perfectly:
     private var progressColor: Color? {
         guard let positive = progressMovedDirectionPositive else { return nil }
-        return positive ? .darkGreen : .red
+        return positive ? Color("AdaptiveGreen") : .red
     }
 }
 struct FiveDayStepsBarChartWithValues: View {

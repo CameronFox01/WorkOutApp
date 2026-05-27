@@ -12,12 +12,12 @@ struct PlannedWorkoutsView: View {
 
     // MARK: - Environment
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
 
     // MARK: - Toolbar Button Sizes
     @State private var buttonHeight: CGFloat = 10
     @State private var buttonWidth: CGFloat = 10
     @State private var buttonTextSize: CGFloat = 18
+    @State private var dayTitle: String = ""
 
     // MARK: - Weekdays
     enum Weekday: String, CaseIterable, Identifiable {
@@ -50,41 +50,27 @@ struct PlannedWorkoutsView: View {
     @State private var plannedItems: [String] = []
     @State private var plannedItemCategories: [WorkoutCategory] = []
 
-    // MARK: - Dynamic Colors
-
-    private var bgColor: Color {
-        colorScheme == .dark
-        ? Color.black
-        : Color("#F3F4F6")
-    }
-
-    private var cardColor: Color {
-        colorScheme == .dark
-        ? Color(.systemGray6)
-        : .white
-    }
-
-    private var secondaryCardColor: Color {
-        colorScheme == .dark
-        ? Color(.systemGray5)
-        : Color(.systemGray6)
-    }
-
-    private var textColor: Color {
-        colorScheme == .dark ? .white : .primary
-    }
-
     // MARK: - Body
 
     var body: some View {
         NavigationView {
             ZStack {
-                bgColor
-                    .ignoresSafeArea()
+
+                // Same gradient as TimeViewBig
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.9),
+                        Color.black
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 25) {
+                    VStack(spacing: 24) {
                         daySelector
+                        titleCard
                         plannedCountCard
                         plannedItemsCard
                     }
@@ -99,28 +85,20 @@ struct PlannedWorkoutsView: View {
             }
             .toolbarBackground(Color.blue, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-
             .toolbar {
-
-                // CENTER
                 ToolbarItem(placement: .principal) {
                     Text("Schedule")
                         .font(.title.bold())
                         .foregroundStyle(.white)
                 }
-
-                // RIGHT
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         saveForDay(selectedDay)
                     } label: {
                         Text("Save")
                             .fontWeight(.semibold)
-                            .font(.system(size: buttonTextSize))
-                            .padding(.horizontal, buttonWidth)
-                            .padding(.vertical, buttonHeight)
+                            .foregroundStyle(.white)
                     }
-                    .foregroundStyle(.white)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -133,7 +111,7 @@ struct PlannedWorkoutsView: View {
     // MARK: - Day Selector
 
     private var daySelector: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             ForEach(Weekday.allCases) { day in
                 Button(action: {
                     saveForDay(selectedDay)
@@ -141,14 +119,14 @@ struct PlannedWorkoutsView: View {
                     loadForDay(day)
                 }) {
                     Text(day.display)
-                        .font(.system(size: 20).bold())
-                        .foregroundColor(selectedDay == day ? .white : textColor)
+                        .font(.system(size: 13).bold())
+                        .foregroundStyle(selectedDay == day ? .white : .white.opacity(0.6))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(
                             selectedDay == day
-                            ? Color.accentColor
-                            : secondaryCardColor
+                                ? Color.blue
+                                : Color.white.opacity(0.12)
                         )
                         .clipShape(Capsule())
                 }
@@ -157,159 +135,144 @@ struct PlannedWorkoutsView: View {
         }
     }
 
+    // MARK: - Title Card
+
+    private var titleCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+
+            Label("Schedule Title", systemImage: "tag.fill")
+                .font(.headline.bold())
+                .foregroundStyle(.white)
+
+            TextField("e.g. Leg Day", text: $dayTitle)
+                .padding(12)
+                .background(.white.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .foregroundStyle(.white)
+                .font(.headline)
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 28)
+                .fill(.white.opacity(0.10))
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 28))
+        )
+    }
+
     // MARK: - Planned Count Card
 
     private var plannedCountCard: some View {
         VStack(alignment: .leading, spacing: 12) {
 
-            Text("Workouts Planned")
+            Label("Number of Workouts Planned", systemImage: "calendar.badge.plus")
                 .font(.headline.bold())
-                .foregroundStyle(textColor)
+                .foregroundStyle(.white)
 
-            HStack(spacing: 12) {
-
-                Image(systemName: "calendar.badge.plus")
-                    .foregroundStyle(.tint)
-
-                Text("Number of workouts")
-                    .font(.subheadline)
-                    .foregroundStyle(textColor)
-
+            HStack {
                 Spacer()
-
-                pillField(
-                    text: $plannedCount,
-                    placeholder: "3",
-                    focus: $isEditing
-                )
-            }
+                TextField("3", text: $plannedCount)
+                    .keyboardType(.numberPad)
+                    .focused($isEditing)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 60)
+                    .padding(.vertical, 8)
+                    .background(.white.opacity(0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .foregroundStyle(.white)
+                    .font(.headline.bold())
+                Spacer()
+           }
         }
-        .padding(16)
+        .padding(20)
         .background(
-            cardColor,
-            in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-        )
-        .shadow(
-            color: colorScheme == .dark
-            ? .clear
-            : .black.opacity(0.05),
-            radius: 8,
-            x: 0,
-            y: 4
+            RoundedRectangle(cornerRadius: 28)
+                .fill(.white.opacity(0.10))
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 28))
         )
     }
 
     // MARK: - Planned Workouts Card
 
     private var plannedItemsCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
 
-        VStack(alignment: .leading, spacing: 14) {
-
-            Text("Specific Workouts")
+            Label("Specific Workouts", systemImage: "list.bullet.clipboard.fill")
                 .font(.headline.bold())
-                .foregroundStyle(textColor)
+                .foregroundStyle(.white)
 
             ForEach(plannedItems.indices, id: \.self) { idx in
-
-                HStack(spacing: 12) {
-
-                    Image(systemName: "list.bullet")
-                        .foregroundStyle(.secondary)
+                HStack(spacing: 10) {
 
                     // CATEGORY MENU
                     Menu {
                         ForEach(WorkoutCategory.allCases) { cat in
                             Button(cat.title) {
-
                                 if idx < plannedItemCategories.count {
                                     plannedItemCategories[idx] = cat
                                 } else {
-
                                     while plannedItemCategories.count < plannedItems.count {
                                         plannedItemCategories.append(.bodyweight)
                                     }
-
                                     plannedItemCategories[idx] = cat
                                 }
-
                                 plannedItems[idx] = ""
                             }
                         }
                     } label: {
-
-                        HStack {
-
-                            let cat = (
-                                idx < plannedItemCategories.count
+                        HStack(spacing: 4) {
+                            let cat = idx < plannedItemCategories.count
                                 ? plannedItemCategories[idx]
                                 : .bodyweight
-                            )
-
                             Text(cat.title)
-                                .foregroundStyle(textColor)
-
+                                .foregroundStyle(.white)
+                                .font(.subheadline)
                             Image(systemName: "chevron.down")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.white.opacity(0.6))
+                                .font(.caption)
                         }
-                        .padding(12)
-                        .background(
-                            secondaryCardColor,
-                            in: RoundedRectangle(cornerRadius: 12)
-                        )
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(.white.opacity(0.15))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
 
                     // WORKOUT MENU
                     Menu {
-
-                        let cat = (
-                            idx < plannedItemCategories.count
+                        let cat = idx < plannedItemCategories.count
                             ? plannedItemCategories[idx]
                             : .bodyweight
-                        )
-
                         ForEach(cat.workouts, id: \.self) { name in
-                            Button(name) {
-                                plannedItems[idx] = name
-                            }
+                            Button(name) { plannedItems[idx] = name }
                         }
-
                     } label: {
-
-                        HStack {
-
-                            Text(
-                                plannedItems[idx].isEmpty
-                                ? "Select workout"
-                                : plannedItems[idx]
-                            )
-                            .foregroundStyle(
-                                plannedItems[idx].isEmpty
-                                ? .secondary
-                                : textColor
-                            )
-
+                        HStack(spacing: 4) {
+                            Text(plannedItems[idx].isEmpty ? "Select" : plannedItems[idx])
+                                .foregroundStyle(plannedItems[idx].isEmpty ? .white.opacity(0.45) : .white)
+                                .font(.subheadline)
+                                .lineLimit(1)
                             Image(systemName: "chevron.down")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.white.opacity(0.6))
+                                .font(.caption)
                         }
-                        .padding(12)
-                        .background(
-                            secondaryCardColor,
-                            in: RoundedRectangle(cornerRadius: 12)
-                        )
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(.white.opacity(0.15))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
 
-                    // DELETE BUTTON
+                    Spacer()
+
+                    // DELETE
                     Button {
-
                         plannedItems.remove(at: idx)
-
                         if idx < plannedItemCategories.count {
                             plannedItemCategories.remove(at: idx)
                         }
-
                     } label: {
                         Image(systemName: "trash")
-                            .foregroundColor(.red)
+                            .foregroundStyle(.red.opacity(0.85))
                     }
                     .buttonStyle(.plain)
                 }
@@ -317,113 +280,65 @@ struct PlannedWorkoutsView: View {
 
             // ADD BUTTON
             Button {
-
                 plannedItems.append("")
                 plannedItemCategories.append(.bodyweight)
-
             } label: {
-
                 Label("Add Workout", systemImage: "plus.circle.fill")
                     .font(.subheadline.bold())
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(.white.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .buttonStyle(.plain)
-            .padding(.top, 6)
+            .padding(.top, 4)
         }
-        .padding(16)
+        .padding(20)
         .background(
-            cardColor,
-            in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-        )
-        .shadow(
-            color: colorScheme == .dark
-            ? .clear
-            : .black.opacity(0.05),
-            radius: 8,
-            x: 0,
-            y: 4
+            RoundedRectangle(cornerRadius: 28)
+                .fill(.white.opacity(0.10))
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 28))
         )
     }
 
     // MARK: - Persistence
 
-    private func keyCount(for day: Weekday) -> String {
-        "planned_workouts_count_\(day.rawValue)"
-    }
-
-    private func keyItems(for day: Weekday) -> String {
-        "planned_workouts_items_\(day.rawValue)"
-    }
-
-    private func keyItemCategories(for day: Weekday) -> String {
-        "planned_workouts_categories_\(day.rawValue)"
-    }
+    private func keyCount(for day: Weekday) -> String { "planned_workouts_count_\(day.rawValue)" }
+    private func keyItems(for day: Weekday) -> String { "planned_workouts_items_\(day.rawValue)" }
+    private func keyItemCategories(for day: Weekday) -> String { "planned_workouts_categories_\(day.rawValue)" }
+    private func keyTitle(for day: Weekday) -> String { "planned_workouts_title_\(day.rawValue)" }
 
     private func saveForDay(_ day: Weekday) {
-
-        UserDefaults.standard.set(
-            plannedCount,
-            forKey: keyCount(for: day)
-        )
-
-        UserDefaults.standard.set(
-            plannedItems,
-            forKey: keyItems(for: day)
-        )
-
-        let catRaw = plannedItemCategories.map { $0.rawValue }
-
-        UserDefaults.standard.set(
-            catRaw,
-            forKey: keyItemCategories(for: day)
-        )
+        UserDefaults.standard.set(plannedCount, forKey: keyCount(for: day))
+        UserDefaults.standard.set(plannedItems, forKey: keyItems(for: day))
+        UserDefaults.standard.set(plannedItemCategories.map { $0.rawValue }, forKey: keyItemCategories(for: day))
+        UserDefaults.standard.set(dayTitle, forKey: keyTitle(for: day))
     }
 
     private func loadForDay(_ day: Weekday) {
+        plannedCount = UserDefaults.standard.string(forKey: keyCount(for: day)) ?? ""
 
-        plannedCount =
-        UserDefaults.standard.string(
-            forKey: keyCount(for: day)
-        ) ?? ""
-
-        if let arr = UserDefaults.standard.array(
-            forKey: keyItems(for: day)
-        ) as? [String] {
-
+        if let arr = UserDefaults.standard.array(forKey: keyItems(for: day)) as? [String] {
             plannedItems = arr
-
         } else {
-
             plannedItems = []
         }
 
-        if let catArr = UserDefaults.standard.array(
-            forKey: keyItemCategories(for: day)
-        ) as? [String] {
-
-            plannedItemCategories =
-            catArr.compactMap {
-                WorkoutCategory(rawValue: $0)
-            }
-
+        if let catArr = UserDefaults.standard.array(forKey: keyItemCategories(for: day)) as? [String] {
+            plannedItemCategories = catArr.compactMap { WorkoutCategory(rawValue: $0) }
         } else {
-
-            plannedItemCategories =
-            Array(repeating: .bodyweight, count: plannedItems.count)
+            plannedItemCategories = Array(repeating: .bodyweight, count: plannedItems.count)
         }
 
         if plannedItemCategories.count < plannedItems.count {
-
-            plannedItemCategories +=
-            Array(
-                repeating: .bodyweight,
-                count: plannedItems.count - plannedItemCategories.count
-            )
-
+            plannedItemCategories += Array(repeating: .bodyweight, count: plannedItems.count - plannedItemCategories.count)
         } else if plannedItemCategories.count > plannedItems.count {
-
-            plannedItemCategories =
-            Array(plannedItemCategories.prefix(plannedItems.count))
+            plannedItemCategories = Array(plannedItemCategories.prefix(plannedItems.count))
         }
+
+        dayTitle = UserDefaults.standard.string(forKey: keyTitle(for: day)) ?? ""
     }
 }
 
