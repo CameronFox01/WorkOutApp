@@ -15,6 +15,7 @@ struct ViewPhotosInApp: View {
     @State private var savedPhotoURLs: [URL] = []
     @State private var selectedImage: UIImage?
     @State private var showSaveOptions = false
+    @State private var selectedURL: URL?
 
     var body: some View {
         NavigationView {
@@ -35,6 +36,7 @@ struct ViewPhotosInApp: View {
                             Button {
                                 selectedImage = uiImage
                                 showSaveOptions = true
+                                selectedURL = url
                             } label: {
                                 Image(uiImage: uiImage)
                                     .resizable()
@@ -74,9 +76,26 @@ struct ViewPhotosInApp: View {
                         UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
                     }
                 }
+                Button("Delete Photo"){
+                    if let url = selectedURL {
+                            deletePhoto(url)
+                        }
+                }
 
                 Button("Cancel", role: .cancel) { }
             }
+        }
+    }
+    
+    private func deletePhoto(_ url: URL) {
+        do {
+            try FileManager.default.removeItem(at: url)
+
+            // update UI after delete
+            savedPhotoURLs.removeAll { $0 == url }
+
+        } catch {
+            print("Failed to delete photo: \(error)")
         }
     }
 
@@ -92,7 +111,12 @@ struct ViewPhotosInApp: View {
 
             savedPhotoURLs = files
                 .filter { $0.pathExtension.lowercased() == "jpg" }
-                .sorted { $0.lastPathComponent > $1.lastPathComponent }
+                .sorted { first, second in
+                    let firstDate = try? first.resourceValues(forKeys: [.creationDateKey]).creationDate
+                    let secondDate = try? second.resourceValues(forKeys: [.creationDateKey]).creationDate
+
+                    return (firstDate ?? .distantPast) > (secondDate ?? .distantPast)
+                }
 
         } catch {
             print("Failed to load photos: \(error)")

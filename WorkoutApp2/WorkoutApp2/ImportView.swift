@@ -507,10 +507,17 @@ struct ImportView: View {
                 }
 
                 if category == .distanceCardio {
+
                     statRow("ruler", "Distance", distanceBinding) {
                         increment(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
                     } dec: {
                         decrement(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
+                    }
+
+                    statRow("timer", "Time (min)", timeBinding) {
+                        increment(&times, 1)
+                    } dec: {
+                        decrement(&times, 1)
                     }
                 }
 
@@ -638,25 +645,15 @@ struct ImportView: View {
         }
         
         if category == .distanceCardio {
-            guard let distance = distances[category], !distance.isEmpty else {
-                feedbackError()
-                print("⛔️ Missing values for distance")
-                return
-            }
-            guard let time = times[category], !time.isEmpty else {
-                feedbackError()
-                print("⛔️ Missing values for time")
-                return
-            }
+            let distance = distances[category] ?? "0"
+            let time = times[category] ?? "0"
         }
 
         let rep = reps[category] ?? ""
-        if category != .distanceCardio {
-            guard !rep.isEmpty else {
-                feedbackError()
-                print("⛔️ Missing values for rep")
-                return
-            }
+        if category != .distanceCardio && rep.isEmpty {
+            feedbackError()
+            print("⛔️ Missing rep")
+            return
         }
 
         guard let workout = selections[category], !workout.isEmpty else {

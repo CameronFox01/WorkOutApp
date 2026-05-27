@@ -58,19 +58,26 @@ struct SavedPhotosView: View {
     }
 
     private func loadSavedPhotos() {
-
         do {
 
             let directory = try documentsDirectory()
 
             let files = try FileManager.default.contentsOfDirectory(
                 at: directory,
-                includingPropertiesForKeys: nil
+                includingPropertiesForKeys: [.creationDateKey]
             )
 
-            savedPhotoURLs = files.filter {
-                $0.pathExtension.lowercased() == "jpg"
-            }
+            savedPhotoURLs = files
+                .filter {
+                    $0.pathExtension.lowercased() == "jpg"
+                }
+                .sorted { first, second in
+
+                    let firstDate = try? first.resourceValues(forKeys: [.creationDateKey]).creationDate
+                    let secondDate = try? second.resourceValues(forKeys: [.creationDateKey]).creationDate
+
+                    return (firstDate ?? .distantPast) > (secondDate ?? .distantPast)
+                }
 
         } catch {
             print("Failed to load photos: \(error)")
