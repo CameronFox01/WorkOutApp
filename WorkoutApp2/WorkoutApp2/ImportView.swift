@@ -14,6 +14,7 @@ struct WorkoutEntry: Identifiable, Codable {
     var reps: String
     var sets: String
     var date: Date
+    var note: String
 }
 // Enums for each workout type
 enum WorkoutCategory: String, CaseIterable, Identifiable {
@@ -128,6 +129,8 @@ struct ImportView: View {
     @State private var distances: [WorkoutCategory: String] = [:]
     @State private var times: [WorkoutCategory: String] = [:]
     
+    @State private var notes: [WorkoutCategory: String] = [:]
+    
     // Weight Stuff
     @AppStorage("userWeight") private var currentWeight: String = ""
 
@@ -179,6 +182,7 @@ struct ImportView: View {
                                 distances: $distances,
                                 times: $times,
                                 entries: $entries,
+                                notes: $notes,
                                 save: { saveEntry(for: category) },
                                 increment: { dict, step in self.increment(&dict, for: category, by: step) },
                                 decrement: { dict, step in self.decrement(&dict, for: category, by: step) },
@@ -198,7 +202,7 @@ struct ImportView: View {
                                     }
                                 }
                             }
-                            //.listRowBackground(Color.white.opacity(0.63))
+                            //.listRowBackground(Color.white.opacity(0.80))
                         }
                     }
                     // Seeing all workouts that have been entered
@@ -275,6 +279,7 @@ struct ImportView: View {
         @Binding var distances: [WorkoutCategory: String]
         @Binding var times: [WorkoutCategory: String]
         @Binding var entries: [WorkoutEntry]
+        @Binding var notes: [WorkoutCategory: String]
         @Environment(\.dismiss) private var dismiss
 
         let save: () -> Void
@@ -302,6 +307,13 @@ struct ImportView: View {
             .onAppear() {
                 resetParent()
             }
+        }
+        
+        private var noteBinding: Binding<String> {
+            Binding(
+                get: { notes[category] ?? "" },
+                set: { notes[category] = $0 }
+            )
         }
 
         private var weightUnit: String { weightUnitProvider() }
@@ -463,6 +475,16 @@ struct ImportView: View {
                     .padding(12)
                     .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
+                
+                HStack(spacing: 12) {
+                    Image(systemName: "note.text")
+                        .foregroundStyle(.secondary)
+                    
+                    // Using a TextField for a single line, or TextEditor for multi-line
+                    TextField("Add a note...", text: noteBinding)
+                }
+                .padding(12)
+                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                 Button {
                     save()
@@ -568,7 +590,8 @@ struct ImportView: View {
             weight: weightString,
             reps: rep,
             sets: setsVal,
-            date: Date()
+            date: Date(),
+            note: notes[category] ?? ""
         )
         workoutData.add(entry: newEntry)
 

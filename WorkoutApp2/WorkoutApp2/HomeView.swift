@@ -62,15 +62,15 @@ struct HomeView: View {
         NavigationView {
             ZStack{
                 LinearGradient(
-                           colors: [
-                                Color.blue.opacity(1.0),
-                                Color.cyan.opacity(0.6),
-                                Color(.systemBackground)
-                           ],
-                           startPoint: .top,
-                           endPoint: .bottom
-                       )
-                       .ignoresSafeArea()
+                    colors: [
+                        Color.blue.opacity(1.0),
+                        Color.cyan.opacity(0.6),
+                        Color(.systemBackground)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
                 ScrollView {
                     Spacer()
                     VStack(alignment: .leading, spacing: 24) {
@@ -137,7 +137,7 @@ struct HomeView: View {
                                         Text("Calories Today")
                                             .font(.title2.bold())
                                             .frame(maxWidth: .infinity, alignment: .center)
-
+                                        
                                         
                                         Text("\(Int(Hmanager.activeCalories)) kcal")
                                             .font(.title2).bold()
@@ -184,14 +184,13 @@ struct HomeView: View {
                             ],
                             spacing: 16
                         ) {
-                            
                             NavigationLink(destination: DistanceDetailView(unitSystem: unitSystem)
                                 .environmentObject(Hmanager)) {
                                     VStack(alignment: .center, spacing: 8) {
                                         Text("Steps Today")
                                             .font(.title2.bold())
                                             .frame(maxWidth: .infinity, alignment: .center)
-
+                                        
                                         
                                         Text("\(Hmanager.steps)")
                                             .font(.title2)
@@ -227,7 +226,7 @@ struct HomeView: View {
                                     Text("Calendar")
                                         .font(.title2.bold())
                                         .frame(maxWidth: .infinity, alignment: .center)
-
+                                    
                                     WorkoutHeatMapView(entries: workoutData.entries)
                                         .frame(height: 80)
                                 }
@@ -240,23 +239,24 @@ struct HomeView: View {
                             .cardStyle()
                         }
                         .padding(.horizontal)
+                        
                         //Divider().padding(.vertical)
                         
                         //Section for Pasted Worked Outs
                         HStack {
-
+                            
                             VStack(alignment: .leading, spacing: 4) {
-
+                                
                                 Text("Recent Workouts")
                                     .font(.system(size: 30, weight: .bold))
-
+                                
                                 Text("Your latest progress")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
-
+                            
                             Spacer()
-
+                            
                             Image(systemName: "flame.fill")
                                 .font(.title2)
                                 .foregroundStyle(.orange)
@@ -277,122 +277,42 @@ struct HomeView: View {
                                         entries: workoutData.entries
                                     )
                                 ) {
-                                    VStack(alignment: .leading, spacing: 14) {
-
-                                        // TOP
-                                        HStack {
-
-                                            VStack(alignment: .leading, spacing: 4) {
-
-                                                Text(entry.workoutType)
-                                                    .font(.headline.bold())
-                                                    .foregroundStyle(.white)
-
-                                                Text(
-                                                    entry.date.formatted(
-                                                        date: .abbreviated,
-                                                        time: .omitted
-                                                    )
-                                                )
-                                                .font(.caption)
-                                                .foregroundStyle(.white.opacity(0.75))
-                                            }
-
-                                            Spacer()
-
-                                            ZStack {
-
-                                                Circle()
-                                                    .fill(.white.opacity(0.15))
-                                                    .frame(width: 42, height: 42)
-
-                                                Image(systemName: "dumbbell.fill")
-                                                    .foregroundStyle(.white)
-                                            }
-                                        }
-
-                                        Spacer()
-
-                                        // BOTTOM STATS
-                                        VStack(alignment: .leading, spacing: 6) {
-
-                                            Label(
-                                                "\(entry.reps) reps",
-                                                systemImage: "figure.strengthtraining.traditional"
-                                            )
-
-                                            Label(
-                                                "\(entry.weight) \(weightUnit)",
-                                                systemImage: "scalemass.fill"
-                                            )
-                                        }
-                                        .font(.subheadline.weight(.medium))
-                                        .foregroundStyle(.white.opacity(0.92))
-                                    }
-                                    .padding(18)
-                                    .frame(
-                                        maxWidth: .infinity,
-                                        minHeight: 165,
-                                        alignment: .topLeading
-                                    )
-                                    .background(
-                                        LinearGradient(
-                                            colors: [
-                                                Color.blue.opacity(0.95),
-                                                Color.cyan.opacity(0.5)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .clipShape(
-                                        RoundedRectangle(
-                                            cornerRadius: 28,
-                                            style: .continuous
-                                        )
-                                    )
-                                    .shadow(
-                                        color: .blue.opacity(0.22),
-                                        radius: 10,
-                                        x: 0,
-                                        y: 6
-                                    )
-                                    
+                                    WorkoutTypeCardView(entry: entry, weightUnit: weightUnit)
                                 }
                                 .buttonStyle(.plain)
                             }
                         }
-                        .padding(.horizontal)
-                        
-                        // Seeing all workouts that have been entered
-                        Spacer().frame(height: 50)
-                        
-                        NavigationLink {
-
-                            AllImportedWorkoutsView()
-
-                        } label: {
-
-                            HStack(spacing: 12) {
-
-                                Image(systemName: "list.bullet")
-
-                                Text("See all imported workouts")
-                                    .fontWeight(.semibold)
-
-                                Spacer()
-
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 22)
-                                    .fill(.ultraThinMaterial)
-                            )
-                        }
-                        .padding(.horizontal)
                     }
+                    .padding(.horizontal)
+                    
+                    // Seeing all workouts that have been entered
+                    Spacer().frame(height: 50)
+                    
+                    NavigationLink {
+                        
+                        AllImportedWorkoutsView()
+                        
+                    } label: {
+                        
+                        HStack(spacing: 12) {
+                            
+                            Image(systemName: "list.bullet")
+                            
+                            Text("See all imported workouts")
+                                .fontWeight(.semibold)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 22)
+                                .fill(.ultraThinMaterial)
+                        )
+                    }
+                    .padding(.horizontal)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -455,7 +375,8 @@ struct HomeView: View {
                             weight: valueString,
                             reps: "",
                             sets: "",
-                            date: Date()
+                            date: Date(),
+                            note: ""
                         )
                         workoutData.add(entry: entry)
                     },
@@ -467,7 +388,7 @@ struct HomeView: View {
                 Hmanager.fetchDistance()
                 Hmanager.fetchLastFiveDaysSteps()
                 Hmanager.fetchActiveCalories()
-
+                
                 // Seed initial Body Weight entry if none exists, using the first time account info was saved
                 let hasBodyWeight = workoutData.entries.contains { $0.workoutType == "Body Weight" }
                 if !hasBodyWeight, let w = Double(weight), !weight.isEmpty {
@@ -480,7 +401,8 @@ struct HomeView: View {
                         weight: String(w),
                         reps: "",
                         sets: "",
-                        date: accountFirstSaved
+                        date: accountFirstSaved,
+                        note: ""
                     )
                     workoutData.add(entry: seed)
                 }
@@ -491,49 +413,49 @@ struct HomeView: View {
             }
         }
     }
-
+    
     var groupedWorkouts: [WorkoutEntry] {
         uniqueWorkoutEntries(from: workoutData.entries.sorted(by: { $0.date > $1.date }))
     }
-
+    
     // MARK: - Computed properties
-
+    
     var unitSystem: UnitSystem {
         UnitSystem(rawValue: unitSystemRaw) ?? .metric
     }
-
+    
     var heightUnit: String {
         unitSystem == .metric ? "cm" : "in"
     }
-
+    
     var weightUnit: String {
         unitSystem == .metric ? "kg" : "lbs"
     }
     
     var weightDifference: Double? {
-            guard let current = Double(weight),
-                  let target = Double(targetWeight) else {
-                return nil
-            }
-            return abs(target - current)
+        guard let current = Double(weight),
+              let target = Double(targetWeight) else {
+            return nil
         }
+        return abs(target - current)
+    }
     
     func uniqueWorkoutEntries(from all: [WorkoutEntry]) -> [WorkoutEntry] {
-            var seen = Set<String>()
-            var unique: [WorkoutEntry] = []
-
-            for entry in all {
-                if !seen.contains(entry.workoutType) {
-                    seen.insert(entry.workoutType)
-                    unique.append(entry)
-                }
+        var seen = Set<String>()
+        var unique: [WorkoutEntry] = []
+        
+        for entry in all {
+            if !seen.contains(entry.workoutType) {
+                seen.insert(entry.workoutType)
+                unique.append(entry)
             }
-            return unique
         }
+        return unique
+    }
     
     func firstEntryPerWorkoutType(from entries: [WorkoutEntry]) -> [WorkoutEntry] {
         var seen = Set<String>()
-
+        
         return entries.filter { entry in
             if seen.contains(entry.workoutType) {
                 return false
@@ -546,17 +468,17 @@ struct HomeView: View {
     
     func lastEntryPerWorkoutType(from entries: [WorkoutEntry]) -> [WorkoutEntry] {
         let sortedEntries = entries.sorted { $0.date > $1.date }
-
-           var seen = Set<String>()
-           var result: [WorkoutEntry] = []
-
-           for entry in sortedEntries {
-               if !seen.contains(entry.workoutType) {
-                   seen.insert(entry.workoutType)
-                   result.append(entry)
-               }
-           }
-
+        
+        var seen = Set<String>()
+        var result: [WorkoutEntry] = []
+        
+        for entry in sortedEntries {
+            if !seen.contains(entry.workoutType) {
+                seen.insert(entry.workoutType)
+                result.append(entry)
+            }
+        }
+        
         return Array(result.prefix(numberOfWorkoutsToShow))
     }
     
@@ -581,11 +503,11 @@ struct HomeView: View {
     }
     
     private var estimatedCaloriesToday: Int { Int(Double(Hmanager.steps) * 0.04) }
-
+    
     private var lastFiveDaysCalories: [(date: Date, calories: Int)] {
         lastFiveDaysSteps.map { ($0.date, Int(Double($0.steps) * 0.04)) }
     }
-
+    
     private var fiveDayAverageCalories: Int {
         let total = lastFiveDaysCalories.reduce(0) { $0 + $1.calories }
         return lastFiveDaysCalories.isEmpty ? 0 : total / lastFiveDaysCalories.count
@@ -594,7 +516,7 @@ struct HomeView: View {
     private var currentWeightValue: Double? { Double(weight) }
     private var targetWeightValue: Double? { Double(targetWeight) }
     private var originalWeightValue: Double? { Double(originalWeight) }
-
+    
     // Percentage progress from original toward target. Positive = closer, negative = farther.
     private var progressPercent: Double? {
         guard let orig = originalWeightValue,
@@ -610,7 +532,7 @@ struct HomeView: View {
         let progressed = total - remaining
         return (progressed / total) * 100.0
     }
-
+    
     private var progressPercentText: String? {
         guard let pct = progressPercent else { return nil }
         // ✅ Use the actual sign from the number itself
@@ -620,21 +542,19 @@ struct HomeView: View {
             return String(format: "Progress: %.0f%%", pct)  // already has minus sign
         }
     }
-
+    
     private var progressMovedDirectionPositive: Bool? {
         guard let pct = progressPercent else { return nil }
         return pct >= 0
     }
-
+    
     // Then your function works perfectly:
     private var progressColor: Color? {
         guard let positive = progressMovedDirectionPositive else { return nil }
         return positive ? .darkGreen : .red
     }
-
 }
-
-public struct FiveDayStepsBarChartWithValues: View {
+struct FiveDayStepsBarChartWithValues: View {
     let data: [(date: Date, steps: Int)]
 
     private var maxSteps: Double {
@@ -766,6 +686,67 @@ struct CardStyle: ViewModifier {
             )
     }
 }
+
+struct WorkoutTypeCardView: View {
+    let entry: WorkoutEntry
+    let weightUnit: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+
+                    Text(entry.workoutType)
+                        .font(.headline.bold())
+                        .foregroundStyle(.white)
+
+                    Text(entry.date.formatted(date: .abbreviated, time: .omitted))
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.75))
+                }
+
+                Spacer()
+
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.15))
+                        .frame(width: 42, height: 42)
+
+                    Image(systemName: "dumbbell.fill")
+                        .foregroundStyle(.white)
+                }
+            }
+
+            Spacer()
+
+            VStack(alignment: .leading, spacing: 6) {
+                Label("\(entry.reps) reps",
+                      systemImage: "figure.strengthtraining.traditional")
+
+                Label("\(entry.weight) \(weightUnit)",
+                      systemImage: "scalemass.fill")
+            }
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(.white.opacity(0.92))
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, minHeight: 165, alignment: .topLeading)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(0.95),
+                    Color.cyan.opacity(0.5)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .shadow(color: .blue.opacity(0.22), radius: 10, x: 0, y: 6)
+    }
+}
+
 
 extension View {
     func cardStyle() -> some View {

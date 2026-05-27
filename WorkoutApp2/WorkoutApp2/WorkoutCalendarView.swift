@@ -177,30 +177,12 @@ import SwiftUI
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(workouts, id: \.self) { workout in
-                                NavigationLink {
-                                    ImportView.CategoryDetailView(
-                                        category: categoryForWorkout(workout),
-                                        unitSystemRaw: .constant(UnitSystem.metric.rawValue),
-                                        selections: .constant([
-                                            categoryForWorkout(workout): workout
-                                        ]),
-                                        weights: .constant([:]),
-                                        reps: .constant([:]),
-                                        sets: .constant([:]),
-                                        distances: .constant([:]),
-                                        times: .constant([:]),
-                                        entries: .constant([]),
-                                        save: {},
-                                        increment: { _, _ in },
-                                        decrement: { _, _ in },
-                                        weightUnitProvider: { "lbs" },
-                                        goHomeAfterSave: false,
-                                        showSavedToast: .constant(false),
-                                        resetParent: {}
+                                // Replace the old NavigationLink block with this:
+                                ForEach(workouts, id: \.self) { workout in
+                                    PlannedWorkoutDetailLink(
+                                        workout: workout,
+                                        category: categoryForWorkout(workout)
                                     )
-                                } label: {
-                                    Text(workout)
-                                        .font(.title3.bold())
                                 }
                             }
                         }
@@ -260,6 +242,38 @@ import SwiftUI
          default: return .sat
          }
      }
+     
+     private struct PlannedWorkoutDetailLink: View {
+         let workout: String
+         let category: WorkoutCategory
+         
+         var body: some View {
+             NavigationLink {
+                 ImportView.CategoryDetailView(
+                     category: category,
+                     unitSystemRaw: .constant(UnitSystem.metric.rawValue),
+                     selections: .constant([category: workout]),
+                     weights: .constant([:]),
+                     reps: .constant([:]),
+                     sets: .constant([:]),
+                     distances: .constant([:]),
+                     times: .constant([:]),
+                     entries: .constant([]),
+                     notes: .constant([:]),
+                     save: {},
+                     increment: { _, _ in },
+                     decrement: { _, _ in },
+                     weightUnitProvider: { "lbs" },
+                     goHomeAfterSave: false,
+                     showSavedToast: .constant(false),
+                     resetParent: {}
+                 )
+             } label: {
+                 Text(workout)
+                     .font(.title3.bold())
+             }
+         }
+     }
 }
 
 #Preview {
@@ -269,28 +283,32 @@ import SwiftUI
             weight: "185",
             reps: "8",
             sets: "3",
-            date: Date()
+            date: Date(),
+            note: "Felt great, nice form"
         ),
         WorkoutEntry(
             workoutType: "Squat",
             weight: "225",
             reps: "5",
             sets: "5",
-            date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+            date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!,
+            note: "Felt good, nice form"
         ),
         WorkoutEntry(
             workoutType: "Body Weight",
             weight: "180",
             reps: "",
             sets: "",
-            date: Date()
+            date: Date(),
+            note: "Felt good, nice form"
         ),
         WorkoutEntry(
             workoutType: "Body Weight",
             weight: "190",
             reps: "",
             sets: "",
-            date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+            date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!,
+            note: ""
         )
     ]
 

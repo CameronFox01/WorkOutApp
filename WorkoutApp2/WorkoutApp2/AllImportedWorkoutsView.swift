@@ -203,7 +203,8 @@ private var sampleWorkoutData: WorkoutData {
             weight: "185",
             reps: "8",
             sets: "4",
-            date: Date()
+            date: Date(),
+            note: ""
         ),
 
         WorkoutEntry(
@@ -211,7 +212,8 @@ private var sampleWorkoutData: WorkoutData {
             weight: "225",
             reps: "5",
             sets: "5",
-            date: Date().addingTimeInterval(-86400)
+            date: Date().addingTimeInterval(-86400),
+            note: "hey"
         ),
 
         WorkoutEntry(
@@ -219,7 +221,8 @@ private var sampleWorkoutData: WorkoutData {
             weight: "3.2",
             reps: "",
             sets: "25",
-            date: Date().addingTimeInterval(-172800)
+            date: Date().addingTimeInterval(-172800),
+            note: ""
         ),
 
         WorkoutEntry(
@@ -227,7 +230,8 @@ private var sampleWorkoutData: WorkoutData {
             weight: "",
             reps: "12",
             sets: "3",
-            date: Date().addingTimeInterval(-250000)
+            date: Date().addingTimeInterval(-250000),
+            note: "running"
         )
     ]
 

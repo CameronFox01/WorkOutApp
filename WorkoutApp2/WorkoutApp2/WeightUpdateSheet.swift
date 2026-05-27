@@ -105,21 +105,24 @@ struct WeightUpdateSheet_Previews: PreviewProvider {
                 weight: "185",
                 reps: "",
                 sets: "",
-                date: Calendar.current.date(byAdding: .day, value: -14, to: Date())!
+                date: Calendar.current.date(byAdding: .day, value: -14, to: Date())!,
+                note: "String"
             ),
             WorkoutEntry(
                 workoutType: "Body Weight",
                 weight: "183",
                 reps: "",
                 sets: "",
-                date: Calendar.current.date(byAdding: .day, value: -7, to: Date())!
+                date: Calendar.current.date(byAdding: .day, value: -7, to: Date())!,
+                note: "String"
             ),
             WorkoutEntry(
                 workoutType: "Body Weight",
                 weight: "180",
                 reps: "",
                 sets: "",
-                date: Date()
+                date: Date(),
+                note: "String"
             )
         ]
 
