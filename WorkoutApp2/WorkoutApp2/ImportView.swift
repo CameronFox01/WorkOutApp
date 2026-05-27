@@ -60,7 +60,7 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
     // Categories where weight is typically not entered
     var usesWeight: Bool {
         switch self {
-        case .bodyweight, .abs, .stretch, .sports, .distanceCardio: return false
+        case .bodyweight, .abs, .stretch, .sports, .distanceCardio, .timeCardio: return false
         default: return true
         }
     }
