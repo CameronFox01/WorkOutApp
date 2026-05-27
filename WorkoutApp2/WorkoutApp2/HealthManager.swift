@@ -129,11 +129,24 @@ class HealthManager: ObservableObject {
             let isToday = dayOffset == 0
             let endOfDay = isToday ? Date() : (calendar.date(byAdding: .day, value: 1, to: day) ?? day)
 
-            let predicate = HKQuery.predicateForSamples(withStart: day, end: endOfDay)
+            let predicate = HKQuery.predicateForSamples(
+                withStart: day,
+                end: endOfDay,
+                options: .strictStartDate
+            )
 
             group.enter()
-            let query = HKStatisticsQuery(quantityType: stepsType, quantitySamplePredicate: predicate) { _, result, _ in
-                let count = Int(result?.sumQuantity()?.doubleValue(for: .count()) ?? 0)
+            
+            let query = HKStatisticsQuery(
+                quantityType: stepsType,
+                quantitySamplePredicate: predicate,
+                options: .cumulativeSum
+            ) { _, result, _ in
+
+                let count = Int(
+                    result?.sumQuantity()?.doubleValue(for: .count()) ?? 0
+                )
+
                 results.append((date: day, steps: count))
                 group.leave()
             }
