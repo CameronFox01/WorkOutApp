@@ -726,11 +726,33 @@ struct WorkoutTypeCardView: View {
             Spacer()
 
             VStack(alignment: .leading, spacing: 6) {
-                Label("\(entry.reps) reps",
-                      systemImage: "figure.strengthtraining.traditional")
 
-                Label("\(entry.weight) \(weightUnit)",
-                      systemImage: "scalemass.fill")
+                if isDistanceCardio {
+
+                    Label(
+                        "\(entry.weight) \(distanceUnit)",
+                        systemImage: "figure.walk"
+                    )
+
+                } else if isTimeCardio {
+
+                    Label(
+                        "\(entry.reps) min",
+                        systemImage: "timer"
+                    )
+
+                } else {
+
+                    Label(
+                        "\(entry.reps) reps",
+                        systemImage: "figure.strengthtraining.traditional"
+                    )
+
+                    Label(
+                        "\(entry.weight) \(weightUnit)",
+                        systemImage: "scalemass.fill"
+                    )
+                }
             }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(.white.opacity(0.92))
@@ -749,6 +771,21 @@ struct WorkoutTypeCardView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .shadow(color: .blue.opacity(0.22), radius: 10, x: 0, y: 6)
+    }
+    private var isDistanceCardio: Bool {
+        DistanceCardioWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
+    }
+
+    private var isTimeCardio: Bool {
+        TimeCardioWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
+    }
+
+    private var distanceUnit: String {
+        weightUnit == "lbs" ? "mi" : "km"
     }
 }
 

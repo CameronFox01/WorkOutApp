@@ -154,26 +154,55 @@ struct WorkoutChartView: View {
                         .font(.headline.bold())
                         .foregroundStyle(.white)
 
-                    let (bestWeight, bestReps) = bests()
                     let totalSessions = Set(entriesForWorkout.map {
                         Calendar.current.startOfDay(for: $0.date)
                     }).count
 
                     HStack(spacing: 12) {
-                        if let bestWeight {
-                            highlightPill(
-                                icon: "scalemass.fill",
-                                label: "Best Weight",
-                                value: "\(bestWeight) \(weightUnit)"
-                            )
+
+                        if isDistanceCardio {
+
+                            if let bestDistance = bestDistance() {
+                                highlightPill(
+                                    icon: "figure.walk",
+                                    label: UnitSystem(rawValue: unitSystemRaw) == .imperial
+                                        ? "Best Miles"
+                                        : "Best KM",
+                                    value: bestDistance
+                                )
+                            }
+
+                        } else if isTimeCardio {
+
+                            if let bestTime = bestTime() {
+                                highlightPill(
+                                    icon: "timer",
+                                    label: "Longest Time",
+                                    value: bestTime
+                                )
+                            }
+
+                        } else {
+
+                            let (bestWeight, bestReps) = bests()
+
+                            if let bestWeight {
+                                highlightPill(
+                                    icon: "scalemass.fill",
+                                    label: "Best Weight",
+                                    value: "\(bestWeight) \(weightUnit)"
+                                )
+                            }
+
+                            if let bestReps {
+                                highlightPill(
+                                    icon: "number",
+                                    label: "Best Reps",
+                                    value: bestReps
+                                )
+                            }
                         }
-                        if let bestReps {
-                            highlightPill(
-                                icon: "number",
-                                label: "Best Reps",
-                                value: bestReps
-                            )
-                        }
+
                         highlightPill(
                             icon: "calendar",
                             label: "Sessions",
@@ -222,6 +251,25 @@ struct WorkoutChartView: View {
         TimeCardioWorkout.allCases
             .map(\.rawValue)
             .contains(workoutName)
+    }
+    
+    private func bestDistance() -> String? {
+        entriesForWorkout
+            .compactMap { Double($0.weight) }
+            .max()
+            .map {
+                "\(format($0)) " +
+                (UnitSystem(rawValue: unitSystemRaw) == .imperial ? "mi" : "km")
+            }
+    }
+
+    private func bestTime() -> String? {
+        entriesForWorkout
+            .compactMap { Double($0.reps) }
+            .max()
+            .map {
+                "\(format($0)) min"
+            }
     }
 
     private func highlightPill(icon: String, label: String, value: String) -> some View {

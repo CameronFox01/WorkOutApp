@@ -645,8 +645,14 @@ struct ImportView: View {
         }
         
         if category == .distanceCardio {
-            let distance = distances[category] ?? "0"
-            let time = times[category] ?? "0"
+            guard let distance = distances[category], !distance.isEmpty else {
+                feedbackError()
+                return
+            }
+            guard let time = times[category], !time.isEmpty else {
+                feedbackError()
+                return
+            }
         }
 
         let rep = reps[category] ?? ""

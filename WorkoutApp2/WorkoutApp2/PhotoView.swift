@@ -27,6 +27,8 @@ struct PhotoView: View {
     @State private var showingSidePicker = false
     
     @AppStorage("SaveToPhotosApp") private var saveToPhoto: Bool = true
+    @AppStorage("leftPhotoFileName") private var leftPhotoFileName: String = ""
+    @AppStorage("rightPhotoFileName") private var rightPhotoFileName: String = ""
     
     @State private var showImageSheet = false
 
@@ -45,12 +47,18 @@ struct PhotoView: View {
                     VStack(spacing: 20) {
                         // 1. Comparison Card
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Current Comparison")
-                                .font(.headline).bold()
-                            
+                          
                             HStack(spacing: 16) {
-                                imagePane(title: "Left", image: leftImage, action: { showingLeftCamera = true })
-                                imagePane(title: "Right", image: rightImage, action: { showingRightCamera = true })
+                                VStack{
+                                    Text("Before")
+                                        .font(.headline).bold()
+                                    imagePane(title: "Left", image: leftImage, action: { showingLeftCamera = true })
+                                }
+                                VStack{
+                                    Text("After")
+                                        .font(.headline).bold()
+                                    imagePane(title: "Right", image: rightImage, action: { showingRightCamera = true })
+                                }
                             }
                         }
                         .padding()
@@ -60,29 +68,31 @@ struct PhotoView: View {
                         // 2. Actions Card
                         VStack(spacing: 12) {
                             // LEFT PICKER
-                                photoPickerButton(title: "Load Left Photo", selection: $leftSelectedItem)
+                                photoPickerButton(title: "Choose Before Photo", selection: $leftSelectedItem)
                                     .onChange(of: leftSelectedItem) { _, newItem in
                                         Task {
                                             if let data = try? await newItem?.loadTransferable(type: Data.self),
                                                let image = UIImage(data: data) {
                                                 leftImage = image
+                                                saveToAppStorage(image: image, side: "left")
                                             }
                                         }
                                     }
                                 
                                 // RIGHT PICKER
-                                photoPickerButton(title: "Load Right Photo", selection: $rightSelectedItem)
+                                photoPickerButton(title: "Choose After Photo", selection: $rightSelectedItem)
                                     .onChange(of: rightSelectedItem) { _, newItem in
                                         Task {
                                             if let data = try? await newItem?.loadTransferable(type: Data.self),
                                                let image = UIImage(data: data) {
                                                 rightImage = image
+                                                saveToAppStorage(image: image, side: "right")
                                             }
                                         }
                                     }
                             
                             Button { showingSavedPhotos = true } label: {
-                                Label("Gallery", systemImage: "photo.on.rectangle")
+                                Label("Choose from Saved Photos", systemImage: "photo.on.rectangle")
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .buttonStyle(.bordered)
@@ -94,7 +104,7 @@ struct PhotoView: View {
                         
                         Spacer()
                         NavigationLink(destination: ViewPhotosInApp()) {
-                            Label("Archive", systemImage: "photo.stack")
+                            Label("Saved Photos", systemImage: "photo.stack")
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .buttonStyle(.borderedProminent)
@@ -104,16 +114,26 @@ struct PhotoView: View {
                 }
             }
             .sheet(isPresented: $showingLeftCamera) {
-               CameraView(image: Binding(get: { leftImage }, set: { newValue in
-                   leftImage = newValue
-                   if let img = newValue { saveToAppStorage(image: img) }
-               }))
+                CameraView(image: Binding(
+                    get: { leftImage },
+                    set: { newValue in
+                        leftImage = newValue
+                        if let img = newValue {
+                            saveToAppStorage(image: img, side: "left")
+                        }
+                    }
+                ))
             }
             .sheet(isPresented: $showingRightCamera) {
-                CameraView(image: Binding(get: { rightImage }, set: { newValue in
-                    rightImage = newValue
-                    if let img = newValue { saveToAppStorage(image: img) }
-                }))
+                CameraView(image: Binding(
+                    get: { rightImage },
+                    set: { newValue in
+                        rightImage = newValue
+                        if let img = newValue {
+                            saveToAppStorage(image: img, side: "right")
+                        }
+                    }
+                ))
             }
             .sheet(isPresented: $showingSavedPhotos) {
                 SavedPhotosView { image in
@@ -126,18 +146,25 @@ struct PhotoView: View {
                 isPresented: $showingSidePicker,
                 titleVisibility: .visible
             ) {
-                Button("Use for Left") {
-                    leftImage = selectedGalleryImage
+                Button("Use as Before Photo") {
+                    if let img = selectedGalleryImage {
+                        leftImage = img
+                        saveToAppStorage(image: img, side: "left")
+                    }
                 }
 
-                Button("Use for Right") {
-                    rightImage = selectedGalleryImage
+                Button("Use as After Photo") {
+                    if let img = selectedGalleryImage {
+                        rightImage = img
+                        saveToAppStorage(image: img, side: "right")
+                    }
                 }
 
                 Button("Cancel", role: .cancel) { }
             }
             .onAppear{
                 loadSavedPhotos()
+                loadPersistentImages()
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color.blue, for: .navigationBar)
@@ -167,9 +194,21 @@ struct PhotoView: View {
         .buttonStyle(.plain)
     }
     
+    private func loadPersistentImages() {
+        if !leftPhotoFileName.isEmpty {
+            let url = documentsDirectory().appendingPathComponent(leftPhotoFileName)
+            leftImage = UIImage(contentsOfFile: url.path)
+        }
+
+        if !rightPhotoFileName.isEmpty {
+            let url = documentsDirectory().appendingPathComponent(rightPhotoFileName)
+            rightImage = UIImage(contentsOfFile: url.path)
+        }
+    }
+    
     private func loadSavedPhotos() {
         do {
-            let directory = try documentsDirectory()
+            let directory = documentsDirectory()
 
             let files = try FileManager.default.contentsOfDirectory(
                 at: directory,
@@ -191,17 +230,21 @@ struct PhotoView: View {
     // SINGLE SOURCE OF TRUTH for the display pane
     @ViewBuilder
     private func imagePane(title: String, image: UIImage?, action: @escaping () -> Void) -> some View {
+        let minWidth: CGFloat = 150
+        let maxWidth: CGFloat = 200
+        let minHeight: CGFloat = 250
+        let maxHeight: CGFloat = 250
         VStack(spacing: 8) {
             if let uiImage = image {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(height: 250)
+                    .frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color(.tertiarySystemFill))
-                    .frame(height: 250)
+                    .frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight)
                     .overlay(Image(systemName: "plus").foregroundStyle(.secondary))
             }
             
@@ -212,32 +255,35 @@ struct PhotoView: View {
     }
 
     // Saves to App Storage and Photo's App on iPhone
-    private func saveToAppStorage(image: UIImage) {
-        //This saves it but I need to create a way to access those saced photo's.
-        // Save JPEG to app's documents directory. This does NOT write to the Photos app.
+    private func saveToAppStorage(image: UIImage, side: String) {
+
         guard let data = image.jpegData(compressionQuality: 0.9) else { return }
-        let filename = UUID().uuidString + ".jpg"
+
+        let filename = "\(side)_photo.jpg"
+        let url = documentsDirectory().appendingPathComponent(filename)
+
         do {
-            let url = try documentsDirectory().appendingPathComponent(filename)
             try data.write(to: url)
-            // You could store URLs in a model for later reuse if needed
-            // print("Saved image to: \(url)")
+
+            if side == "left" {
+                leftPhotoFileName = filename
+            } else {
+                rightPhotoFileName = filename
+            }
+
         } catch {
-            // print("Failed to save image: \(error)")
+            print("Failed to save image: \(error)")
         }
-        
-        //Saving to Photo's on iPhone
-        if saveToPhoto == true {
+
+        if saveToPhoto {
             UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
         }
-        
+
         loadSavedPhotos()
     }
 
-    private func documentsDirectory() throws -> URL {
-        let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        guard let dir = urls.first else { throw URLError(.fileDoesNotExist) }
-        return dir
+    private func documentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     }
     
     @ViewBuilder

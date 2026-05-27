@@ -267,7 +267,7 @@ enum GluteWorkout: String, CaseIterable, Identifiable, Hashable {
 
 //Cardio workouts that require distance
 enum DistanceCardioWorkout: String, CaseIterable, Identifiable, Hashable {
-    case briskWalking = "Brisk Walking"
+    case briskWalking = "Brisk Walking", casualWalking = "Casual Walking"
     case crossCountrySkiing = "Cross-Country Skiing"
     case cycleSprint = "Cycle Sprint", cycling = "Cycling"
     case elliptical = "Elliptical", ellipticalIntervals = "Elliptical Intervals"

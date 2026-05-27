@@ -18,6 +18,7 @@ struct PlannedWorkoutsView: View {
     @State private var buttonWidth: CGFloat = 10
     @State private var buttonTextSize: CGFloat = 18
     @State private var dayTitle: String = ""
+    @State private var showSavedToast = false
 
     // MARK: - Weekdays
     enum Weekday: String, CaseIterable, Identifiable {
@@ -83,6 +84,11 @@ struct PlannedWorkoutsView: View {
                     isEditing = false
                 }
             }
+            .overlay(alignment: .top) {
+                if showSavedToast {
+                    savedToast
+                }
+            }
             .toolbarBackground(Color.blue, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
@@ -94,6 +100,9 @@ struct PlannedWorkoutsView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         saveForDay(selectedDay)
+                        withAnimation(.spring()) {
+                           showSavedToast = true
+                       }
                     } label: {
                         Text("Save")
                             .fontWeight(.semibold)
@@ -315,6 +324,24 @@ struct PlannedWorkoutsView: View {
         UserDefaults.standard.set(plannedItems, forKey: keyItems(for: day))
         UserDefaults.standard.set(plannedItemCategories.map { $0.rawValue }, forKey: keyItemCategories(for: day))
         UserDefaults.standard.set(dayTitle, forKey: keyTitle(for: day))
+    }
+    
+    // MARK: - Toast
+    private var savedToast: some View {
+        Text("Saved ✔︎")
+            .font(.subheadline.bold())
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(.ultraThinMaterial, in: Capsule())
+            .padding(.top, 8)
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    withAnimation(.spring()) {
+                        showSavedToast = false
+                    }
+                }
+            }
     }
 
     private func loadForDay(_ day: Weekday) {
