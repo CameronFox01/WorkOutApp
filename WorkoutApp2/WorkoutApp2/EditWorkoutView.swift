@@ -19,6 +19,7 @@ struct EditWorkoutView: View {
     @State private var sets: String = ""
     @State private var date: Date = Date()
     @State private var notes: String = ""
+    @State private var workoutGoal: String = ""
 
     @FocusState private var focusedField: Field?
 
@@ -52,6 +53,11 @@ struct EditWorkoutView: View {
         } else {
             self._selectedCategory = State(initialValue: .push)
         }
+        self._workoutGoal = State(
+            initialValue: UserDefaults.standard.string(
+                forKey: "goal_\(entry.workoutType)"
+            ) ?? ""
+        )
     }
 
     var body: some View {
@@ -147,7 +153,28 @@ struct EditWorkoutView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(.white.opacity(0.10))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
+                            
+                            HStack(spacing: 8) {
+
+                                Image(systemName: "target")
+                                    .foregroundStyle(.white.opacity(0.7))
+
+                                Text("Goal")
+                                    .foregroundStyle(.white.opacity(0.7))
+
+                                Spacer()
+
+                                TextField("Optional", text: $workoutGoal)
+                                    .multilineTextAlignment(.trailing)
+                                    .foregroundStyle(.white)
+                                    .keyboardType(.decimalPad)
+                                    .frame(width: 100)
+                            }
+                            .padding(12)
+                            .background(.white.opacity(0.10))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
+
                     }
 
                     // MARK: - Details Card
@@ -332,6 +359,12 @@ struct EditWorkoutView: View {
             workoutData.entries[index].date = date
             workoutData.entries[index].note = notes
         }
+        
+        UserDefaults.standard.set(
+            workoutGoal,
+            forKey: "goal_\(workoutType)"
+        )
+        
         saveEntriesToStorage()
         dismiss()
     }

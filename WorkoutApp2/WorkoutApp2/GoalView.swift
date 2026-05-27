@@ -40,6 +40,7 @@ struct GoalView: View {
     }
     
     // Colors
+
     private let primaryBlue = Color(hex: "#2563EB")
     private let secondaryTeal = Color(hex: "#14B8A6")
     private let accentGreen = Color(hex: "#84CC16")
