@@ -718,7 +718,7 @@ struct WorkoutTypeCardView: View {
                         .fill(.white.opacity(0.15))
                         .frame(width: 42, height: 42)
 
-                    Image(systemName: "dumbbell.fill")
+                    Image(systemName: cardIcon)
                         .foregroundStyle(.white)
                 }
             }
@@ -772,6 +772,18 @@ struct WorkoutTypeCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .shadow(color: .blue.opacity(0.22), radius: 10, x: 0, y: 6)
     }
+    private var cardIcon: String {
+        if isDistanceCardio {
+            return "figure.run"
+        }
+
+        if isTimeCardio {
+            return "timer"
+        }
+
+        return "dumbbell.fill"
+    }
+    
     private var isDistanceCardio: Bool {
         DistanceCardioWorkout.allCases
             .map(\.rawValue)
