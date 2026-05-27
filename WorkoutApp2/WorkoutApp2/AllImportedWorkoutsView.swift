@@ -64,6 +64,7 @@ enum ImageNames: String, CaseIterable {
 }
 
 struct AllImportedWorkoutsView: View {
+    var scrollToID: UUID?
     @EnvironmentObject var workoutData: WorkoutData
     
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
@@ -73,34 +74,41 @@ struct AllImportedWorkoutsView: View {
     }
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 16) {
-
-                if workoutData.entries.isEmpty {
-
-                    VStack(spacing: 12) {
-                        Image(systemName: "dumbbell")
-                            .font(.system(size: 40))
-                            .foregroundStyle(.secondary)
-
-                        Text("No Workouts Imported Yet")
-                            .font(.headline)
-
-                        Text("Your imported workouts will appear here.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, 80)
-
-                } else {
-
-                    ForEach(workoutData.entries.reversed()) { entry in
-                        let iconName = workoutCategoryLookup[entry.workoutType]?.icon ?? "dumbbell.fill"
-                        WorkoutEntryCard(entry: entry, iconName: iconName, weightUnit: weightUnit)
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 16) {
+                    
+                    if workoutData.entries.isEmpty {
+                        
+                        VStack(spacing: 12) {
+                            Image(systemName: "dumbbell")
+                                .font(.system(size: 40))
+                                .foregroundStyle(.secondary)
+                            
+                            Text("No Workouts Imported Yet")
+                                .font(.headline)
+                            
+                            Text("Your imported workouts will appear here.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.top, 80)
+                        
+                    } else {
+                        
+                        ForEach(workoutData.entries.reversed()) { entry in
+                            let iconName = workoutCategoryLookup[entry.workoutType]?.icon ?? "dumbbell.fill"
+                            WorkoutEntryCard(entry: entry, iconName: iconName, weightUnit: weightUnit)
+                        }
                     }
                 }
+                .padding(.vertical)
             }
-            .padding(.vertical)
+            .onAppear {
+                if let id = scrollToID {
+                    proxy.scrollTo(id, anchor: .top)
+                }
+            }
         }
         .background(Color(.systemGroupedBackground))
         .toolbarBackground(Color.blue, for: .navigationBar)

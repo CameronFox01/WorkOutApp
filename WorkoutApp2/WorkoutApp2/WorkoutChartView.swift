@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct WorkoutChartView: View {
+    @State private var selectedEntryID: UUID?
+    
     let workoutName: String
     let entries: [WorkoutEntry]
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
@@ -50,16 +52,37 @@ struct WorkoutChartView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Recent Sets")
                         .font(.headline)
-                    ForEach(entriesForWorkout.prefix(5)) { e in
+                    //Setting up the Latest Workout
+                    let latestEntry = mostRecentEntry!
+                    NavigationLink(destination: EditWorkoutView(entry: latestEntry)) {
                         HStack {
-                            Text(e.date.formatted(date: .abbreviated, time: .omitted))
-                                .font(.subheadline)
+                            Text(latestEntry.date.formatted(date: .abbreviated, time: .omitted))
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.cyan)
+                            
                             Spacer()
-                            Text(detailLine(for: e))
+                            
+                            Text(detailLine(for: latestEntry))
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.cyan)
                         }
-                        .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain) // Keeps the text color as you defined it
+                    
+                    //The next 4 entries being set up.
+                    if entriesForWorkout.count > 1 {
+                        let remainingEntries = entriesForWorkout.dropFirst(1)
+                        ForEach(remainingEntries.prefix(4)) { e in
+                            HStack {
+                                Text(e.date.formatted(date: .abbreviated, time: .omitted))
+                                    .font(.subheadline)
+                                Spacer()
+                                Text(detailLine(for: e))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                        }
                     }
                 }
 
@@ -146,7 +169,11 @@ struct WorkoutChartView: View {
         WorkoutEntry(workoutType: "Bench Press", weight: "135", reps: "8", sets: "2", date: .now.addingTimeInterval(-86400 * 6), note: "Felt sore"),
         WorkoutEntry(workoutType: "Bench Press", weight: "145", reps: "8", sets: "3", date: .now.addingTimeInterval(-86400 * 4), note: "Felt sore"),
         WorkoutEntry(workoutType: "Bench Press", weight: "155", reps: "6", sets: "5", date: .now.addingTimeInterval(-86400 * 2), note: ""),
-        WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now, note: "")
+        WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now, note: ""),
+        WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now, note: ""),
+        WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now, note: ""),
+        WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now, note: ""),
+        WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now.addingTimeInterval(-86400), note: "")
     ]
     NavigationView {
         WorkoutChartView(workoutName: "Bench Press", entries: sampleEntries)

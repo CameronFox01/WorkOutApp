@@ -14,7 +14,7 @@ struct WorkoutEntry: Identifiable, Codable {
     var reps: String
     var sets: String
     var date: Date
-    var note: String
+    var note: String = ""
 }
 // Enums for each workout type
 enum WorkoutCategory: String, CaseIterable, Identifiable {
@@ -481,7 +481,19 @@ struct ImportView: View {
                         .foregroundStyle(.secondary)
                     
                     // Using a TextField for a single line, or TextEditor for multi-line
-                    TextField("Add a note...", text: noteBinding)
+                    TextEditor(text: noteBinding)
+                        .overlay(
+                            Group {
+                                if noteBinding.wrappedValue.isEmpty {
+                                    Text("Add a note...")
+                                        .foregroundStyle(.secondary)
+                                        .padding(.leading, 4)
+                                        .padding(.top, 8)
+                                        .allowsHitTesting(false)
+                                }
+                            },
+                            alignment: .topLeading
+                        )
                 }
                 .padding(12)
                 .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -529,6 +541,7 @@ struct ImportView: View {
         setsDict.removeAll()
         distances.removeAll()
         times.removeAll()
+        notes.removeAll()
         // Re-add default workout selections
         for category in WorkoutCategory.allCases {
             selections[category] = category.workouts.first ?? ""

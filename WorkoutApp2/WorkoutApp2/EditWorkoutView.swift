@@ -20,6 +20,7 @@ struct EditWorkoutView: View {
     @State private var reps: String = ""
     @State private var sets: String = ""
     @State private var date: Date = Date()
+    @State private var notes: String = ""
     
     // Focus handling for keyboard dismissal
     @FocusState private var focusedField: Field?
@@ -28,6 +29,7 @@ struct EditWorkoutView: View {
         case weight
         case reps
         case sets
+        case notes
     }
     
     // Picker selections
@@ -51,6 +53,7 @@ struct EditWorkoutView: View {
         self._reps = State(initialValue: entry.reps)
         self._sets = State(initialValue: entry.sets)
         self._date = State(initialValue: entry.date)
+        self._notes = State(initialValue: entry.note)
         // Initialize selected category from the current workout type if possible
         if let cat = workoutCategoryLookup[entry.workoutType] {
             self._selectedCategory = State(initialValue: cat)
@@ -118,6 +121,12 @@ struct EditWorkoutView: View {
                         .onSubmit { focusedField = nil }
                 }
             }
+            
+            Section(header: Text("Notes")) {
+                TextEditor(text: $notes)
+                    .frame(minHeight: 100)
+                    .focused($focusedField, equals: .notes)
+            }
 
             Section {
                 Button(role: .destructive) {
@@ -164,6 +173,7 @@ struct EditWorkoutView: View {
             workoutData.entries[index].reps = reps
             workoutData.entries[index].sets = sets
             workoutData.entries[index].date = date
+            workoutData.entries[index].note = notes
         }
 
         saveEntriesToStorage()
