@@ -28,126 +28,139 @@ struct StartUpView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                // Area for Name to be entered
-                Section(header: Text("Name")) {
-                    TextField("Name", text: $name)
-                        .textInputAutocapitalization(.words)
-                        .autocorrectionDisabled()
-                }
-                
-                // Area for Gender to be selected
-                Section(header: Text("Gender")) {
-                    Picker("Gender", selection: $genderRaw) {
-                        ForEach(Gender.allCases) { gender in
-                            Text(gender.rawValue).tag(gender.rawValue)
-                        }
+            ZStack{
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(1.0),
+                        Color.cyan.opacity(0.6),
+                        Color(.systemBackground)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                Form {
+                    // Area for Name to be entered
+                    Section(header: Text("Name")) {
+                        TextField("Name", text: $name)
+                            .textInputAutocapitalization(.words)
+                            .autocorrectionDisabled()
                     }
-                    .pickerStyle(.segmented)
-                }
-                
-                // Area for Unit to be selected
-                Section(header: Text("Unit System")){
-                    Picker("Unit System", selection: Binding<UnitSystem>(
-                        get: { UnitSystem(rawValue: unitSystemRaw) ?? .metric },
-                        set: { newValue in
-                            let oldUnit = UnitSystem(rawValue: unitSystemRaw) ?? .metric
-                            if oldUnit != newValue {
-                                convertValues(from: oldUnit, to: newValue)
-                                unitSystemRaw = newValue.rawValue
+                    
+                    // Area for Gender to be selected
+                    Section(header: Text("Gender")) {
+                        Picker("Gender", selection: $genderRaw) {
+                            ForEach(Gender.allCases) { gender in
+                                Text(gender.rawValue).tag(gender.rawValue)
                             }
                         }
-                    )) {
-                        ForEach(UnitSystem.allCases, id: \.self) { unit in
-                            Text(unit.rawValue).tag(unit)
-                        }
+                        .pickerStyle(.segmented)
                     }
-                    .pickerStyle(.segmented)
-                }
-
-                // Area for Body Info
-                Section(header: Text("Body Info")) {
-                    // HEIGHT
-                    if unitSystem == .imperial {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Height")
-                            HStack {
-                                Picker("Feet", selection: $selectedFeet) {
-                                    ForEach(3...7, id: \.self) { foot in
-                                        Text("\(foot) ft").tag(foot)
+                    
+                    // Area for Unit to be selected
+                    Section(header: Text("Unit System")){
+                        Picker("Unit System", selection: Binding<UnitSystem>(
+                            get: { UnitSystem(rawValue: unitSystemRaw) ?? .metric },
+                            set: { newValue in
+                                let oldUnit = UnitSystem(rawValue: unitSystemRaw) ?? .metric
+                                if oldUnit != newValue {
+                                    convertValues(from: oldUnit, to: newValue)
+                                    unitSystemRaw = newValue.rawValue
+                                }
+                            }
+                        )) {
+                            ForEach(UnitSystem.allCases, id: \.self) { unit in
+                                Text(unit.rawValue).tag(unit)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    
+                    // Area for Body Info
+                    Section(header: Text("Body Info")) {
+                        // HEIGHT
+                        if unitSystem == .imperial {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Height")
+                                HStack {
+                                    Picker("Feet", selection: $selectedFeet) {
+                                        ForEach(3...7, id: \.self) { foot in
+                                            Text("\(foot) ft").tag(foot)
+                                        }
+                                    }
+                                    .pickerStyle(.wheel)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 100)
+                                    
+                                    Picker("Inches", selection: $selectedInches) {
+                                        ForEach(0...11, id: \.self) { inch in
+                                            Text("\(inch) in").tag(inch)
+                                        }
+                                    }
+                                    .pickerStyle(.wheel)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 100)
+                                }
+                            }
+                        } else {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Height")
+                                Picker("Centimeters", selection: $selectedCentimeters) {
+                                    ForEach(100...250, id: \.self) { cm in
+                                        Text("\(cm) cm").tag(cm)
                                     }
                                 }
                                 .pickerStyle(.wheel)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 100)
-
-                                Picker("Inches", selection: $selectedInches) {
-                                    ForEach(0...11, id: \.self) { inch in
-                                        Text("\(inch) in").tag(inch)
-                                    }
-                                }
-                                .pickerStyle(.wheel)
-                                .frame(maxWidth: .infinity)
                                 .frame(height: 100)
                             }
                         }
-                    } else {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Height")
-                            Picker("Centimeters", selection: $selectedCentimeters) {
-                                ForEach(100...250, id: \.self) { cm in
-                                    Text("\(cm) cm").tag(cm)
-                                }
-                            }
-                            .pickerStyle(.wheel)
-                            .frame(height: 100)
+                        
+                        // WEIGHT
+                        TextField(weightLabel, text: $weight)
+                            .keyboardType(.decimalPad)
+                    }
+                    
+                    Button("Finish Setup") {
+                        guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+                        
+                        // Always persist height from picker state right now
+                        if unitSystem == .imperial {
+                            let totalInches = (selectedFeet * 12) + selectedInches
+                            height = "\(totalInches)"
+                        } else {
+                            height = "\(selectedCentimeters)"
                         }
+                        
+                        //                    DispatchQueue.main.async {
+                        //                         hasCompletedSetup = true
+                        //                     }
+                        hasCompletedSetup = true
                     }
-
-                    // WEIGHT
-                    TextField(weightLabel, text: $weight)
-                        .keyboardType(.decimalPad)
                 }
-
-                Button("Finish Setup") {
-                    guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-
-                    // Always persist height from picker state right now
-                    if unitSystem == .imperial {
-                        let totalInches = (selectedFeet * 12) + selectedInches
-                        height = "\(totalInches)"
-                    } else {
-                        height = "\(selectedCentimeters)"
+                .scrollContentBackground(.hidden)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(Color.blue, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("Setup Account")
+                            .font(.largeTitle).bold()
+                            .foregroundStyle(.white)
                     }
-
-//                    DispatchQueue.main.async {
-//                         hasCompletedSetup = true
-//                     }
-                    hasCompletedSetup = true
                 }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.blue, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Setup Account")
-                        .font(.largeTitle).bold()
-                        .foregroundStyle(.white)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                // Make sure unit state is consistent and pickers reflect stored value (if any)
-                initializePickersFromStoredHeight()
-
-                // If height hasn’t been set yet, populate it from the default picker selections now
-                if height.isEmpty {
-                    if unitSystem == .imperial {
-                        let totalInches = (selectedFeet * 12) + selectedInches
-                        height = "\(totalInches)"
-                    } else {
-                        height = "\(selectedCentimeters)"
+                .navigationBarTitleDisplayMode(.inline)
+                .onAppear {
+                    // Make sure unit state is consistent and pickers reflect stored value (if any)
+                    initializePickersFromStoredHeight()
+                    
+                    // If height hasn’t been set yet, populate it from the default picker selections now
+                    if height.isEmpty {
+                        if unitSystem == .imperial {
+                            let totalInches = (selectedFeet * 12) + selectedInches
+                            height = "\(totalInches)"
+                        } else {
+                            height = "\(selectedCentimeters)"
+                        }
                     }
                 }
             }
