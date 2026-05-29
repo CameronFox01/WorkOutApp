@@ -214,13 +214,14 @@ enum TricepWorkout: String, CaseIterable, Identifiable, Hashable {
 
 // Leg workouts
 enum LegWorkout: String, CaseIterable, Identifiable, Hashable {
+    case hipAdductorClosing = "Adductor Machine (Closing)", hipAdductorOpening = "Adductor Machine (Opening)"
     case barbellHipThrust = "Barbell Hip Thrust", boxJumps = "Box Jumps", boxSquat = "Box Squat"
     case BulgarianSplitSquat = "Bulgarian Split Squat", calfRaises = "Calf Raises"
     case cableLegExtension = "Cable Leg Extension", cablePullThrough = "Cable Pull Through"
     case curtsyLunges = "Curtsy Lunges", deadlift = "Deadlift", donkeyCalfRaise = "Donkey Calf Raise"
     case dumbbellSquat = "Dumbbell Squat", frontSquat = "Front Squat", gluteBridge = "Glute Bridge"
-    case gobletSquat = "Goblet Squat", hackSquat = "Hack Squat", hipAdductorClosing = "Adductor Machine (Closing)"
-    case hipAdductorOpening = "Adductor Machine (Opening)", jeffersonSquat = "Jefferson Squat"
+    case gobletSquat = "Goblet Squat", hackSquat = "Hack Squat"
+    case jeffersonSquat = "Jefferson Squat"
     case jumpingLunges = "Jumping Lunges", lateralStepUps = "Lateral Step-ups", legCurl = "Leg Curl"
     case legExtension = "Leg Extension", legPress = "Leg Press", legPressCalfRaise = "Leg Press Calf Raise"
     case legPressVariations = "Leg Press Variations", lunges = "Lunges", lyingLegCurl = "Lying Leg Curl"

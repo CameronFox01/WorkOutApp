@@ -19,13 +19,13 @@ struct GoalView: View {
     @State private var selectedBodyWeight: BodyweightWorkout = .airSquats
     @State private var selectedPush: PushWorkout = .ArnoldPress
     @State private var selectedPull: PullWorkout = .alternatingDumbbellRow
-    @State private var selectedLeg: LegWorkout = .barbellHipThrust
+    @State private var selectedLeg: LegWorkout = .hipAdductorClosing
     @State private var selectedGlute: GluteWorkout = .backwardLunge
     @State private var selectedBicep: BicepWorkout = .alternatingDumbbellCurl
     @State private var selectedTricep: TricepWorkout = .bandedPushdown
     @State private var selectedAbs: AbsWorkout = .abdominalVacuum
     @State private var selectedDistanceCardio: DistanceCardioWorkout = .briskWalking
-    @State private var selectedTimeCardio: TimeCardioWorkout = .burpees
+    @State private var selectedTimeCardio: TimeCardioWorkout = .battleRopes
     @State private var selectedSports: SportsWorkout = .archery
     @State private var selectedStretch: StretchRoutine = .ankleCircles
     
