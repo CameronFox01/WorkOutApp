@@ -55,6 +55,9 @@ struct SettingsView: View {
     //Notification settings for milestones to be sent
     @AppStorage("milestonesReminder") private var milesstoneReminder: Bool = true
 
+    //Notification for Goals Section
+    @AppStorage("goalReminder") private var goalReminder: Bool = true
+    
     var body: some View {
         NavigationView {
             ZStack{
@@ -173,12 +176,30 @@ struct SettingsView: View {
                                     .opacity(notificationsEnabled ? 1 : 0.4)
                                     
                                     Divider()
-                                    SettingsRow(icon: "bell.fill",
-                                                title: "Enable Milestone Notifications"
+                                    
+                                    //Notification for Milestones achieved
+                                    SettingsRow(
+                                        icon: notificationsEnabled
+                                            ? "bell.fill"
+                                            : "bell.slash.fill",
+                                        title: "Enable Milestone Notifications"
                                     ){
                                         Toggle("", isOn: $milesstoneReminder)
                                             .labelsHidden()
                                     }
+                                    .opacity(notificationsEnabled ? 1 : 0.4)
+                                    
+                                    //Notification for Goals Achieved
+                                    SettingsRow(
+                                        icon: notificationsEnabled
+                                            ? "bell.fill"
+                                            : "bell.slash.fill",
+                                        title: "Enable Achieved Goal Notifications"
+                                    ){
+                                        Toggle("", isOn: $goalReminder)
+                                            .labelsHidden()
+                                    }
+                                    .opacity(notificationsEnabled ? 1 : 0.4)
                                     
                                     //Notification for daily weigh ins
                                     
@@ -197,6 +218,7 @@ struct SettingsView: View {
                                                         .labelsHidden()
                                                         .disabled(!notificationsEnabled)
                                                 }
+                                                .opacity(notificationsEnabled ? 1 : 0.4)
                                                 
                                                 if notificationsEnabled && weighInReminder {
                                                     
@@ -374,6 +396,7 @@ struct SettingsView: View {
         }
     }
     
+    
     // Helpers for completedMilestones
     private func getCompletedMilestones() -> Set<String> {
         (try? JSONDecoder().decode(Set<String>.self, from: completedMilestonesData)) ?? []
@@ -437,9 +460,7 @@ struct SettingsView: View {
             UserDefaults.standard.removePersistentDomain(forName: bundleID)
             UserDefaults.standard.synchronize()
         }
-        
-        workoutData.entries.removeAll()  // ← clears the in-memory array
-        
+        workoutData.entries.removeAll()
         UserDefaults.standard.set(false, forKey: "hasCompletedSetup")
         hasCompletedSetup = false
     }
