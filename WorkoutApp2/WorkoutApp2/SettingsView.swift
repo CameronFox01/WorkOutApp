@@ -7,6 +7,7 @@
 // The purpose of this View is to allow users to set their settings to make the app behave the way they would like the app to behave
 
 import SwiftUI
+import Foundation
 
 struct SettingsView: View {
     @EnvironmentObject var workoutData: WorkoutData
@@ -20,6 +21,8 @@ struct SettingsView: View {
 
     @State private var showResetConfirmation = false
     @State private var showResetAccountConfirmation = false
+    
+    @State private var showDeletePhotosConfirmation = false
 
     // Keyboard focus
     @FocusState private var workoutsFieldFocused: Bool
@@ -283,7 +286,19 @@ struct SettingsView: View {
 
                             // RESET SECTION
                             SettingsCard(title: "Danger Zone") {
-
+                                Button {
+                                    showDeletePhotosConfirmation = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "photo.on.rectangle")
+                                        Text("Delete all Photos")
+                                        Spacer()
+                                    }
+                                    .foregroundStyle(.orange)
+                                }
+                                
+                                Divider()
+                                
                                 Button {
                                     showResetAccountConfirmation = true
                                 } label: {
@@ -310,6 +325,18 @@ struct SettingsView: View {
                                         Spacer()
                                     }
                                 }
+                            }
+                            .confirmationDialog(
+                                "Delete All Photos?",
+                                isPresented: $showDeletePhotosConfirmation,
+                                titleVisibility: .visible
+                            ) {
+                                Button("Delete All", role: .destructive) {
+                                    deleteAllPhotos()
+                                }
+                                Button("Cancel", role: .cancel) { }
+                            } message: {
+                                Text("This will permanently delete all photos saved in the app.")
                             }
                             .confirmationDialog(
                                 "Reset Entire App?",
@@ -396,6 +423,24 @@ struct SettingsView: View {
         }
     }
     
+    // Function to delete all stored photos
+    private func deleteAllPhotos() {
+        let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        
+        do {
+            let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+            let photos = files.filter { $0.pathExtension.lowercased() == "jpg" }
+            for url in photos {
+                try? FileManager.default.removeItem(at: url)
+            }
+        } catch {
+            print("Failed to delete photos: \(error)")
+        }
+
+        // Clear the AppStorage references so PhotoView doesn't try to reload missing files
+        UserDefaults.standard.removeObject(forKey: "leftPhotoFileName")
+        UserDefaults.standard.removeObject(forKey: "rightPhotoFileName")
+    }
     
     // Helpers for completedMilestones
     private func getCompletedMilestones() -> Set<String> {

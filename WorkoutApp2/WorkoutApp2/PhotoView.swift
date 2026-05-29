@@ -281,7 +281,7 @@ struct PhotoView: View {
 
         loadSavedPhotos()
     }
-
+    
     private func documentsDirectory() -> URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     }
