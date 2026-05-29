@@ -324,6 +324,7 @@ struct PlannedWorkoutsView: View {
         UserDefaults.standard.set(plannedItems, forKey: keyItems(for: day))
         UserDefaults.standard.set(plannedItemCategories.map { $0.rawValue }, forKey: keyItemCategories(for: day))
         UserDefaults.standard.set(dayTitle, forKey: keyTitle(for: day))
+        scheduleReminderForDay(day)
     }
     
     // MARK: - Toast
@@ -342,6 +343,86 @@ struct PlannedWorkoutsView: View {
                     }
                 }
             }
+    }
+    
+    private func scheduleReminderForDay(
+        _ day: Weekday
+    ) {
+
+        let notificationsEnabled =
+        UserDefaults.standard.bool(
+            forKey: "notificationsEnabled"
+        )
+
+        guard notificationsEnabled else {
+
+            NotificationHandler.shared
+                .removeNotification(
+                    identifier:
+                    "planned_\(day.rawValue)"
+                )
+
+            return
+        }
+
+        guard !dayTitle.isEmpty else {
+
+            NotificationHandler.shared
+                .removeNotification(
+                    identifier:
+                    "planned_\(day.rawValue)"
+                )
+
+            return
+        }
+
+        let savedTime =
+        Date(
+            timeIntervalSince1970:
+            UserDefaults.standard.double(
+                forKey: "workoutReminderTime"
+            )
+        )
+
+        let components =
+        Calendar.current.dateComponents(
+            [.hour,.minute],
+            from: savedTime
+        )
+
+        let weekdayMap:[Weekday:Int] = [
+
+            .sun:1,
+            .mon:2,
+            .tue:3,
+            .wed:4,
+            .thu:5,
+            .fri:6,
+            .sat:7
+
+        ]
+
+        NotificationHandler.shared
+            .scheduleWorkoutNotification(
+
+                title:
+                "Workout Reminder",
+
+                body:
+                "Today's workout: \(dayTitle)",
+
+                weekday:
+                weekdayMap[day] ?? 1,
+
+                hour:
+                components.hour ?? 8,
+
+                minute:
+                components.minute ?? 0,
+
+                identifier:
+                "planned_\(day.rawValue)"
+            )
     }
 
     private func loadForDay(_ day: Weekday) {

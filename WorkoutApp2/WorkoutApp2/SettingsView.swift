@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var workoutData: WorkoutData
 
     //Flags being Imported to this View
     @AppStorage("saveButtonAction") private var GoToHomeScreenWhenSaved: Bool = false
@@ -22,6 +23,37 @@ struct SettingsView: View {
 
     // Keyboard focus
     @FocusState private var workoutsFieldFocused: Bool
+    
+    //Notification Section
+    //Settings for the entire section
+    @AppStorage("notificationsEnabled")
+    private var notificationsEnabled = true
+    //Notification time for when the reminder to workout is.
+    @AppStorage("workoutReminderTime")
+    private var workoutReminderTime: Double =
+    Calendar.current.date( // This is the section to set the default for when the notification comes out.
+        bySettingHour: 8,
+        minute: 0,
+        second: 0,
+        of: Date()
+    )?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
+    
+    //Notification for when to Weigh in
+    @AppStorage("weighInReminder") private var weighInReminder: Bool = true
+    @AppStorage("weighInReminderTime")
+    private var weighInReminderTime: Double =
+    Calendar.current.date( 
+        bySettingHour: 8,
+        minute: 0,
+        second: 0,
+        of: Date()
+    )?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
+    
+    // Notification Milestones Section
+    @AppStorage("completedMilestonesData")
+    private var completedMilestonesData: Data = Data()
+    //Notification settings for milestones to be sent
+    @AppStorage("milestonesReminder") private var milesstoneReminder: Bool = true
 
     var body: some View {
         NavigationView {
@@ -90,6 +122,142 @@ struct SettingsView: View {
                                         .labelsHidden()
                                 }
                             }
+                            
+                            //Notification
+                            SettingsCard(title: "Notifications") {
+                                
+                                SettingsCard(title: "") {
+                                    
+                                    SettingsRow(
+                                        icon: notificationsEnabled
+                                        ? "bell.badge.fill"
+                                        : "bell.slash.fill",
+                                        title: "Enable Notifications"
+                                    ) {
+                                        
+                                        Toggle("", isOn: $notificationsEnabled)
+                                            .labelsHidden()
+                                        
+                                    }
+                                    
+                                    Divider()
+                                    
+                                    // Notification Reminder for the workouts plans in PlannedWorkoutView
+                                    SettingsRow(
+                                        icon: notificationsEnabled
+                                            ? "bell.fill"
+                                            : "bell.slash.fill",
+                                        title: "Workout Reminder Time"
+                                    ) {
+                                        
+                                        DatePicker(
+                                            "",
+                                            selection: Binding(
+                                                get: {
+                                                    Date(
+                                                        timeIntervalSince1970:
+                                                            workoutReminderTime
+                                                    )
+                                                },
+                                                set: {
+                                                    workoutReminderTime =
+                                                    $0.timeIntervalSince1970
+                                                }
+                                            ),
+                                            displayedComponents: .hourAndMinute
+                                        )
+                                        .labelsHidden()
+                                        
+                                    }
+                                    .disabled(!notificationsEnabled)
+                                    .opacity(notificationsEnabled ? 1 : 0.4)
+                                    
+                                    Divider()
+                                    SettingsRow(icon: "bell.fill",
+                                                title: "Enable Milestone Notifications"
+                                    ){
+                                        Toggle("", isOn: $milesstoneReminder)
+                                            .labelsHidden()
+                                    }
+                                    
+                                    //Notification for daily weigh ins
+                                    
+                                    SettingsCard(title: "") {
+                                        
+                                        VStack(spacing: 16) {
+                                            
+                                            // WEIGH IN REMINDER CARD
+                                            VStack(spacing: 12) {
+                                                
+                                                SettingsRow(
+                                                    icon: weighInReminder ? "bell.fill" : "bell.slash.fill",
+                                                    title: "Daily Weigh-In Reminder"
+                                                ) {
+                                                    Toggle("", isOn: $weighInReminder)
+                                                        .labelsHidden()
+                                                        .disabled(!notificationsEnabled)
+                                                }
+                                                
+                                                if notificationsEnabled && weighInReminder {
+                                                    
+                                                    Divider()
+                                                    
+                                                    SettingsRow(
+                                                        icon: "clock.fill",
+                                                        title: "Reminder Time"
+                                                    ) {
+                                                        
+                                                        DatePicker(
+                                                            "",
+                                                            selection: Binding(
+                                                                get: {
+                                                                    Date(
+                                                                        timeIntervalSince1970:
+                                                                            weighInReminderTime
+                                                                    )
+                                                                },
+                                                                set: {
+                                                                    weighInReminderTime =
+                                                                    $0.timeIntervalSince1970
+                                                                }
+                                                            ),
+                                                            displayedComponents: .hourAndMinute
+                                                        )
+                                                        .labelsHidden()
+                                                    }
+                                                    
+                                                } else {
+                                                    
+                                                    HStack {
+                                                        
+                                                        Image(systemName: "moon.zzz.fill")
+                                                            .foregroundStyle(.secondary)
+                                                        
+                                                        Text("Reminder disabled")
+                                                            .foregroundStyle(.secondary)
+                                                        
+                                                        Spacer()
+                                                    }
+                                                    .font(.subheadline)
+                                                    
+                                                }
+                                                
+                                            }
+                                            .padding()
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 18)
+                                                    .fill(
+                                                        notificationsEnabled && weighInReminder
+                                                        ? Color.blue.opacity(0.12)
+                                                        : Color.gray.opacity(0.08)
+                                                    )
+                                            )
+                                            
+                                        }
+                                        
+                                    }
+                                }
+                            }
 
                             // RESET SECTION
                             SettingsCard(title: "Danger Zone") {
@@ -120,6 +288,30 @@ struct SettingsView: View {
                                         Spacer()
                                     }
                                 }
+                            }
+                            .confirmationDialog(
+                                "Reset Entire App?",
+                                isPresented: $showResetConfirmation,
+                                titleVisibility: .visible
+                            ) {
+                                Button("Reset Everything", role: .destructive) {
+                                    resetEntireApp()
+                                }
+                                Button("Cancel", role: .cancel) { }
+                            } message: {
+                                Text("This will delete all your workout data and settings. This cannot be undone.")
+                            }
+                            .confirmationDialog(
+                                "Reset App Setup?",
+                                isPresented: $showResetAccountConfirmation,
+                                titleVisibility: .visible
+                            ) {
+                                Button("Reset Setup", role: .destructive) {
+                                    hasCompletedSetup = false
+                                }
+                                Button("Cancel", role: .cancel) { }
+                            } message: {
+                                Text("This will take you back through the initial setup screen.")
                             }
 
                             // APP INFO
@@ -164,17 +356,90 @@ struct SettingsView: View {
                 }
             }
         }
+        .onChange(of: weighInReminder) { _, _ in
+            updateWeighInReminder()
+        }
+        .onChange(of: weighInReminderTime) { _, _ in
+            updateWeighInReminder()
+        }
+        .onChange(of: notificationsEnabled) { _, _ in
+            updateWeighInReminder()
+        }
+        .onChange(of: workoutData.entries.count) { _, _ in
+            checkWorkoutMilestones()
+        }
+        .onAppear {
+            updateWeighInReminder()
+            checkWorkoutMilestones()
+        }
+    }
+    
+    // Helpers for completedMilestones
+    private func getCompletedMilestones() -> Set<String> {
+        (try? JSONDecoder().decode(Set<String>.self, from: completedMilestonesData)) ?? []
+    }
+
+    private func setCompletedMilestones(_ value: Set<String>) {
+        completedMilestonesData = (try? JSONEncoder().encode(value)) ?? Data()
+    }
+
+    private func checkWorkoutMilestones() {
+        guard milesstoneReminder && notificationsEnabled else { return }
+
+        let workoutCount = workoutData.entries.count
+        let milestones = [1, 5, 10, 25, 50, 100, 250, 500]
+        var completed = getCompletedMilestones()
+
+        for milestone in milestones {
+            let key = "workout_\(milestone)"
+            if workoutCount >= milestone && !completed.contains(key) {
+                completed.insert(key)
+                setCompletedMilestones(completed)
+                NotificationHandler.shared.sendInstantNotification(
+                    title: "Milestone Reached 🎉",
+                    body: "You completed \(milestone) workouts!"
+                )
+            }
+        }
+    }
+    
+    private func updateWeighInReminder() {
+
+        let center = UNUserNotificationCenter.current()
+
+        // Remove old reminder first
+        center.removePendingNotificationRequests(
+            withIdentifiers: ["daily_weigh_in"]
+        )
+
+        // If turned off, stop here
+        guard notificationsEnabled else { return }
+        guard weighInReminder else { return }
+
+        let reminderDate =
+        Date(timeIntervalSince1970: weighInReminderTime)
+
+        let components =
+        Calendar.current.dateComponents(
+            [.hour, .minute],
+            from: reminderDate
+        )
+
+        NotificationHandler.shared.scheduleDailyWeighInNotification(
+            hour: components.hour ?? 8,
+            minute: components.minute ?? 0
+        )
     }
 
     //This Function will reset the entire app and delete all data.
     private func resetEntireApp() {
-
         if let bundleID = Bundle.main.bundleIdentifier {
-
             UserDefaults.standard.removePersistentDomain(forName: bundleID)
             UserDefaults.standard.synchronize()
         }
-
+        
+        workoutData.entries.removeAll()  // ← clears the in-memory array
+        
         UserDefaults.standard.set(false, forKey: "hasCompletedSetup")
         hasCompletedSetup = false
     }
@@ -241,4 +506,5 @@ private var appVersion: String {
 
 #Preview {
     SettingsView()
+        .environmentObject(WorkoutData())
 }

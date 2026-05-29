@@ -6,23 +6,45 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 @main
 struct WorkoutApp2App: App {
+
     @StateObject private var workoutData = WorkoutData()
     @StateObject var healthManager = HealthManager()
-    
-    @AppStorage("hasCompletedSetup") private var hasCompletedSetup: Bool = false
+
+    @AppStorage("hasCompletedSetup")
+    private var hasCompletedSetup: Bool = false
+
+    init() {
+        
+        UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
+
+        NotificationHandler.shared
+            .requestNotificationPermission()
+        
+        NotificationHandler.shared
+            .scheduleWeighInReminder()
+
+    }
 
     var body: some Scene {
+
         WindowGroup {
-            if(hasCompletedSetup){
+
+            if hasCompletedSetup {
+
                 ContentView()
                     .environmentObject(workoutData)
-                    .environmentObject(healthManager)  // ✅ Add this here
-            }else {
+                    .environmentObject(healthManager)
+
+            } else {
+
                 StartUpView()
+
             }
+
         }
     }
 }

@@ -620,6 +620,7 @@ struct ImportView: View {
                 }
         }
     }
+    
     public func resetImportView() { selections.removeAll()
         weights.removeAll()
         reps.removeAll()
@@ -709,7 +710,7 @@ struct ImportView: View {
 
         feedbackSuccess()
     }
-
+    
     func saveEntriesToStorage() {
         if let encoded = try? JSONEncoder().encode(entries) {
             UserDefaults.standard.set(encoded, forKey: "workout_entries")
