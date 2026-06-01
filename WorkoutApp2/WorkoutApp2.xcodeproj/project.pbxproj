@@ -34,9 +34,22 @@
 		7E85E8082DF0B803008E1909 /* WorkoutApp2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutApp2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BAAC27292FCD4986009564AB /* Exceptions for "WorkoutApp2" folder in "WorkoutApp2" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7E85E7F02DF0B7FC008E1909 /* WorkoutApp2 */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		7E85E7F32DF0B7FC008E1909 /* WorkoutApp2 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BAAC27292FCD4986009564AB /* Exceptions for "WorkoutApp2" folder in "WorkoutApp2" target */,
+			);
 			path = WorkoutApp2;
 			sourceTree = "<group>";
 		};
@@ -408,11 +421,13 @@
 				DEVELOPMENT_TEAM = 52TSPRGPBZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WorkoutApp2/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IronFox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage for taking progress photo's";
 				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "To allow the app to access Health Data to display your steps, flights climbed, and calroies burned in the Home tab.  ";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "The app will track and display your steps and how far you have travelled.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "WorkoutApp uses HealthKit to log your steps, distance, and active calories to help track your fitness progress.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "WorkoutApp uses HealthKit to log your steps, distance, and active calories to help track your fitness progress.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Permission to access photos from gallery to be used in the app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -443,11 +458,13 @@
 				DEVELOPMENT_TEAM = 52TSPRGPBZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WorkoutApp2/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IronFox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage for taking progress photo's";
 				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "To allow the app to access Health Data to display your steps, flights climbed, and calroies burned in the Home tab.  ";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "The app will track and display your steps and how far you have travelled.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "WorkoutApp uses HealthKit to log your steps, distance, and active calories to help track your fitness progress.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "WorkoutApp uses HealthKit to log your steps, distance, and active calories to help track your fitness progress.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Permission to access photos from gallery to be used in the app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

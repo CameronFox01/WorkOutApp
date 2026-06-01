@@ -95,15 +95,13 @@ class NotificationHandler {
     
     func scheduleWeighInReminder() {
 
-        let notificationsEnabled =
-        UserDefaults.standard.bool(
-            forKey: "notificationsEnabled"
-        )
+        let notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") == nil
+            ? true
+            : UserDefaults.standard.bool(forKey: "notificationsEnabled")
 
-        let weighInEnabled =
-        UserDefaults.standard.bool(
-            forKey: "weighInReminder"
-        )
+        let weighInEnabled = UserDefaults.standard.object(forKey: "weighInReminder") == nil
+            ? true
+            : UserDefaults.standard.bool(forKey: "weighInReminder")
 
         let identifier = "daily_weigh_in"
 
@@ -226,6 +224,12 @@ class NotificationHandler {
             trigger: trigger
         )
 
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Failed to schedule: \(error)")
+            } else {
+                print("Scheduled weigh-in successfully")
+            }
+        }
     }
 }

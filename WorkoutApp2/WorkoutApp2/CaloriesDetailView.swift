@@ -104,7 +104,7 @@ struct CaloriesDetailView: View {
 
                                 VStack(spacing: 10) {
 
-                                    Text("\(estimatedCaloriesToday)")
+                                    Text("\(Int(Hmanager.activeCalories))")
                                         .font(
                                             .system(
                                                 size: 60,
@@ -198,7 +198,7 @@ struct CaloriesDetailView: View {
 
                                     Spacer()
 
-                                    Text("\(estimatedCaloriesToday) kcal")
+                                    Text("\(Int(Hmanager.activeCalories)) kcal")
                                         .bold()
                                 }
 

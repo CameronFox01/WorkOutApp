@@ -676,12 +676,500 @@ struct WorkoutCalendarView: View {
 #Preview {
 
     let sampleEntries = [
-        WorkoutEntry(
+        
+        //All comments are based on June 1 so they will be wrong on other days but needed this for screen shots
+        WorkoutEntry( // Tuesday
             workoutType: "Bench Press",
             weight: "185",
             reps: "8",
             sets: "3",
-            date: Date(),
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -27,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Wednesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -26,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Wednesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -26,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Wednesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -26,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Wednesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -26,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Thursday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -25,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -24,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -24,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -24,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Monday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -21,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Monday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -21,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Monday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -21,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Monday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -21,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Monday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -21,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Monday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -21,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Wednesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -19,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Thursday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -18,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Thursday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -18,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Thursday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -18,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Thursday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -18,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -17,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        
+        WorkoutEntry( //Monday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -14,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Tuesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -13,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Tuesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -13,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Tuesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -13,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Tuesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -13,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Tuesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -13,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Wednesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -12,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Thursday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -11,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -10,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -10,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -10,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -10,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -10,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -10,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -10,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        
+        WorkoutEntry( //Monday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -7,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Tuesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -6,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Wednesday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -5,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( // Thursday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -4,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -3,
+                to: Date()
+            )!,
             note: "Felt great, nice form"
         ),
         WorkoutEntry(
