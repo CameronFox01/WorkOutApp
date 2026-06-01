@@ -408,7 +408,7 @@
 				DEVELOPMENT_TEAM = 52TSPRGPBZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = MyStride;
+				INFOPLIST_KEY_CFBundleDisplayName = IronFox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage for taking progress photo's";
 				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "To allow the app to access Health Data to display your steps, flights climbed, and calroies burned in the Home tab.  ";
@@ -443,7 +443,7 @@
 				DEVELOPMENT_TEAM = 52TSPRGPBZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = MyStride;
+				INFOPLIST_KEY_CFBundleDisplayName = IronFox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage for taking progress photo's";
 				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "To allow the app to access Health Data to display your steps, flights climbed, and calroies burned in the Home tab.  ";

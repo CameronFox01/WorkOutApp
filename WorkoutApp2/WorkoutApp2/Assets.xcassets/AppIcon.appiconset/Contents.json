@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "MyStride Logo.png",
+      "filename" : "LightMode Iron Fox.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "DarkMode MyStride .png",
+      "filename" : "DarkMode Iron Fox.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

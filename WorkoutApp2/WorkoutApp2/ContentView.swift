@@ -37,8 +37,9 @@ struct ContentView: View {
                 .tabItem {
                     Label("Camera", systemImage: "camera")
                 }
-                
-                GoalView()
+                NavigationStack{
+                    GoalView()
+                }
                 .tabItem{
                     Label("Goal", systemImage: "trophy")
                 }

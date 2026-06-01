@@ -13,6 +13,7 @@ struct WorkoutApp2App: App {
 
     @StateObject private var workoutData = WorkoutData()
     @StateObject var healthManager = HealthManager()
+    @State private var isBooting: Bool = true
 
     @AppStorage("hasCompletedSetup")
     private var hasCompletedSetup: Bool = false
@@ -32,19 +33,31 @@ struct WorkoutApp2App: App {
     var body: some Scene {
 
         WindowGroup {
-
-            if hasCompletedSetup {
-
-                ContentView()
-                    .environmentObject(workoutData)
-                    .environmentObject(healthManager)
-
-            } else {
-
-                StartUpView()
-
+            Group {
+                if isBooting {
+                    LaunchScreen()
+                        .onAppear {
+                            // Simulate/allow boot tasks to finish before showing main UI
+                            DispatchQueue.main.async {
+                                // If you have async setup, perform it here then set isBooting = false
+                                // For now, allow LaunchScreen's internal 2s animation to run, then swap root.
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                    isBooting = false
+                                }
+                            }
+                        }
+                } else {
+                    if hasCompletedSetup {
+                        ContentView()
+                            .environmentObject(workoutData)
+                            .environmentObject(healthManager)
+                    } else {
+                        StartUpView()
+                            .environmentObject(workoutData)
+                            .environmentObject(healthManager)
+                    }
+                }
             }
-
         }
     }
 }

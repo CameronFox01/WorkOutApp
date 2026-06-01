@@ -5,7 +5,6 @@
 //  Created by Cameron Fox on 3/19/26.
 //
 
-
 import SwiftUI
 
 struct PlannedWorkoutsView: View {
@@ -50,6 +49,14 @@ struct PlannedWorkoutsView: View {
     @State private var plannedCount: String = ""
     @State private var plannedItems: [String] = []
     @State private var plannedItemCategories: [WorkoutCategory] = []
+    @State private var plannedReminderEnabled: Bool = true
+    @State private var plannedTime: Date = {
+        // default to 8:00 AM today
+        var comps = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        comps.hour = 8
+        comps.minute = 0
+        return Calendar.current.date(from: comps) ?? Date()
+    }()
 
     // MARK: - Body
 
@@ -74,6 +81,7 @@ struct PlannedWorkoutsView: View {
                         titleCard
                         plannedCountCard
                         plannedItemsCard
+                        dayReminderCard
                     }
                     .padding(.horizontal)
                     .padding(.top, 8)
@@ -82,6 +90,14 @@ struct PlannedWorkoutsView: View {
                 .scrollDismissesKeyboard(.interactively)
                 .onTapGesture {
                     isEditing = false
+                }
+                .onChange(of: plannedReminderEnabled) { _, _ in
+                    UserDefaults.standard.set(plannedReminderEnabled, forKey: keyEnabled(for: selectedDay))
+                    scheduleReminderForDay(selectedDay)
+                }
+                .onChange(of: plannedTime) { _, _ in
+                    UserDefaults.standard.set(plannedTime.timeIntervalSince1970, forKey: keyTime(for: selectedDay))
+                    scheduleReminderForDay(selectedDay)
                 }
             }
             .overlay(alignment: .top) {
@@ -160,6 +176,65 @@ struct PlannedWorkoutsView: View {
                 .foregroundStyle(.white)
                 .font(.headline)
         }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 28)
+                .fill(.white.opacity(0.10))
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 28))
+        )
+    }
+
+    private var dayReminderCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Planned Reminder", systemImage: "bell.fill")
+                .font(.headline.bold())
+                .foregroundStyle(.white)
+
+            HStack {
+                Image(systemName: plannedReminderEnabled ? "bell.fill" : "bell.slash.fill")
+                    .foregroundStyle(.white.opacity(0.85))
+                Text("Enable Reminder")
+                    .foregroundStyle(.white)
+                Spacer()
+                Toggle("", isOn: $plannedReminderEnabled)
+                    .labelsHidden()
+            }
+            .padding(12)
+            .background(.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+
+            if plannedReminderEnabled {
+                Divider().background(Color.white.opacity(0.2))
+
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "clock.fill")
+                            .foregroundStyle(.white.opacity(0.85))
+                        Text("Reminder Time")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.white)
+                    }
+
+                    DatePicker(
+                        "",
+                        selection: $plannedTime,
+                        displayedComponents: .hourAndMinute
+                    )
+                    .labelsHidden()
+                    .colorScheme(.dark)
+                }
+            } else {
+                HStack(spacing: 8) {
+                    Image(systemName: "moon.zzz.fill")
+                        .foregroundStyle(.secondary)
+                    Text("Reminder disabled")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .font(.subheadline)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 28)
@@ -318,12 +393,16 @@ struct PlannedWorkoutsView: View {
     private func keyItems(for day: Weekday) -> String { "planned_workouts_items_\(day.rawValue)" }
     private func keyItemCategories(for day: Weekday) -> String { "planned_workouts_categories_\(day.rawValue)" }
     private func keyTitle(for day: Weekday) -> String { "planned_workouts_title_\(day.rawValue)" }
+    private func keyTime(for day: Weekday) -> String { "planned_workout_time_\(day.rawValue)" }
+    private func keyEnabled(for day: Weekday) -> String { "planned_workout_enabled_\(day.rawValue)" }
 
     private func saveForDay(_ day: Weekday) {
         UserDefaults.standard.set(plannedCount, forKey: keyCount(for: day))
         UserDefaults.standard.set(plannedItems, forKey: keyItems(for: day))
         UserDefaults.standard.set(plannedItemCategories.map { $0.rawValue }, forKey: keyItemCategories(for: day))
         UserDefaults.standard.set(dayTitle, forKey: keyTitle(for: day))
+        UserDefaults.standard.set(plannedReminderEnabled, forKey: keyEnabled(for: day))
+        UserDefaults.standard.set(plannedTime.timeIntervalSince1970, forKey: keyTime(for: day))
         scheduleReminderForDay(day)
     }
     
@@ -345,84 +424,57 @@ struct PlannedWorkoutsView: View {
             }
     }
     
-    private func scheduleReminderForDay(
-        _ day: Weekday
-    ) {
+    private func scheduleReminderForDay(_ day: Weekday) {
 
-        let notificationsEnabled =
-        UserDefaults.standard.bool(
-            forKey: "notificationsEnabled"
-        )
+        let notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") == nil
+            ? true
+            : UserDefaults.standard.bool(forKey: "notificationsEnabled")
+
+        let enabledForDay = UserDefaults.standard.object(forKey: keyEnabled(for: day)) == nil
+            ? true
+            : UserDefaults.standard.bool(forKey: keyEnabled(for: day))
 
         guard notificationsEnabled else {
+            NotificationHandler.shared.removeNotification(identifier: "planned_\(day.rawValue)")
+            return
+        }
 
-            NotificationHandler.shared
-                .removeNotification(
-                    identifier:
-                    "planned_\(day.rawValue)"
-                )
-
+        guard enabledForDay else {
+            NotificationHandler.shared.removeNotification(identifier: "planned_\(day.rawValue)")
             return
         }
 
         guard !dayTitle.isEmpty else {
-
-            NotificationHandler.shared
-                .removeNotification(
-                    identifier:
-                    "planned_\(day.rawValue)"
-                )
-
+            NotificationHandler.shared.removeNotification(identifier: "planned_\(day.rawValue)")
             return
         }
 
-        let savedTime =
-        Date(
-            timeIntervalSince1970:
-            UserDefaults.standard.double(
-                forKey: "workoutReminderTime"
-            )
-        )
+        let ts = UserDefaults.standard.double(forKey: keyTime(for: day))
+        let dateForTime = ts > 0 ? Date(timeIntervalSince1970: ts) : plannedTime
+        let components = Calendar.current.dateComponents([.hour, .minute], from: dateForTime)
 
-        let components =
-        Calendar.current.dateComponents(
-            [.hour,.minute],
-            from: savedTime
-        )
-
-        let weekdayMap:[Weekday:Int] = [
-
-            .sun:1,
-            .mon:2,
-            .tue:3,
-            .wed:4,
-            .thu:5,
-            .fri:6,
-            .sat:7
-
+        let weekdayMap: [Weekday: Int] = [
+            .sun: 1, .mon: 2, .tue: 3, .wed: 4, .thu: 5, .fri: 6, .sat: 7
         ]
 
-        NotificationHandler.shared
-            .scheduleWorkoutNotification(
+        let weekdayInt = weekdayMap[day] ?? 1
 
-                title:
-                "Workout Reminder",
+        NotificationHandler.shared.scheduleWorkoutNotification(
+            title: "Workout Reminder",
+            body: "Today's workout: \(dayTitle)",
+            weekday: weekdayInt,
+            hour: components.hour ?? 8,
+            minute: components.minute ?? 0,
+            identifier: "planned_\(day.rawValue)"
+        )
 
-                body:
-                "Today's workout: \(dayTitle)",
-
-                weekday:
-                weekdayMap[day] ?? 1,
-
-                hour:
-                components.hour ?? 8,
-
-                minute:
-                components.minute ?? 0,
-
-                identifier:
-                "planned_\(day.rawValue)"
-            )
+        // Verify it was actually registered
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let match = requests.filter { $0.identifier == "planned_\(day.rawValue)" }
+            for r in match {
+                print("   → \(r.identifier): \(r.trigger.debugDescription)")
+            }
+        }
     }
 
     private func loadForDay(_ day: Weekday) {
@@ -447,6 +499,22 @@ struct PlannedWorkoutsView: View {
         }
 
         dayTitle = UserDefaults.standard.string(forKey: keyTitle(for: day)) ?? ""
+
+        if UserDefaults.standard.object(forKey: keyEnabled(for: day)) == nil {
+            plannedReminderEnabled = true
+        } else {
+            plannedReminderEnabled = UserDefaults.standard.bool(forKey: keyEnabled(for: day))
+        }
+
+        let ts = UserDefaults.standard.double(forKey: keyTime(for: day))
+        if ts > 0 {
+            plannedTime = Date(timeIntervalSince1970: ts)
+        } else {
+            var comps = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+            comps.hour = 8
+            comps.minute = 0
+            plannedTime = Calendar.current.date(from: comps) ?? Date()
+        }
     }
 }
 

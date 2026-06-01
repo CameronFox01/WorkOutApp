@@ -148,38 +148,6 @@ struct SettingsView: View {
                                     
                                     Divider()
                                     
-                                    // Notification Reminder for the workouts plans in PlannedWorkoutView
-                                    SettingsRow(
-                                        icon: notificationsEnabled
-                                            ? "bell.fill"
-                                            : "bell.slash.fill",
-                                        title: "Workout Reminder Time"
-                                    ) {
-                                        
-                                        DatePicker(
-                                            "",
-                                            selection: Binding(
-                                                get: {
-                                                    Date(
-                                                        timeIntervalSince1970:
-                                                            workoutReminderTime
-                                                    )
-                                                },
-                                                set: {
-                                                    workoutReminderTime =
-                                                    $0.timeIntervalSince1970
-                                                }
-                                            ),
-                                            displayedComponents: .hourAndMinute
-                                        )
-                                        .labelsHidden()
-                                        
-                                    }
-                                    .disabled(!notificationsEnabled)
-                                    .opacity(notificationsEnabled ? 1 : 0.4)
-                                    
-                                    Divider()
-                                    
                                     //Notification for Milestones achieved
                                     SettingsRow(
                                         icon: notificationsEnabled
@@ -574,3 +542,4 @@ private var appVersion: String {
     SettingsView()
         .environmentObject(WorkoutData())
 }
+

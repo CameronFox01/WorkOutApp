@@ -66,8 +66,31 @@ class NotificationHandler {
             trigger: trigger
         )
 
-        UNUserNotificationCenter.current()
-            .add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Failed to schedule daily weigh-in: \(error)")
+            } else {
+                print("Scheduled daily weigh-in at \(hour):\(String(format: "%02d", minute))")
+            }
+        }
+    }
+    
+    func ensureAuthorization(completion: @escaping (Bool) -> Void) {
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                completion(true)
+            case .denied:
+                completion(false)
+            case .notDetermined:
+                center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+                    completion(granted)
+                }
+            @unknown default:
+                completion(false)
+            }
+        }
     }
     
     func scheduleWeighInReminder() {
