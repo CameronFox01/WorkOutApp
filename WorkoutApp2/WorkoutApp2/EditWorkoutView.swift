@@ -48,18 +48,23 @@ struct EditWorkoutView: View {
         self._sets = State(initialValue: entry.sets)
         self._date = State(initialValue: entry.date)
         self._notes = State(initialValue: entry.note)
-        if let cat = workoutCategoryLookup[entry.workoutType] {
-            self._selectedCategory = State(initialValue: cat)
-        } else {
-            self._selectedCategory = State(initialValue: .push)
+
+        // Build lookup locally instead of referencing self.workoutCategoryLookup
+        var lookup: [String: WorkoutCategory] = [:]
+        for category in WorkoutCategory.allCases {
+            for workout in category.workouts() {
+                lookup[workout] = category
+            }
         }
+        let resolvedCategory = lookup[entry.workoutType] ?? .push
+        self._selectedCategory = State(initialValue: resolvedCategory)
+
         self._workoutGoal = State(
             initialValue: UserDefaults.standard.string(
                 forKey: "goal_\(entry.workoutType)"
             ) ?? ""
         )
     }
-
     var body: some View {
         ZStack {
             LinearGradient(

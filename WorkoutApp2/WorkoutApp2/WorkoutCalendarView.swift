@@ -318,52 +318,19 @@ struct WorkoutCalendarView: View {
                         // MARK: - Selected Day Card
                         VStack(alignment: .leading, spacing: 18) {
 
-                            let dayEntries =
-                            entries(for: selectedDate)
-
-                            let bodyWeightForDay =
-                            dayEntries.first {
-                                $0.workoutType == "Body Weight"
-                                && !$0.weight.isEmpty
-                            }?.weight
-
-                            let fallbackWeight =
-                            lastStoredBodyWeightEntry?.weight
-
-//                            let workouts =
-//                            UserDefaults.standard.stringArray(
-//                                forKey: keyItems(
-//                                    for: weekday(
-//                                        from: selectedDate
-//                                    )
-//                                )
-//                            ) ?? []
-
                             HStack {
-
                                 VStack(alignment: .leading) {
-
-                                    Text(
-                                        selectedDate.formatted(
-                                            date: .abbreviated,
-                                            time: .omitted
-                                        )
-                                    )
-                                    .font(.title.bold())
-                                    .foregroundStyle(.white)                            
+                                    Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
+                                        .font(.title.bold())
+                                        .foregroundStyle(.white)
                                 }
 
                                 Spacer()
 
-                                if let w =
-                                    bodyWeightForDay
-                                    ?? fallbackWeight {
-
+                                if let w = displayedBodyWeight {
                                     VStack(alignment: .trailing) {
-
                                         Text("\(w)")
                                             .font(.title3.bold())
-
                                         Text("Body Weight")
                                             .font(.caption)
                                     }
@@ -377,7 +344,7 @@ struct WorkoutCalendarView: View {
                                 )
 
                             // MARK: - Workouts
-                            if dayEntries.isEmpty {
+                            if selectedDayEntries.isEmpty {
 
                                 VStack(spacing: 14) {
 
@@ -400,7 +367,7 @@ struct WorkoutCalendarView: View {
 
                             } else {
 
-                                ForEach(dayEntries) { e in
+                                ForEach(selectedDayEntries) { e in
                                     NavigationLink(destination: EditWorkoutView(entry: e)
                                         .environmentObject(workoutData)
                                     ) {
@@ -538,6 +505,17 @@ struct WorkoutCalendarView: View {
         }
     }
     
+    private var selectedDayEntries: [WorkoutEntry] {
+        entries(for: selectedDate)
+    }
+
+    private var displayedBodyWeight: String? {
+        let forDay = selectedDayEntries.first {
+            $0.workoutType == "Body Weight" && !$0.weight.isEmpty
+        }?.weight
+        return forDay ?? lastStoredBodyWeightEntry?.weight
+    }
+    
     private func keyTitle(for day: WorkoutCalendarView.Weekday) -> String {
         "planned_workouts_title_\(day.rawValue)"
     }
@@ -616,9 +594,66 @@ struct WorkoutCalendarView: View {
     }
 
     private struct PlannedWorkoutDetailLink: View {
+           
 
         let workout: String
         let category: WorkoutCategory
+        var saveAction: (WorkoutCategory) -> Void = { _ in }
+        @State private var selections: [WorkoutCategory: String] = [:]
+        @State private var weights: [WorkoutCategory: String] = [:]
+        @State private var reps: [WorkoutCategory: String] = [:]
+        @State private var sets: [WorkoutCategory: String] = [:]
+        @State private var distances: [WorkoutCategory: String] = [:]
+        @State private var times: [WorkoutCategory: String] = [:]
+        @State private var notes: [WorkoutCategory: String] = [:]
+        @State private var entriesLocal: [WorkoutEntry] = []
+        @State private var showSavedToastLocal: Bool = false
+        @State private var unitSystemRawLocal: String = UnitSystem.metric.rawValue
+
+        @EnvironmentObject private var workoutData: WorkoutData
+
+        // Simple flags and utilities to satisfy references
+        @State private var showSavedToast: Bool = false
+        private var GoToHomeScreenWhenSaved: Bool { false }
+
+        // Provide a weight unit string for ImportView
+        private var weightUnit: String { unitSystemRawLocal }
+
+        // Increment/decrement helpers for dictionaries keyed by WorkoutCategory
+        private func increment(_ dict: inout [WorkoutCategory: String], for category: WorkoutCategory, by step: Int) {
+            let current = Int(dict[category] ?? "0") ?? 0
+            dict[category] = String(current + step)
+        }
+
+        private func decrement(_ dict: inout [WorkoutCategory: String], for category: WorkoutCategory, by step: Int) {
+            let current = Int(dict[category] ?? "0") ?? 0
+            let next = max(0, current - step)
+            dict[category] = String(next)
+        }
+
+        // Haptic feedback helpers
+        private func feedbackSuccess() {
+        #if os(iOS)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        #endif
+        }
+
+        private func feedbackError() {
+        #if os(iOS)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+        #endif
+        }
+
+        // Reset behavior used after save when GoToHomeScreenWhenSaved is true
+        private func resetImportView() {
+            selections.removeAll()
+            weights.removeAll()
+            reps.removeAll()
+            sets.removeAll()
+            distances.removeAll()
+            times.removeAll()
+            notes.removeAll()
+        }
 
         var body: some View {
 
@@ -626,27 +661,28 @@ struct WorkoutCalendarView: View {
 
                 ImportView.CategoryDetailView(
                     category: category,
-                    unitSystemRaw: .constant(
-                        UnitSystem.metric.rawValue
-                    ),
-                    selections: .constant(
-                        [category: workout]
-                    ),
-                    weights: .constant([:]),
-                    reps: .constant([:]),
-                    sets: .constant([:]),
-                    distances: .constant([:]),
-                    times: .constant([:]),
-                    entries: .constant([]),
-                    notes: .constant([:]),
-                    save: {},
-                    increment: { _, _ in },
-                    decrement: { _, _ in },
-                    weightUnitProvider: { "lbs" },
-                    goHomeAfterSave: false,
-                    showSavedToast: .constant(false),
-                    resetParent: {}
+                    unitSystemRaw: $unitSystemRawLocal,
+                    selections: $selections,
+                    weights: $weights,
+                    reps: $reps,
+                    sets: $sets,
+                    distances: $distances,
+                    times: $times,
+                    entries: $entriesLocal,
+                    notes: $notes,
+                    save: { saveEntry()},
+                    increment: { dict, step in self.increment(&dict, for: category, by: Int(step)) },
+                    decrement: { dict, step in self.decrement(&dict, for: category, by: Int(step)) },
+                    weightUnitProvider: { self.weightUnit },
+                    goHomeAfterSave: GoToHomeScreenWhenSaved,
+                    showSavedToast: $showSavedToast,
+                    resetParent: { resetImportView() }
                 )
+                .onAppear{
+                    if selections[category] == nil {
+                                    selections[category] = workout
+                                }
+                }
 
             } label: {
 
@@ -669,6 +705,27 @@ struct WorkoutCalendarView: View {
                         .fill(.white.opacity(0.08))
                 )
             }
+        }
+        
+        private func saveEntry() {
+            WorkoutApp2.saveEntry(
+                for: category,
+                selections: selections,
+                weights: weights,
+                reps: reps,
+                sets: sets,
+                distances: distances,
+                times: times,
+                notes: notes,
+                workoutData: workoutData,
+                onSuccess: {
+                    showSavedToast = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                        showSavedToast = false
+                    }
+                },
+                onError: { }
+            )
         }
     }
 }
@@ -1111,6 +1168,18 @@ struct WorkoutCalendarView: View {
             )!,
             note: "Felt great, nice form"
         ),
+        WorkoutEntry( //Friday
+            workoutType: "Bench Press",
+            weight: "185",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -10,
+                to: Date()
+            )!,
+            note: "Felt great, nice form"
+        ),
         
         WorkoutEntry( //Monday
             workoutType: "Bench Press",
@@ -1211,3 +1280,4 @@ struct WorkoutCalendarView: View {
             .environmentObject(WorkoutData())
     }
 }
+

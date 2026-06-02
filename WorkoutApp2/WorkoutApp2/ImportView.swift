@@ -635,81 +635,96 @@ struct ImportView: View {
     }
     // MARK: - Save / Storage
     func saveEntry(for category: WorkoutCategory) {
-        print("🔍 Saving category: \(category)")
-        // Validation adapted to categories without weight
-        if category.usesWeight {
-            guard let weight = weights[category], !weight.isEmpty else {
-                feedbackError()
-                print("⛔️ Missing values for weight")
-                return
-            }
-        }
-        
-        if category == .distanceCardio {
-            guard let distance = distances[category], !distance.isEmpty else {
-                feedbackError()
-                return
-            }
-            guard let time = times[category], !time.isEmpty else {
-                feedbackError()
-                return
-            }
-        }
-
-        let rep = reps[category] ?? ""
-        if category != .distanceCardio && rep.isEmpty {
-            feedbackError()
-            print("⛔️ Missing rep")
-            return
-        }
-
-        guard let workout = selections[category], !workout.isEmpty else {
-            feedbackError()
-            print("⛔️ Missing values for workout")
-            return
-        }
-
-        let setsVal: String = {
-            if category == .distanceCardio { return times[category] ?? "" }
-            else { return setsDict[category] ?? "" }
-        }()
-
-        let weightString: String = {
-            if category == .distanceCardio { return distances[category] ?? "" }
-            if category.usesWeight { return weights[category] ?? "" }
-            else { return "" }
-        }()
-
-        let newEntry = WorkoutEntry(
-            workoutType: workout,
-            weight: weightString,
-            reps: rep,
-            sets: setsVal,
-            date: Date(),
-            note: notes[category] ?? ""
+        WorkoutApp2.saveEntry(
+            for: category,
+            selections: selections,
+            weights: weights,
+            reps: reps,
+            sets: setsDict,
+            distances: distances,
+            times: times,
+            notes: notes,
+            workoutData: workoutData,
+            onSuccess: { feedbackSuccess() },
+            onError: { feedbackError() }
         )
-        workoutData.add(entry: newEntry)
-
-        entries.append(newEntry)
-        saveEntriesToStorage()
-
-        //How the button resets after being pressed.
-        DispatchQueue.main.async {
-            
-            //This will allow the user to do multiple sets without having to redo.
-            if GoToHomeScreenWhenSaved == false{
-                if category.usesWeight { weights[category] = "" }
-                if category == .distanceCardio { distances[category] = "" }
-                if category == .distanceCardio { times[category] = "" }
-                reps[category] = ""
-                setsDict[category] = ""
-            }else { //this will move the user out to the home screen after each save.
-                resetImportView()
-            }
-        }
-
-        feedbackSuccess()
     }
+//    func saveEntry(for category: WorkoutCategory) {
+//        print("🔍 Saving category: \(category)")
+//        // Validation adapted to categories without weight
+//        if category.usesWeight {
+//            guard let weight = weights[category], !weight.isEmpty else {
+//                feedbackError()
+//                print("⛔️ Missing values for weight")
+//                return
+//            }
+//        }
+//        
+//        if category == .distanceCardio {
+//            guard let distance = distances[category], !distance.isEmpty else {
+//                feedbackError()
+//                return
+//            }
+//            guard let time = times[category], !time.isEmpty else {
+//                feedbackError()
+//                return
+//            }
+//        }
+//
+//        let rep = reps[category] ?? ""
+//        if category != .distanceCardio && rep.isEmpty {
+//            feedbackError()
+//            print("⛔️ Missing rep")
+//            return
+//        }
+//
+//        guard let workout = selections[category], !workout.isEmpty else {
+//            feedbackError()
+//            print("⛔️ Missing values for workout")
+//            return
+//        }
+//
+//        let setsVal: String = {
+//            if category == .distanceCardio { return times[category] ?? "" }
+//            else { return setsDict[category] ?? "" }
+//        }()
+//
+//        let weightString: String = {
+//            if category == .distanceCardio { return distances[category] ?? "" }
+//            if category.usesWeight { return weights[category] ?? "" }
+//            else { return "" }
+//        }()
+//
+//        let newEntry = WorkoutEntry(
+//            workoutType: workout,
+//            weight: weightString,
+//            reps: rep,
+//            sets: setsVal,
+//            date: Date(),
+//            note: notes[category] ?? ""
+//        )
+//        workoutData.add(entry: newEntry)
+//
+//        entries.append(newEntry)
+//        saveEntriesToStorage()
+//
+//        //How the button resets after being pressed.
+//        DispatchQueue.main.async {
+//            
+//            //This will allow the user to do multiple sets without having to redo.
+//            if GoToHomeScreenWhenSaved == false{
+//                if category.usesWeight { weights[category] = "" }
+//                if category == .distanceCardio { distances[category] = "" }
+//                if category == .distanceCardio { times[category] = "" }
+//                reps[category] = ""
+//                setsDict[category] = ""
+//            }else { //this will move the user out to the home screen after each save.
+//                resetImportView()
+//            }
+//        }
+//
+//        feedbackSuccess()
+//    }
     
     func saveEntriesToStorage() {
         if let encoded = try? JSONEncoder().encode(entries) {
