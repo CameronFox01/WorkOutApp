@@ -41,7 +41,7 @@ struct SettingsView: View {
         of: Date()
     )?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
     
-    //Notification for when to Weigh in
+    //Notification for when to Weigh in for Daily Weigh in
     @AppStorage("weighInReminder") private var weighInReminder: Bool = true
     @AppStorage("weighInReminderTime")
     private var weighInReminderTime: Double =
@@ -51,6 +51,21 @@ struct SettingsView: View {
         second: 0,
         of: Date()
     )?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
+    
+    
+    // Notification for when to Weigh in for Weekly Weigh In
+    @AppStorage("weighInWeeklyReminder") private var weighInWeeklyReminder: Bool = false
+    @AppStorage("weighInWeeklyReminderTime")
+    private var weighInWeeklyReminderTime: Double =
+    Calendar.current.date(
+        bySettingHour: 8,
+        minute: 0,
+        second: 0,
+        of: Date()
+    )?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
+    
+    @AppStorage("weeklyWeighInDay")
+    private var weeklyWeighInDay: Int = 1
     
     // Notification Milestones Section
     @AppStorage("completedMilestonesData")
@@ -160,6 +175,8 @@ struct SettingsView: View {
                                     }
                                     .opacity(notificationsEnabled ? 1 : 0.4)
                                     
+                                    Divider()
+                                    
                                     //Notification for Goals Achieved
                                     SettingsRow(
                                         icon: notificationsEnabled
@@ -172,8 +189,14 @@ struct SettingsView: View {
                                     }
                                     .opacity(notificationsEnabled ? 1 : 0.4)
                                     
-                                    //Notification for daily weigh ins
+                                    //Notification Section
+                                    Divider()
                                     
+                                    Text("Weight Settings")
+                                        .font(.title2).bold()
+                                        .padding(.top, 16)
+                                        .padding(.bottom, 0)
+                                    //Notification for Daily weigh ins
                                     SettingsCard(title: "") {
                                         
                                         VStack(spacing: 16) {
@@ -247,6 +270,85 @@ struct SettingsView: View {
                                             )
                                             
                                         }
+                                        
+                                    }
+                                    
+                                    //Notification for Weekly weigh ins
+                                    SettingsCard(title: ""){
+                                        VStack(spacing: 16) {
+                                            
+                                            SettingsRow(
+                                                icon: weighInWeeklyReminder ? "bell.fill" : "bell.slash.fill",
+                                                title: "Weekly Weigh-In Reminder"
+                                            ) {
+                                                Toggle("", isOn: $weighInWeeklyReminder)
+                                                    .labelsHidden()
+                                                    .disabled(!notificationsEnabled)
+                                            }
+                                            .opacity(notificationsEnabled ? 1 : 0.4)
+                                            
+                                            if notificationsEnabled && weighInWeeklyReminder {
+                                                
+                                                Divider()
+                                                
+                                                SettingsRow(
+                                                    icon: "clock.fill",
+                                                    title: "Reminder Time"
+                                                ) {
+                                                    DatePicker(
+                                                        "",
+                                                        selection: Binding(
+                                                            get: {
+                                                                Date(
+                                                                    timeIntervalSince1970:
+                                                                        weighInWeeklyReminderTime
+                                                                )
+                                                            },
+                                                            set: {
+                                                                weighInWeeklyReminderTime =
+                                                                $0.timeIntervalSince1970
+                                                            }
+                                                        ),
+                                                        displayedComponents: .hourAndMinute
+                                                    )
+                                                    .labelsHidden()
+                                                }
+                                                Picker("Day", selection: $weeklyWeighInDay) {
+                                                    Text("Sunday").tag(1)
+                                                    Text("Monday").tag(2)
+                                                    Text("Tuesday").tag(3)
+                                                    Text("Wednesday").tag(4)
+                                                    Text("Thursday").tag(5)
+                                                    Text("Friday").tag(6)
+                                                    Text("Saturday").tag(7)
+                                                }
+                                                
+                                            } else {
+                                                
+                                                HStack {
+                                                    
+                                                    Image(systemName: "moon.zzz.fill")
+                                                        .foregroundStyle(.secondary)
+                                                    
+                                                    Text("Reminder disabled")
+                                                        .foregroundStyle(.secondary)
+                                                    
+                                                    Spacer()
+                                                }
+                                                .font(.subheadline)
+                                                
+                                            }
+                                            
+                                        }
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 18)
+                                                .fill(
+                                                    notificationsEnabled && weighInWeeklyReminder
+                                                    ? Color.blue.opacity(0.12)
+                                                    : Color.gray.opacity(0.08)
+                                                )
+                                        )
                                         
                                     }
                                 }
@@ -373,7 +475,19 @@ struct SettingsView: View {
                 }
             }
         }
-        .onChange(of: weighInReminder) { _, _ in
+        .onChange(of: weighInReminder) { _, newValue in
+            if newValue {
+                weighInWeeklyReminder = false
+            }
+
+            updateWeighInReminder()
+        }
+
+        .onChange(of: weighInWeeklyReminder) { _, newValue in
+            if newValue {
+                weighInReminder = false
+            }
+
             updateWeighInReminder()
         }
         .onChange(of: weighInReminderTime) { _, _ in
