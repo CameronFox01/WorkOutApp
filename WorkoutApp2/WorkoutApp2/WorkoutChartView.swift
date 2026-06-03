@@ -291,11 +291,45 @@ struct WorkoutChartView: View {
     }
 
     private func detailLine(for entry: WorkoutEntry) -> String {
-        if let w = Double(entry.weight), !entry.weight.isEmpty {
-            return "\(format(w)) \(weightUnit) × \(entry.reps)"
-        } else {
+
+        if isDistanceCardio {
+
+            let distance = entry.weight.isEmpty
+                ? "0"
+                : entry.weight
+
+            let unit = UnitSystem(rawValue: unitSystemRaw) == .imperial
+                ? "mi"
+                : "km"
+
+            let time = entry.sets.isEmpty
+                ? ""
+                : " • \(entry.sets) min"
+
+            return "\(distance) \(unit)\(time)"
+        }
+
+        if isTimeCardio {
+
+            let time = entry.sets.isEmpty
+                ? entry.reps
+                : entry.sets
+
+            return "\(time) min"
+        }
+
+        // Normal strength workouts
+        if let w = Double(entry.weight),
+           !entry.weight.isEmpty {
+
+            return "\(format(w)) \(weightUnit) × \(entry.reps) reps"
+        }
+
+        if !entry.reps.isEmpty {
             return "\(entry.reps) reps"
         }
+
+        return "No data"
     }
 
     private func bests() -> (bestWeight: String?, bestReps: String?) {
@@ -318,7 +352,8 @@ struct WorkoutChartView: View {
 }
 
 #Preview {
-    let sampleEntries: [WorkoutEntry] = [
+    let isWeighted: Bool = false
+    let weightedEntries: [WorkoutEntry] = [
         WorkoutEntry(workoutType: "Bench Press", weight: "135", reps: "8", sets: "2", date: .now.addingTimeInterval(-86400 * 6), note: "Felt sore"),
         WorkoutEntry(workoutType: "Bench Press", weight: "145", reps: "8", sets: "3", date: .now.addingTimeInterval(-86400 * 4), note: "Felt sore"),
         WorkoutEntry(workoutType: "Bench Press", weight: "155", reps: "6", sets: "5", date: .now.addingTimeInterval(-86400 * 2), note: ""),
@@ -328,7 +363,34 @@ struct WorkoutChartView: View {
         WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now, note: ""),
         WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now.addingTimeInterval(-86400), note: "")
     ]
-    NavigationView {
-        WorkoutChartView(workoutName: "Bench Press", entries: sampleEntries)
+    
+    let distanceEntries: [WorkoutEntry] = [
+        WorkoutEntry(
+            workoutType: "Brisk Walking",
+            weight: "2.5",      // distance
+            reps: "",           // unused
+            sets: "32",         // time in minutes
+            date: .now,
+            note: "Latest Walk"
+        ),
+
+        WorkoutEntry(
+            workoutType: "Brisk Walking",
+            weight: "0.8",
+            reps: "",
+            sets: "14",
+            date: .now.addingTimeInterval(-86400 * 2),
+            note: "First Walk"
+        )
+    ]
+    if isWeighted {
+        NavigationView {
+            WorkoutChartView(workoutName: "Bench Press", entries: weightedEntries)
+        }
+    }
+    else {
+        NavigationView{
+            WorkoutChartView(workoutName: "Brisk Walking", entries: distanceEntries)
+        }
     }
 }

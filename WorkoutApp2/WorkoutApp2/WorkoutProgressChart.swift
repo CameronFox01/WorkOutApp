@@ -85,9 +85,7 @@ struct WorkoutProgressChart: View {
             if isDistanceCardio,
                let distance = Double(entry.weight) {
 
-                let displayValue: Double = displayImperial
-                    ? (distance / 1.60934)
-                    : distance
+                let displayValue: Double = distance
 
                 return WorkoutDataPoint(
                     date: entry.date,
