@@ -543,7 +543,7 @@ struct SettingsView: View {
 
         let workoutCount = workoutData.entries.count
         let workoutImportedMilestones = [5, 10, 25, 50, 100, 250, 500]
-        let daysWorkedOutMilestones = [1, 7, 14, 30, 60, 90, 180, 365, 500, 1000]
+        let daysWorkedOutMilestones = [7, 14, 30, 60, 90, 180, 365, 500, 1000]
 
         var completed = getCompletedMilestones()
 
