@@ -40,6 +40,9 @@ enum ImageNames: String, CaseIterable {
 }
 
 struct AllImportedWorkoutsView: View {
+    @State private var searchText: String = ""
+    @State private var selectedCategory: WorkoutCategory? = nil
+    
     var scrollToID: UUID?
     @EnvironmentObject var workoutData: WorkoutData
 
@@ -63,6 +66,18 @@ struct AllImportedWorkoutsView: View {
             .ignoresSafeArea()
 
             ScrollViewReader { proxy in
+                VStack(spacing: 12) {
+
+                    TextField("Search workouts...", text: $searchText)
+                        .padding(12)
+                        .background(.white.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .foregroundStyle(.white)
+
+                    filterScrollView
+                }
+                .padding(.horizontal)
+                .padding(.top)
                 ScrollView {
                     LazyVStack(spacing: 14) {
 
@@ -83,9 +98,28 @@ struct AllImportedWorkoutsView: View {
                             .padding(.top, 100)
 
                         } else {
-                            ForEach(workoutData.entries.reversed()) { entry in
-                                let iconName = workoutCategoryLookup[entry.workoutType]?.icon ?? "dumbbell.fill"
-                                WorkoutEntryCard(entry: entry, iconName: iconName, weightUnit: weightUnit)
+                            ForEach(groupedEntries, id: \.date) { group in
+
+                                VStack(alignment: .leading, spacing: 10) {
+
+                                    Text(sectionTitle(for: group.date))
+                                        .font(.headline.bold())
+                                        .foregroundStyle(.white.opacity(0.8))
+                                        .padding(.horizontal)
+
+                                    ForEach(group.entries.sorted(by: { $0.date > $1.date })) { entry in
+
+                                        let iconName =
+                                            workoutCategoryLookup[entry.workoutType]?.icon
+                                            ?? "dumbbell.fill"
+
+                                        WorkoutEntryCard(
+                                            entry: entry,
+                                            iconName: iconName,
+                                            weightUnit: weightUnit
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -119,6 +153,109 @@ struct AllImportedWorkoutsView: View {
         }
         return lookup
     }()
+    
+    private func sectionTitle(for date: Date) -> String {
+
+        let calendar = Calendar.current
+
+        if calendar.isDateInToday(date) {
+            return "Today"
+        }
+
+        if calendar.isDateInYesterday(date) {
+            return "Yesterday"
+        }
+
+        return date.formatted(
+            date: .abbreviated,
+            time: .omitted
+        )
+    }
+    
+    private func filterChip(
+        title: String,
+        isSelected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+
+        Button(action: action) {
+
+            Text(title)
+                .font(.subheadline.bold())
+                .foregroundStyle(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    isSelected
+                    ? Color.blue
+                    : Color.white.opacity(0.12)
+                )
+                .clipShape(Capsule())
+        }
+    }
+    
+    private var filterScrollView: some View {
+
+        ScrollView(.horizontal, showsIndicators: false) {
+
+            HStack(spacing: 10) {
+
+                filterChip(
+                    title: "All",
+                    isSelected: selectedCategory == nil
+                ) {
+                    selectedCategory = nil
+                }
+
+                ForEach(WorkoutCategory.allCases, id: \.self) { category in
+
+                    filterChip(
+                        title: category.rawValue,
+                        isSelected: selectedCategory == category
+                    ) {
+                        selectedCategory = category
+                    }
+                }
+            }
+        }
+    }
+    
+    private var filteredEntries: [WorkoutEntry] {
+
+        workoutData.entries.filter { entry in
+
+            // Search filtering
+            let matchesSearch =
+                searchText.isEmpty ||
+                entry.workoutType.localizedCaseInsensitiveContains(searchText) ||
+                entry.note.localizedCaseInsensitiveContains(searchText)
+
+            // Category filtering
+            let matchesCategory: Bool
+
+            if let selectedCategory {
+                matchesCategory =
+                    workoutCategoryLookup[entry.workoutType] == selectedCategory
+            } else {
+                matchesCategory = true
+            }
+
+            return matchesSearch && matchesCategory
+        }
+    }
+    
+    private var groupedEntries: [(date: Date, entries: [WorkoutEntry])] {
+
+        let grouped = Dictionary(
+            grouping: filteredEntries
+        ) { entry in
+            Calendar.current.startOfDay(for: entry.date)
+        }
+
+        return grouped
+            .map { ($0.key, $0.value) }
+            .sorted { $0.date > $1.date }
+    }
 }
 
 private struct WorkoutEntryCard: View {
