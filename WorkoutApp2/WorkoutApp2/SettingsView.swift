@@ -196,6 +196,7 @@ struct SettingsView: View {
                                         .font(.title2).bold()
                                         .padding(.top, 16)
                                         .padding(.bottom, 0)
+                                    
                                     //Notification for Daily weigh ins
                                     SettingsCard(title: "") {
                                         
@@ -220,7 +221,7 @@ struct SettingsView: View {
                                                     
                                                     SettingsRow(
                                                         icon: "clock.fill",
-                                                        title: "Reminder Time"
+                                                        title: "Time"
                                                     ) {
                                                         
                                                         DatePicker(
@@ -293,7 +294,7 @@ struct SettingsView: View {
                                                 
                                                 SettingsRow(
                                                     icon: "clock.fill",
-                                                    title: "Reminder Time"
+                                                    title: "Time"
                                                 ) {
                                                     DatePicker(
                                                         "",
@@ -541,20 +542,53 @@ struct SettingsView: View {
         guard milesstoneReminder && notificationsEnabled else { return }
 
         let workoutCount = workoutData.entries.count
-        let milestones = [1, 5, 10, 25, 50, 100, 250, 500]
+        let workoutImportedMilestones = [5, 10, 25, 50, 100, 250, 500]
+        let daysWorkedOutMilestones = [1, 7, 14, 30, 60, 90, 180, 365, 500, 1000]
+
         var completed = getCompletedMilestones()
 
-        for milestone in milestones {
+        // MARK: Workout Count Milestones
+        for milestone in workoutImportedMilestones {
+
             let key = "workout_\(milestone)"
-            if workoutCount >= milestone && !completed.contains(key) {
+
+            if workoutCount >= milestone &&
+                !completed.contains(key) {
+
                 completed.insert(key)
-                setCompletedMilestones(completed)
+
                 NotificationHandler.shared.sendInstantNotification(
-                    title: "Milestone Reached 🎉",
+                    title: "Milestone Reached",
                     body: "You completed \(milestone) workouts!"
                 )
             }
         }
+
+        // MARK: Days Worked Out Milestones
+
+        let uniqueWorkoutDays = Set(
+            workoutData.entries.map {
+                Calendar.current.startOfDay(for: $0.date)
+            }
+        ).count
+
+        for milestone in daysWorkedOutMilestones {
+
+            let key = "days_\(milestone)"
+
+            if uniqueWorkoutDays >= milestone &&
+                !completed.contains(key) {
+
+                completed.insert(key)
+
+                NotificationHandler.shared.sendInstantNotification(
+                    title: "Consistency Milestone 🔥",
+                    body: "You have worked out on \(milestone) different days!"
+                )
+            }
+        }
+
+        setCompletedMilestones(completed)
     }
     
     private func updateWeighInReminder() {
