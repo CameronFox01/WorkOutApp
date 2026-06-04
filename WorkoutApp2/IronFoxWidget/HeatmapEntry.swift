@@ -77,14 +77,32 @@ struct HeatmapProvider: TimelineProvider {
 struct HeatmapWidgetView: View {
     var entry: HeatmapEntry
     @Environment(\.widgetFamily) var family
+    @Environment(\.colorScheme) private var colorScheme
     private let calendar = Calendar.current
 
     var body: some View {
-        switch family {
-        case .systemSmall:  smallView
-        case .systemMedium: mediumView
-        case .systemLarge:  largeView
-        default:            mediumView
+
+        Group {
+            switch family {
+            case .systemSmall:
+                smallView
+
+            case .systemMedium:
+                mediumView
+
+            case .systemLarge:
+                largeView
+
+            default:
+                mediumView
+            }
+        }
+        .containerBackground(for: .widget) {
+            Rectangle().fill(
+                colorScheme == .dark
+                ? Color.black
+                : Color.blue
+            )
         }
     }
 
@@ -129,7 +147,7 @@ struct HeatmapWidgetView: View {
                         Text("\(todayCount)")
                             .font(.title.bold())
                             .foregroundStyle(.white)
-                        Text("Workouts Today")
+                        Text("Today")
                             .font(.subheadline).bold()
                             .foregroundStyle(.white)
                     }
@@ -346,14 +364,12 @@ struct IronFoxHeatmapWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HeatmapProvider()) { entry in
             HeatmapWidgetView(entry: entry)
-                .containerBackground(for: .widget) {
-                    Rectangle().fill(.blue.gradient)
-                }
         }
         .configurationDisplayName("Workout Heatmap")
         .description("See your workout activity this month.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
+
 }
 
 #Preview("Small", as: .systemSmall) {
