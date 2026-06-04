@@ -20,13 +20,15 @@ struct Milestone: Identifiable {
 class WorkoutData: ObservableObject {
     @Published var entries: [WorkoutEntry] = []
     @Published var achievedMilestones: [Milestone] = []
+    
+    private let sharedDefaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2") // For thr Widget
 
     init() {
         load()
     }
 
     func load() {
-        if let data = UserDefaults.standard.data(forKey: "workout_entries"),
+        if let data = sharedDefaults?.data(forKey: "workout_entries"),
            let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
             entries = decoded
         }
@@ -34,7 +36,7 @@ class WorkoutData: ObservableObject {
 
     func save() {
         if let encoded = try? JSONEncoder().encode(entries) {
-            UserDefaults.standard.set(encoded, forKey: "workout_entries")
+            sharedDefaults?.set(encoded, forKey: "workout_entries")
         }
     }
 
