@@ -5,7 +5,6 @@
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>group.Fox-Studios.WorkoutApp2</string>
-		<string>group.Fox-Studios.IronFoxWidget</string>
 	</array>
 </dict>
 </plist>

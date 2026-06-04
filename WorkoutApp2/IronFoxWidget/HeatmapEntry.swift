@@ -67,9 +67,9 @@ struct HeatmapProvider: TimelineProvider {
         default: rawValue = "sat"
         }
 
-        let defaults = UserDefaults.standard
-        let title = defaults.string(forKey: "planned_workouts_title_\(rawValue)") ?? ""
-        let workouts = defaults.stringArray(forKey: "planned_workouts_items_\(rawValue)") ?? []
+        let defaults = UserDefaults( suiteName: "group.Fox-Studios.WorkoutApp2")
+        let title = defaults?.string(forKey: "planned_workouts_title_\(rawValue)") ?? ""
+        let workouts = defaults?.stringArray(forKey: "planned_workouts_items_\(rawValue)") ?? []
         return (title, workouts)
     }
 }
@@ -352,7 +352,7 @@ struct IronFoxHeatmapWidget: Widget {
         }
         .configurationDisplayName("Workout Heatmap")
         .description("See your workout activity this month.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
 
