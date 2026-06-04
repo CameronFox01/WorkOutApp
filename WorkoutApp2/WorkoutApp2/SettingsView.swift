@@ -439,6 +439,9 @@ struct SettingsView: View {
 
                                 Text("MyStep")
                                     .font(.headline)
+                                
+                                // Change this to the actual webpage once published.
+                                Link("Visit Webpage", destination: URL(string: "http://www.cameronfox.me")!)
 
                                 Text("Version \(appVersion)")
                                     .font(.footnote)
