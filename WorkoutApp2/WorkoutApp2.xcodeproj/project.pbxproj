@@ -438,7 +438,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.76.4;
+				MARKETING_VERSION = 0.77;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -475,7 +475,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.76.4;
+				MARKETING_VERSION = 0.77;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

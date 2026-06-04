@@ -6,8 +6,20 @@
 //
 import SwiftUI
 
+struct Milestone: Identifiable {
+    let id = UUID()
+
+    let title: String
+    let description: String
+
+    let icon: String
+
+    let dateReached: Date?
+}
+
 class WorkoutData: ObservableObject {
     @Published var entries: [WorkoutEntry] = []
+    @Published var achievedMilestones: [Milestone] = []
 
     init() {
         load()
@@ -25,14 +37,53 @@ class WorkoutData: ObservableObject {
             UserDefaults.standard.set(encoded, forKey: "workout_entries")
         }
     }
-    
-    
+
+    func loadMilestones() {
+        let completed =
+        (try? JSONDecoder().decode(
+            Set<String>.self,
+            from: UserDefaults.standard.data(
+                forKey: "completedMilestonesData"
+            ) ?? Data()
+        )) ?? []
+
+        var results: [Milestone] = []
+
+        for item in completed {
+
+            if item.starts(with: "workout_") {
+                let number = item.replacingOccurrences(of: "workout_", with: "")
+                results.append(
+                    Milestone(
+                        title: "\(number) Workouts",
+                        description: "Completed \(number) workouts",
+                        icon: "🏋️",          // ✅ added missing icon
+                        dateReached: nil     // ✅ fixed label (was achievedDate:)
+                    )
+                )
+            }
+
+            if item.starts(with: "days_") {
+                let number = item.replacingOccurrences(of: "days_", with: "")
+                results.append(
+                    Milestone(
+                        title: "\(number) Workout Days",
+                        description: "Worked out on \(number) different days",
+                        icon: "📅",          // ✅ added missing icon
+                        dateReached: nil     // ✅ fixed label (was achievedDate:)
+                    )
+                )
+            }
+        }
+
+        achievedMilestones = results.sorted { $0.title < $1.title }
+    }
 
     func add(entry: WorkoutEntry) {
         entries.append(entry)
         save()
         checkMilestones()
-        checkGoalAchieved(for: entry) 
+        checkGoalAchieved(for: entry)
     }
 
     private func checkGoalAchieved(for entry: WorkoutEntry) {
@@ -40,22 +91,20 @@ class WorkoutData: ObservableObject {
             ? true
             : UserDefaults.standard.bool(forKey: "notificationsEnabled")
         let goalReminder = UserDefaults.standard.object(forKey: "goalReminder") == nil
-        ? true
-        : UserDefaults.standard.bool(forKey: "goalReminder")
-        
+            ? true
+            : UserDefaults.standard.bool(forKey: "goalReminder")
+
         guard notificationsEnabled && goalReminder else { return }
 
         let goalKey = "goal_\(entry.workoutType)"
         let completedKey = "goalReached_\(entry.workoutType)"
 
-        // Only fire once per goal
         guard !UserDefaults.standard.bool(forKey: completedKey) else { return }
 
         guard let goalString = UserDefaults.standard.string(forKey: goalKey),
               let goalValue = Double(goalString),
               goalValue > 0 else { return }
 
-        // Compare against the entry's weight (or reps for bodyweight/cardio)
         let entryValue = Double(entry.weight.isEmpty ? entry.reps : entry.weight) ?? 0
 
         if entryValue >= goalValue {
@@ -67,19 +116,17 @@ class WorkoutData: ObservableObject {
             print("Goal reached for \(entry.workoutType)!")
         }
     }
-    
+
     private func checkMilestones() {
         let notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") == nil
-        ? true
-        : UserDefaults.standard.bool(forKey: "notificationsEnabled")
-    
-    let milestonesEnabled = UserDefaults.standard.object(forKey: "milestonesReminder") == nil
-        ? true
-        : UserDefaults.standard.bool(forKey: "milestonesReminder")
-        
-        guard notificationsEnabled && milestonesEnabled else {
-            return
-        }
+            ? true
+            : UserDefaults.standard.bool(forKey: "notificationsEnabled")
+
+        let milestonesEnabled = UserDefaults.standard.object(forKey: "milestonesReminder") == nil
+            ? true
+            : UserDefaults.standard.bool(forKey: "milestonesReminder")
+
+        guard notificationsEnabled && milestonesEnabled else { return }
 
         let count = entries.count
         let milestones = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]

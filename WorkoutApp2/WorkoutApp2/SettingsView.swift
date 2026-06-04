@@ -582,13 +582,14 @@ struct SettingsView: View {
                 completed.insert(key)
 
                 NotificationHandler.shared.sendInstantNotification(
-                    title: "Consistency Milestone 🔥",
+                    title: "Consistency Milestone",
                     body: "You have worked out on \(milestone) different days!"
                 )
             }
         }
 
         setCompletedMilestones(completed)
+        workoutData.loadMilestones()
     }
     
     private func updateWeighInReminder() {
