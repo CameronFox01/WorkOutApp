@@ -37,6 +37,52 @@ class NotificationHandler {
 
     }
     
+    func scheduleWeeklyWeighInNotification(
+    hour: Int,
+    minute: Int,
+    weekday: Int,
+    identifier: String
+    ){
+        //Remove the old one
+        UNUserNotificationCenter.current()
+            .removePendingNotificationRequests(
+                withIdentifiers: [identifier]
+            )
+        
+        let content = UNMutableNotificationContent()
+        
+        content.title = "Weekly Weigh In"
+        content.body = "Time to log your weight for the week."
+        content.sound = .default
+        
+        var components = DateComponents()
+        
+        components.hour = hour
+        components.minute = minute
+        components.weekday = weekday
+        
+        let trigger =
+        UNCalendarNotificationTrigger(
+            dateMatching: components,
+            repeats: true
+        )
+        
+        let request =
+        UNNotificationRequest(
+            identifier: "weekly_weigh_in",
+            content: content,
+            trigger: trigger
+            )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error {
+                print("Failed weekly reminder: \(error)")
+            } else {
+                print("Weekly reminder scheduled")
+            }
+        }
+    }
+    
     func scheduleDailyWeighInNotification(
         hour: Int,
         minute: Int

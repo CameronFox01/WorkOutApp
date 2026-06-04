@@ -488,7 +488,10 @@ struct SettingsView: View {
                 weighInReminder = false
             }
 
-            updateWeighInReminder()
+            updateWeeklyWeighInReminder()
+        }
+        .onChange(of: weighInWeeklyReminderTime) { _, _ in
+            updateWeeklyWeighInReminder()
         }
         .onChange(of: weighInReminderTime) { _, _ in
             updateWeighInReminder()
@@ -501,6 +504,7 @@ struct SettingsView: View {
         }
         .onAppear {
             updateWeighInReminder()
+            updateWeeklyWeighInReminder()
             checkWorkoutMilestones()
         }
     }
@@ -578,6 +582,32 @@ struct SettingsView: View {
         NotificationHandler.shared.scheduleDailyWeighInNotification(
             hour: components.hour ?? 8,
             minute: components.minute ?? 0
+        )
+    }
+    
+    private func updateWeeklyWeighInReminder() {
+        let center = UNUserNotificationCenter.current()
+        
+        // Remove old reminder first
+        center.removePendingNotificationRequests(withIdentifiers: ["weekly_weigh_in"])
+        // If turned off, stop here
+        guard notificationsEnabled else { return }
+        guard weighInWeeklyReminder else { return }
+        
+        let reminderDate =
+        Date(timeIntervalSince1970: weighInWeeklyReminderTime)
+        
+        let components =
+        Calendar.current.dateComponents(
+            [.hour, .minute],
+            from: reminderDate
+        )
+        
+        NotificationHandler.shared.scheduleWeeklyWeighInNotification(
+            hour: components.hour ?? 8,
+            minute: components.minute ?? 0,
+            weekday: weeklyWeighInDay,
+            identifier: "weekly_weigh_in"
         )
     }
 
