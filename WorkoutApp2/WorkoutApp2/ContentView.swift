@@ -18,10 +18,12 @@ struct ContentView: View {
     @AppStorage("userWeight") private var weight: String = ""
     @State private var newWeightInput: String = ""
 
+
     @AppStorage("hasCompletedSetup") private var hasCompletedSetup = false
 
     @State private var entries: [WorkoutEntry] = []
     @State private var achievedGoals: [AchievedGoal] = []
+    @State private var achievedMilestones: [Milestone] = []
     @State private var selectedWorkout: String = ""
 
     var body: some View {
@@ -103,9 +105,22 @@ struct ContentView: View {
                        }
                        .environmentObject(workoutData)
                        
+                   case .achievedMileStones:
+                        NavigationStack {
+                           MilestonesView(
+                            milestones: achievedMilestones,
+                            comingfromWidget: true
+                           )
+                       }
+                       .environmentObject(workoutData)
+                       .onAppear {
+                           loadAchievedMilestones()  // ✅ load when the view appears
+                       }
+                       
                    case .goalEdit:
                        GoalView()
                    }
+                    
                }
             }
         }
@@ -147,6 +162,39 @@ struct ContentView: View {
 
     private var workoutsList: [String] {
         Array(Set(entries.map { $0.workoutType })).sorted()
+    }
+    
+    private func loadAchievedMilestones() {
+        let completedData = UserDefaults.standard.data(forKey: "completedMilestonesData") ?? Data()
+        let completed = (try? JSONDecoder().decode(Set<String>.self, from: completedData)) ?? []
+
+        var results: [Milestone] = []
+
+        for key in completed {
+            if key.hasPrefix("workout_") {
+                let number = key.replacingOccurrences(of: "workout_", with: "")
+                results.append(
+                    Milestone(
+                        title: "\(number) Workouts",
+                        description: "Completed \(number) workouts",
+                        icon: "dumbbell.fill",
+                        dateReached: nil
+                    )
+                )
+            } else if key.hasPrefix("days_") {
+                let number = key.replacingOccurrences(of: "days_", with: "")
+                results.append(
+                    Milestone(
+                        title: "\(number) Workout Days",
+                        description: "Worked out on \(number) different days",
+                        icon: "calendar",
+                        dateReached: nil
+                    )
+                )
+            }
+        }
+
+        achievedMilestones = results.sorted { $0.title < $1.title }
     }
 
     private func loadEntries() {

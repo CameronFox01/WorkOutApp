@@ -57,7 +57,10 @@ struct WorkoutApp2App: App {
             }
             .onReceive(NotificationCenter.default.publisher(for: .openGoals)) { _ in
                 router.activeScreen = .achievedGoals
-                router.selectedTab = .progress
+                //router.selectedTab = .progress
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .openMileStones)) { _ in
+                router.activeScreen = .achievedMileStones
             }
         }
     }
@@ -109,8 +112,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                 NotificationCenter.default.post(name: .openCalendar, object: nil)
             } else if id == "daily_weigh_in" || id == "weekly_weigh_in" {
                 NotificationCenter.default.post(name: .openWeightView, object: nil)
-            } else if id.hasPrefix("goalReached_") || id.hasPrefix("workout_") {
+            } else if id.hasPrefix("goalReached_") {
                 NotificationCenter.default.post(name: .openGoals, object: nil)
+            } else if id.hasPrefix("workout_"){
+                NotificationCenter.default.post(name: .openMileStones, object: nil)
             }
 
             completionHandler()
@@ -121,6 +126,7 @@ extension Notification.Name {
     static let openCalendar = Notification.Name("openCalendar")
     static let openWeightView = Notification.Name("openWeightView")
     static let openGoals = Notification.Name("openGoals")
+    static let openMileStones = Notification.Name("openMileStones")
 }
 
 //Section for widgets and Notification to take you to the correct spot
@@ -133,6 +139,7 @@ enum AppRoute {
     case setup
     case weight
     case achievedGoals
+    case achievedMileStones
 }
 
 class AppRouter: ObservableObject {
@@ -153,6 +160,7 @@ class AppRouter: ObservableObject {
         case goalEdit
         case weight
         case achievedGoals
+        case achievedMileStones
 
         var id: String { "\(self)" }
     }
@@ -182,9 +190,12 @@ class AppRouter: ObservableObject {
             
         case "weight":
             activeScreen = .weight
+            
         case "achievedGoals":
             activeScreen = .achievedGoals
 
+        case "achievedMileStones":
+            activeScreen = .achievedMileStones
         default:
             selectedTab = .home
         }

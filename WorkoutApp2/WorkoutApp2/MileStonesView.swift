@@ -8,6 +8,9 @@ import SwiftUI
 
 struct MilestonesView: View {
     let milestones: [Milestone]
+    let comingfromWidget: Bool
+    
+    @EnvironmentObject var router: AppRouter
 
     private var workoutMilestones: [Milestone] {
         milestones.filter { !$0.title.hasSuffix("Workout Days") }
@@ -115,6 +118,17 @@ struct MilestonesView: View {
         .toolbarBackground(Color.blue, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
+            if comingfromWidget {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button{
+                        router.activeScreen = nil
+                    } label:{
+                        Image(systemName: "chevron.left")
+                            .font(.title)
+                            .foregroundStyle(.white)
+                    }
+                }
+            }
             ToolbarItem(placement: .principal) {
                 Text("Milestones")
                     .font(.title2.bold())

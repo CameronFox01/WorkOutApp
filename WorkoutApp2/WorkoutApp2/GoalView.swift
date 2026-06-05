@@ -104,7 +104,10 @@ struct GoalView: View {
                     }
                     .buttonStyle(.plain)
                     NavigationLink {
-                        MilestonesView(milestones: achievedMilestones)
+                        MilestonesView(
+                            milestones: achievedMilestones,
+                            comingfromWidget: false
+                        )
                     } label: {
                         HStack {
                             Image(systemName: "trophy.fill")
