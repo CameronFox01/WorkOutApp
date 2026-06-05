@@ -21,6 +21,7 @@ struct ContentView: View {
     @AppStorage("hasCompletedSetup") private var hasCompletedSetup = false
 
     @State private var entries: [WorkoutEntry] = []
+    @State private var achievedGoals: [AchievedGoal] = []
     @State private var selectedWorkout: String = ""
 
     var body: some View {
@@ -64,7 +65,7 @@ struct ContentView: View {
                    case .workoutDetail:
                        WorkoutCalendarView(entries: entries, comingFromWidget: true)
                    
-                   case .weight: // This loads it but two issues. 1. Doesn't have any info, (expected) 2. Cant exit the view
+                   case .weight: // This comes from one of the notifications
                        WeightUpdateSheet(
                            unitSystem: unitSystem,
                            weightUnit: weightUnit,
@@ -92,6 +93,15 @@ struct ContentView: View {
                        .onAppear {
                            newWeightInput = weight
                        }
+                   
+                   case .achievedGoals:
+                       NavigationStack {
+                           AchievedGoalsView(
+                            achievedGoals: loadAchievedGoalsForOverlay(),
+                            comingfromWidget: true
+                           )
+                       }
+                       .environmentObject(workoutData)
                        
                    case .goalEdit:
                        GoalView()
@@ -104,6 +114,27 @@ struct ContentView: View {
                 router.activeScreen = .workoutDetail
             }
         }
+    }
+    
+    private func loadAchievedGoalsForOverlay() -> [AchievedGoal] {
+        let allWorkouts = BodyweightWorkout.allCases.map(\.rawValue)
+            + PushWorkout.allCases.map(\.rawValue)
+            + PullWorkout.allCases.map(\.rawValue)
+            + LegWorkout.allCases.map(\.rawValue)
+            + GluteWorkout.allCases.map(\.rawValue)
+            + BicepWorkout.allCases.map(\.rawValue)
+            + TricepWorkout.allCases.map(\.rawValue)
+            + AbsWorkout.allCases.map(\.rawValue)
+            + DistanceCardioWorkout.allCases.map(\.rawValue)
+            + TimeCardioWorkout.allCases.map(\.rawValue)
+            + SportsWorkout.allCases.map(\.rawValue)
+            + StretchRoutine.allCases.map(\.rawValue)
+
+        return allWorkouts.compactMap { workout in
+            guard let goal = UserDefaults.standard.string(forKey: "goal_\(workout)"), !goal.isEmpty,
+                  UserDefaults.standard.bool(forKey: "goalReached_\(workout)") else { return nil }
+            return AchievedGoal(workout: workout, target: goal, dateReached: nil)
+        }.sorted { $0.workout.localizedCaseInsensitiveCompare($1.workout) == .orderedAscending }
     }
     
     var weightUnit: String {
@@ -141,7 +172,7 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
             .environmentObject(WorkoutData())
-            .environmentObject(HealthManager())  // ✅ Add this
+            .environmentObject(HealthManager())
             .environmentObject(AppRouter())
     }
 }

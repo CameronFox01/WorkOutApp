@@ -56,7 +56,7 @@ struct WorkoutApp2App: App {
                 router.activeScreen = .weight
             }
             .onReceive(NotificationCenter.default.publisher(for: .openGoals)) { _ in
-                router.activeScreen = nil
+                router.activeScreen = .achievedGoals
                 router.selectedTab = .progress
             }
         }
@@ -97,6 +97,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         completionHandler([.banner, .sound, .badge])
     }
     
+    //Section for directing users to certain screens based on the notification
     func userNotificationCenter(
             _ center: UNUserNotificationCenter,
             didReceive response: UNNotificationResponse,
@@ -108,7 +109,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                 NotificationCenter.default.post(name: .openCalendar, object: nil)
             } else if id == "daily_weigh_in" || id == "weekly_weigh_in" {
                 NotificationCenter.default.post(name: .openWeightView, object: nil)
-            } else if id.hasPrefix("milestone") || id.hasPrefix("workout_") {
+            } else if id.hasPrefix("goalReached_") || id.hasPrefix("workout_") {
                 NotificationCenter.default.post(name: .openGoals, object: nil)
             }
 
@@ -131,6 +132,7 @@ enum AppRoute {
     case timer
     case setup
     case weight
+    case achievedGoals
 }
 
 class AppRouter: ObservableObject {
@@ -150,6 +152,7 @@ class AppRouter: ObservableObject {
         case workoutDetail
         case goalEdit
         case weight
+        case achievedGoals
 
         var id: String { "\(self)" }
     }
@@ -179,6 +182,8 @@ class AppRouter: ObservableObject {
             
         case "weight":
             activeScreen = .weight
+        case "achievedGoals":
+            activeScreen = .achievedGoals
 
         default:
             selectedTab = .home

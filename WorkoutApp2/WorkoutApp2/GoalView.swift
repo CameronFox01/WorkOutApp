@@ -65,7 +65,8 @@ struct GoalView: View {
                     NavigationLink {
                         
                         AchievedGoalsView(
-                            achievedGoals: achievedGoals
+                            achievedGoals: achievedGoals,
+                            comingfromWidget: false
                         )
                         
                     } label: {
@@ -675,6 +676,7 @@ struct GoalView: View {
                             gradientButton(title: "Save Goal", systemImage: "checkmark.circle.fill") {
                                 let key = "goal_\(selection.rawValue)"
                                 UserDefaults.standard.set(targetWeights[selection.rawValue] ?? "", forKey: key)
+                                UserDefaults.standard.set(false, forKey: "goalReached_\(selection.rawValue)")
                                 let generator = UINotificationFeedbackGenerator()
                                 generator.notificationOccurred(.success)
                             }

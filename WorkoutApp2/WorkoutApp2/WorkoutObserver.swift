@@ -115,7 +115,8 @@ class WorkoutData: ObservableObject {
             UserDefaults.standard.set(true, forKey: completedKey)
             NotificationHandler.shared.sendInstantNotification(
                 title: "Goal Reached!",
-                body: "You hit your \(entry.workoutType) goal of \(goalString)!"
+                body: "You hit your \(entry.workoutType) goal of \(goalString)!",
+                identifier: "goalReached_\(entry.workoutType)"
             )
             print("Goal reached for \(entry.workoutType)!")
         }
@@ -147,7 +148,8 @@ class WorkoutData: ObservableObject {
                 }
                 NotificationHandler.shared.sendInstantNotification(
                     title: "Milestone Reached!",
-                    body: "You've logged \(milestone) workouts!"
+                    body: "You've logged \(milestone) workouts!",
+                    identifier: "workout_\(milestone)"
                 )
             }
         }

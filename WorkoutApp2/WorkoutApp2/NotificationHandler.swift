@@ -255,27 +255,17 @@ class NotificationHandler {
             .add(request)
     }
     
-    func sendInstantNotification(title: String, body: String) {
+    func sendInstantNotification(title: String, body: String, identifier: String = UUID().uuidString) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
 
-        // Trigger immediately (after 0.1s to allow scheduling)
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
-
-        let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
-            content: content,
-            trigger: trigger
-        )
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
 
         UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("Failed to schedule: \(error)")
-            } else {
-                print("Scheduled weigh-in successfully")
-            }
+            if let error { print("Failed to schedule: \(error)") }
         }
     }
 }

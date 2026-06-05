@@ -16,6 +16,9 @@ struct AchievedGoal: Identifiable {
 
 struct AchievedGoalsView: View {
     let achievedGoals: [AchievedGoal]
+    let comingfromWidget: Bool
+    
+    @EnvironmentObject var router: AppRouter
 
     // Optional: you can also recompute here if you want live refresh,
     // but using the passed-in array keeps it simple.
@@ -92,6 +95,17 @@ struct AchievedGoalsView: View {
                 Text("Goals Achieved")
                     .font(.title2.bold())
                     .foregroundStyle(.white)
+            }
+            if comingfromWidget {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button{
+                        router.activeScreen = nil
+                    } label:{
+                        Image(systemName: "chevron.left")
+                            .font(.title)
+                            .foregroundStyle(.white)
+                    }
+                }
             }
         }
     }
