@@ -5,6 +5,7 @@
 //  Created by Cameron Fox on 6/7/25.
 //
 import SwiftUI
+import WidgetKit
 
 struct Milestone: Identifiable {
     let id = UUID()
@@ -38,6 +39,7 @@ class WorkoutData: ObservableObject {
         if let encoded = try? JSONEncoder().encode(entries) {
             sharedDefaults?.set(encoded, forKey: "workout_entries")
         }
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func loadMilestones() {
