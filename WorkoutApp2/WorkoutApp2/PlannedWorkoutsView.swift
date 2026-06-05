@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 struct PlannedWorkoutsView: View {
+    private let sharedDefaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")!
 
     // MARK: - Environment
     @Environment(\.dismiss) private var dismiss
@@ -92,11 +94,11 @@ struct PlannedWorkoutsView: View {
                     isEditing = false
                 }
                 .onChange(of: plannedReminderEnabled) { _, _ in
-                    UserDefaults.standard.set(plannedReminderEnabled, forKey: keyEnabled(for: selectedDay))
+                    sharedDefaults.set(plannedReminderEnabled, forKey: keyEnabled(for: selectedDay))
                     scheduleReminderForDay(selectedDay)
                 }
                 .onChange(of: plannedTime) { _, _ in
-                    UserDefaults.standard.set(plannedTime.timeIntervalSince1970, forKey: keyTime(for: selectedDay))
+                    sharedDefaults.set(plannedTime.timeIntervalSince1970, forKey: keyTime(for: selectedDay))
                     scheduleReminderForDay(selectedDay)
                 }
             }
@@ -397,13 +399,14 @@ struct PlannedWorkoutsView: View {
     private func keyEnabled(for day: Weekday) -> String { "planned_workout_enabled_\(day.rawValue)" }
 
     private func saveForDay(_ day: Weekday) {
-        UserDefaults.standard.set(plannedCount, forKey: keyCount(for: day))
-        UserDefaults.standard.set(plannedItems, forKey: keyItems(for: day))
-        UserDefaults.standard.set(plannedItemCategories.map { $0.rawValue }, forKey: keyItemCategories(for: day))
-        UserDefaults.standard.set(dayTitle, forKey: keyTitle(for: day))
-        UserDefaults.standard.set(plannedReminderEnabled, forKey: keyEnabled(for: day))
-        UserDefaults.standard.set(plannedTime.timeIntervalSince1970, forKey: keyTime(for: day))
+        sharedDefaults.set(plannedCount, forKey: keyCount(for: day))
+        sharedDefaults.set(plannedItems, forKey: keyItems(for: day))
+        sharedDefaults.set(plannedItemCategories.map { $0.rawValue }, forKey: keyItemCategories(for: day))
+        sharedDefaults.set(dayTitle, forKey: keyTitle(for: day))
+        sharedDefaults.set(plannedReminderEnabled, forKey: keyEnabled(for: day))
+        sharedDefaults.set(plannedTime.timeIntervalSince1970, forKey: keyTime(for: day))
         scheduleReminderForDay(day)
+        WidgetCenter.shared.reloadAllTimelines()
     }
     
     // MARK: - Toast
@@ -449,7 +452,7 @@ struct PlannedWorkoutsView: View {
             return
         }
 
-        let ts = UserDefaults.standard.double(forKey: keyTime(for: day))
+        let ts = sharedDefaults.double(forKey: keyTime(for: day))
         let dateForTime = ts > 0 ? Date(timeIntervalSince1970: ts) : plannedTime
         let components = Calendar.current.dateComponents([.hour, .minute], from: dateForTime)
 
@@ -478,15 +481,15 @@ struct PlannedWorkoutsView: View {
     }
 
     private func loadForDay(_ day: Weekday) {
-        plannedCount = UserDefaults.standard.string(forKey: keyCount(for: day)) ?? ""
+        plannedCount = sharedDefaults.string(forKey: keyCount(for: day)) ?? ""
 
-        if let arr = UserDefaults.standard.array(forKey: keyItems(for: day)) as? [String] {
+        if let arr = sharedDefaults.array(forKey: keyItems(for: day)) as? [String] {
             plannedItems = arr
         } else {
             plannedItems = []
         }
 
-        if let catArr = UserDefaults.standard.array(forKey: keyItemCategories(for: day)) as? [String] {
+        if let catArr = sharedDefaults.array(forKey: keyItemCategories(for: day)) as? [String] {
             plannedItemCategories = catArr.compactMap { WorkoutCategory(rawValue: $0) }
         } else {
             plannedItemCategories = Array(repeating: .bodyweight, count: plannedItems.count)
@@ -498,15 +501,15 @@ struct PlannedWorkoutsView: View {
             plannedItemCategories = Array(plannedItemCategories.prefix(plannedItems.count))
         }
 
-        dayTitle = UserDefaults.standard.string(forKey: keyTitle(for: day)) ?? ""
+        dayTitle = sharedDefaults.string(forKey: keyTitle(for: day)) ?? ""
 
-        if UserDefaults.standard.object(forKey: keyEnabled(for: day)) == nil {
+        if sharedDefaults.object(forKey: keyEnabled(for: day)) == nil {
             plannedReminderEnabled = true
         } else {
-            plannedReminderEnabled = UserDefaults.standard.bool(forKey: keyEnabled(for: day))
+            plannedReminderEnabled = sharedDefaults.bool(forKey: keyEnabled(for: day))
         }
 
-        let ts = UserDefaults.standard.double(forKey: keyTime(for: day))
+        let ts = sharedDefaults.double(forKey: keyTime(for: day))
         if ts > 0 {
             plannedTime = Date(timeIntervalSince1970: ts)
         } else {
