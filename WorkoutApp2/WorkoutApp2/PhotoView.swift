@@ -30,6 +30,7 @@ struct PhotoView: View {
     @AppStorage("leftPhotoFileName") private var leftPhotoFileName: String = ""
     @AppStorage("rightPhotoFileName") private var rightPhotoFileName: String = ""
     
+    
     @State private var showImageSheet = false
 
     var body: some View {

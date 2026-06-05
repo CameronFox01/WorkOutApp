@@ -437,7 +437,7 @@ struct SettingsView: View {
                             // APP INFO
                             VStack(spacing: 6) {
 
-                                Text("MyStep")
+                                Text("IronFox")
                                     .font(.headline)
                                 
                                 // Change this to the actual webpage once published.

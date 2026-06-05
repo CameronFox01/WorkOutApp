@@ -24,6 +24,7 @@ struct HomeView: View {
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
     @AppStorage("userAccountFirstSaved") private var accountFirstSaved: Date = .distantPast
     @AppStorage("userOriginalWeight") private var originalWeight: String = ""
+    @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     
     //Profil Image Saved here
     @AppStorage("profileImageData") private var profileImageData: Data?
@@ -245,7 +246,29 @@ struct HomeView: View {
                         }
                         .padding(.horizontal)
                         
-                        //Divider().padding(.vertical)
+                        //Section for Weekly Recap View
+                        NavigationLink(
+                            destination:
+                                WeeklyRecapView(
+                                    recap: weeklyRecap
+                                )
+                        ) {
+
+                            WeeklyRecapCard(
+
+                                workoutsCompleted:
+                                    weeklyRecap.workoutsCompleted,
+
+                                workoutsPlanned:
+                                    weeklyRecap.workoutsPlanned,
+
+                                streak:
+                                    weeklyRecap.streak
+                            )
+                        }
+                        .padding(.horizontal)
+                        .buttonStyle(.plain)
+                        
                         
                         //Section for Pasted Worked Outs
                         HStack {
@@ -444,6 +467,209 @@ struct HomeView: View {
             return nil
         }
         return abs(target - current)
+    }
+    
+    private var weeklyRecap: WeeklyRecapData {
+
+        let calendar = Calendar.current
+        let now = Date()
+
+        guard let weekStart =
+            calendar.date(
+                from: calendar.dateComponents(
+                    [.yearForWeekOfYear, .weekOfYear],
+                    from: now
+                )
+            )
+        else {
+
+            return WeeklyRecapData(
+                workoutsCompleted: 0,
+                workoutsPlanned: 0,
+                totalVolume: 0,
+                streak: 0,
+                strongestExercise: "None",
+                improvementPercent: 0,
+                photosAdded: 0
+            )
+        }
+
+        let weekEntries =
+            workoutData.entries.filter {
+
+                $0.date >= weekStart
+            }
+
+        let workoutsCompleted =
+            Set(
+                weekEntries.map {
+                    calendar.startOfDay(
+                        for: $0.date
+                    )
+                }
+            ).count
+
+        let totalVolume =
+            weekEntries.reduce(0.0) {
+
+                total, entry in
+
+                let weight =
+                    Double(entry.weight) ?? 0
+
+                let reps =
+                    Double(entry.reps) ?? 0
+
+                let sets =
+                    Double(entry.sets) ?? 0
+
+                return total + (weight * reps * sets)
+            }
+
+        let strongestExercise =
+            Dictionary(
+                grouping: weekEntries,
+                by: { $0.workoutType }
+            )
+            .max {
+
+                $0.value.count <
+                $1.value.count
+
+            }?.key ?? "None"
+        
+        let planned =
+        max(
+            Int(targetDaysOfWorkout) ?? 0,
+            1
+        )
+
+        return WeeklyRecapData(
+
+            workoutsCompleted: workoutsCompleted,
+
+            workoutsPlanned: planned,
+
+            totalVolume: totalVolume,
+
+            streak: calculateStreak(),
+
+            strongestExercise: strongestExercise,
+
+            improvementPercent: Int(calculateImprovementPercent()),
+
+            photosAdded: photosAddedThisWeek()
+        )
+    }
+    
+    private func calculateStreak() -> Int {
+
+        let calendar = Calendar.current
+
+        let workoutDays =
+            Set(
+                workoutData.entries.map {
+
+                    calendar.startOfDay(
+                        for: $0.date
+                    )
+                }
+            )
+
+        var streak = 0
+
+        var day =
+            calendar.startOfDay(
+                for: Date()
+            )
+
+        while workoutDays.contains(day) {
+
+            streak += 1
+
+            guard let previous =
+                calendar.date(
+                    byAdding: .day,
+                    value: -1,
+                    to: day
+                )
+            else { break }
+
+            day = previous
+        }
+
+        return streak
+    }
+    
+    private func calculateImprovementPercent() -> Double {
+        let calendar = Calendar.current
+        let now = Date()
+
+        guard let thisWeekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now)),
+              let lastWeekStart = calendar.date(byAdding: .weekOfYear, value: -1, to: thisWeekStart)
+        else { return 0 }
+
+        let thisWeekEntries = workoutData.entries.filter { $0.date >= thisWeekStart }
+        let lastWeekEntries = workoutData.entries.filter { $0.date >= lastWeekStart && $0.date < thisWeekStart }
+
+        let volumeFor: ([WorkoutEntry]) -> Double = { entries in
+            entries.reduce(0.0) { total, entry in
+                let weight = Double(entry.weight) ?? 0
+                let reps = Double(entry.reps) ?? 0
+                let sets = Double(entry.sets) ?? 0
+                return total + (weight * reps * sets)
+            }
+        }
+
+        let thisVolume = volumeFor(thisWeekEntries)
+        let lastVolume = volumeFor(lastWeekEntries)
+
+        // Fall back to workout count comparison if no volume data
+        if lastVolume == 0 && thisVolume == 0 {
+            let lastCount = Set(lastWeekEntries.map { calendar.startOfDay(for: $0.date) }).count
+            let thisCount = Set(thisWeekEntries.map { calendar.startOfDay(for: $0.date) }).count
+            guard lastCount > 0 else { return 0 }
+            return Double(thisCount - lastCount) / Double(lastCount) * 100
+        }
+
+        guard lastVolume > 0 else { return 0 }
+        return ((thisVolume - lastVolume) / lastVolume) * 100
+    }
+    
+    private func photosAddedThisWeek() -> Int {
+        let calendar = Calendar.current
+        let now = Date()
+
+        guard let weekStart = calendar.date(
+            from: calendar.dateComponents(
+                [.yearForWeekOfYear, .weekOfYear],
+                from: now
+            )
+        ) else { return 0 }
+
+        do {
+            let directory = FileManager.default.urls(
+                for: .documentDirectory,
+                in: .userDomainMask
+            ).first!
+
+            let files = try FileManager.default.contentsOfDirectory(
+                at: directory,
+                includingPropertiesForKeys: [.creationDateKey]
+            )
+
+            return files.filter { url in
+                guard url.pathExtension.lowercased() == "jpg",
+                      let attrs = try? url.resourceValues(forKeys: [.creationDateKey]),
+                      let created = attrs.creationDate
+                else { return false }
+                return created >= weekStart
+            }.count
+
+        } catch {
+            print("Failed to count photos: \(error)")
+            return 0
+        }
     }
     
     func uniqueWorkoutEntries(from all: [WorkoutEntry]) -> [WorkoutEntry] {
