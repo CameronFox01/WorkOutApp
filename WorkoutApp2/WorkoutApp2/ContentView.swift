@@ -11,6 +11,8 @@ import Charts
 struct ContentView: View {
     @EnvironmentObject var healthManager: HealthManager
     @EnvironmentObject var workoutData: WorkoutData
+    @EnvironmentObject var router: AppRouter
+
 
     @AppStorage("hasCompletedSetup") private var hasCompletedSetup = false
 
@@ -18,37 +20,56 @@ struct ContentView: View {
     @State private var selectedWorkout: String = ""
 
     var body: some View {
+        ZStack{
+            if !hasCompletedSetup {
+                StartUpView()
+            } else {
+                TabView(selection: $router.selectedTab) {
 
-        if hasCompletedSetup {
+                    HomeView()
+                        .tabItem {
+                            Label("Home", systemImage: "house")
+                        }
+                        .tag(AppRouter.Tab.home)
+                    
+                    ImportView()
+                        .tabItem {
+                            Label("Import", systemImage: "dumbbell")
+                        }
+                        .tag(AppRouter.Tab.workout)
+                    
+                    PhotoView()
+                        .tabItem {
+                            Label("Camera", systemImage: "camera")
+                        }
+                        .tag(AppRouter.Tab.settings)
+                    
+                    NavigationStack {
+                        GoalView()
+                    }
+                    .tabItem {
+                        Label("Goal", systemImage: "trophy")
+                    }
+                    .tag(AppRouter.Tab.progress)
+                }
+                if let screen = router.activeScreen {
+                   switch screen {
+                   case .timer:
+                       TimerView()
 
-            TabView {
-                
-                HomeView()
-                .tabItem {
-                    Label("Home", systemImage: "house")
-                }
+                   case .workoutDetail:
+                       WorkoutCalendarView(entries: entries, comingFromWidget: true)
 
-                ImportView()
-                .tabItem {
-                    Label("Import", systemImage: "dumbbell")
-                }
-                
-                PhotoView()
-                .tabItem {
-                    Label("Camera", systemImage: "camera")
-                }
-                NavigationStack{
-                    GoalView()
-                }
-                .tabItem{
-                    Label("Goal", systemImage: "trophy")
-                }
-                
+                   case .goalEdit:
+                       GoalView()
+                   }
+               }
             }
-
-        } else {
-
-            StartUpView()
+        }
+        .onOpenURL { url in  // ✅ add here
+            if url.absoluteString == "workoutapp://calendar" {
+                router.activeScreen = .workoutDetail
+            }
         }
     }
 
@@ -80,5 +101,6 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
             .environmentObject(WorkoutData())
             .environmentObject(HealthManager())  // ✅ Add this
+            .environmentObject(AppRouter())
     }
 }

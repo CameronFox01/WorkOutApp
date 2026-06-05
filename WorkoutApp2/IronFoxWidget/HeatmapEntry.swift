@@ -97,6 +97,7 @@ struct HeatmapWidgetView: View {
                 mediumView
             }
         }
+        .widgetURL(URL(string: "ironfox://workoutDetail")!)
         .containerBackground(for: .widget) {
             Rectangle().fill(
                 colorScheme == .dark

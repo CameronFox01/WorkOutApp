@@ -9,6 +9,10 @@ import SwiftUI
 struct WorkoutCalendarView: View {
 
     let entries: [WorkoutEntry]
+    let comingFromWidget: Bool
+    
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var router: AppRouter
 
     @State private var currentMonthOffset: Int = 0
     @State private var selectedDate: Date =
@@ -475,6 +479,14 @@ struct WorkoutCalendarView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if comingFromWidget {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Done"){
+                            router.activeScreen = nil
+                        }
+                        .foregroundStyle(Color.white)
+                    }
+                }
 
                 ToolbarItem(placement: .principal) {
 
@@ -1270,7 +1282,7 @@ struct WorkoutCalendarView: View {
     ]
 
     NavigationStack {
-        WorkoutCalendarView(entries: sampleEntries)
+        WorkoutCalendarView(entries: sampleEntries, comingFromWidget: false)
             .environmentObject(WorkoutData())
     }
 }

@@ -226,7 +226,7 @@ struct HomeView: View {
                                 .buttonStyle(.plain)
                                 .cardStyle()
                             
-                            NavigationLink(destination: WorkoutCalendarView(entries: workoutData.entries)) {
+                            NavigationLink(destination: WorkoutCalendarView(entries: workoutData.entries, comingFromWidget: false)) {
                                 VStack(alignment: .leading) {
                                     Text("Calendar")
                                         .font(.title2.bold())

@@ -15,6 +15,8 @@ struct WorkoutApp2App: App {
 
     @StateObject private var workoutData = WorkoutData()
     @StateObject var healthManager = HealthManager()
+    @StateObject private var router = AppRouter()
+    
     @State private var isBooting: Bool = true
 
     @AppStorage("hasCompletedSetup")
@@ -35,13 +37,18 @@ struct WorkoutApp2App: App {
                         ContentView()
                             .environmentObject(workoutData)
                             .environmentObject(healthManager)
+                            .environmentObject(router)
                     } else {
                         StartUpView()
                             .environmentObject(workoutData)
                             .environmentObject(healthManager)
+                            .environmentObject(router)
                     }
                 }
             }
+            .onOpenURL { url in
+                  router.handle(url: url)
+              }
         }
     }
 }
@@ -78,5 +85,64 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.banner, .sound, .badge])
+    }
+}
+
+//Section for widgets and Notification to take you to the correct spot
+enum AppRoute {
+    case home
+    case workout
+    case goals
+    case progress
+    case timer
+    case setup
+}
+
+class AppRouter: ObservableObject {
+
+    @Published var selectedTab: Tab = .home
+    @Published var activeScreen: Screen? = nil   // 👈 NEW
+
+    enum Tab {
+        case home
+        case workout
+        case progress
+        case settings
+    }
+
+    enum Screen: Identifiable {
+        case timer
+        case workoutDetail
+        case goalEdit
+
+        var id: String { "\(self)" }
+    }
+
+    func handle(url: URL) {
+        guard let host = url.host else { return }
+
+        switch host {
+
+        case "home":
+            selectedTab = .home
+
+        case "workout":
+            selectedTab = .workout
+
+        case "progress":
+            selectedTab = .progress
+
+        case "goals":
+            selectedTab = .progress
+
+        case "timer":
+            activeScreen = .timer   // 🔥 NOT a tab
+            
+        case "workoutDetail":
+            activeScreen = .workoutDetail
+
+        default:
+            selectedTab = .home
+        }
     }
 }
