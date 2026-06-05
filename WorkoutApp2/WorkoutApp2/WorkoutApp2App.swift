@@ -48,7 +48,17 @@ struct WorkoutApp2App: App {
             }
             .onOpenURL { url in
                   router.handle(url: url)
-              }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .openCalendar)) { _ in
+                router.activeScreen = .workoutDetail
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .openWeightView)) { _ in
+                router.activeScreen = .weight
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .openGoals)) { _ in
+                router.activeScreen = nil
+                router.selectedTab = .progress
+            }
         }
     }
 }
@@ -86,6 +96,30 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     ) {
         completionHandler([.banner, .sound, .badge])
     }
+    
+    func userNotificationCenter(
+            _ center: UNUserNotificationCenter,
+            didReceive response: UNNotificationResponse,
+            withCompletionHandler completionHandler: @escaping () -> Void
+        ) {
+            let id = response.notification.request.identifier
+
+            if id.hasPrefix("planned_") {
+                NotificationCenter.default.post(name: .openCalendar, object: nil)
+            } else if id == "daily_weigh_in" || id == "weekly_weigh_in" {
+                NotificationCenter.default.post(name: .openWeightView, object: nil)
+            } else if id.hasPrefix("milestone") || id.hasPrefix("workout_") {
+                NotificationCenter.default.post(name: .openGoals, object: nil)
+            }
+
+            completionHandler()
+        }
+}
+
+extension Notification.Name {
+    static let openCalendar = Notification.Name("openCalendar")
+    static let openWeightView = Notification.Name("openWeightView")
+    static let openGoals = Notification.Name("openGoals")
 }
 
 //Section for widgets and Notification to take you to the correct spot
@@ -96,6 +130,7 @@ enum AppRoute {
     case progress
     case timer
     case setup
+    case weight
 }
 
 class AppRouter: ObservableObject {
@@ -114,6 +149,7 @@ class AppRouter: ObservableObject {
         case timer
         case workoutDetail
         case goalEdit
+        case weight
 
         var id: String { "\(self)" }
     }
@@ -140,6 +176,9 @@ class AppRouter: ObservableObject {
             
         case "workoutDetail":
             activeScreen = .workoutDetail
+            
+        case "weight":
+            activeScreen = .weight
 
         default:
             selectedTab = .home

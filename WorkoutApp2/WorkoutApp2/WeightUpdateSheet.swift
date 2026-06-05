@@ -11,6 +11,9 @@ struct WeightUpdateSheet: View {
 
     let unitSystem: UnitSystem
     let weightUnit: String
+    let comingFromWidget: Bool
+    
+    @EnvironmentObject var router: AppRouter
 
     @Binding var currentWeight: String
     @Binding var newWeightInput: String
@@ -271,25 +274,36 @@ struct WeightUpdateSheet: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if comingFromWidget {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button{
+                            router.activeScreen = nil
+                        } label:{
+                            Image(systemName: "xmark")
+                                .font(.title)
+                                .foregroundStyle(.white)
+                        }
+                    }
+                } else {
+                    ToolbarItem(placement: .topBarLeading) {
+
+                        Button {
+
+                            dismiss()
+
+                        } label: {
+
+                            Image(systemName: "xmark")
+                                .foregroundStyle(.white)
+                        }
+                    }
+                }
 
                 ToolbarItem(placement: .principal) {
 
                     Text("Update Weight")
                         .font(.largeTitle.bold())
                         .foregroundStyle(.white)
-                }
-
-                ToolbarItem(placement: .topBarLeading) {
-
-                    Button {
-
-                        dismiss()
-
-                    } label: {
-
-                        Image(systemName: "xmark")
-                            .foregroundStyle(.white)
-                    }
                 }
             }
         }
@@ -363,6 +377,7 @@ struct WeightUpdateSheet_Previews: PreviewProvider {
             WeightUpdateSheet(
                 unitSystem: .imperial,
                 weightUnit: "lbs",
+                comingFromWidget: false,
                 currentWeight: $currentWeight,
                 newWeightInput: $newWeightInput,
                 entries: sampleEntries,

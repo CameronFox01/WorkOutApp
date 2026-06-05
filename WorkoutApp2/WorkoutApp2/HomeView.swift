@@ -368,6 +368,7 @@ struct HomeView: View {
                 WeightUpdateSheet(
                     unitSystem: unitSystem,
                     weightUnit: weightUnit,
+                    comingFromWidget: false,
                     currentWeight: $weight,
                     newWeightInput: $newWeightInput,
                     entries: workoutData.entries,

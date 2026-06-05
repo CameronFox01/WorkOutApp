@@ -481,10 +481,13 @@ struct WorkoutCalendarView: View {
             .toolbar {
                 if comingFromWidget {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button("Done"){
+                        Button{
                             router.activeScreen = nil
+                        } label:{
+                            Image(systemName: "chevron.left")
+                                .font(.title)
+                                .foregroundStyle(.white)
                         }
-                        .foregroundStyle(Color.white)
                     }
                 }
 
