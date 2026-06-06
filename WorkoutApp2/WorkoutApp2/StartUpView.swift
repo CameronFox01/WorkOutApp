@@ -16,6 +16,7 @@ struct StartUpView: View {
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userGender") private var genderRaw: String = Gender.male.rawValue
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
+    @AppStorage("notificationsEnabled") private var notificationsEnabled = true
 
     @State private var selectedFeet = 5
     @State private var selectedInches = 8
@@ -136,6 +137,42 @@ struct StartUpView: View {
                         }
                     }
                     
+                    Section {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("IronFox can send you reminders to stay on track:")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label("Daily weigh-in reminders", systemImage: "scalemass.fill")
+                                Label("Workout schedule reminders", systemImage: "calendar")
+                                Label("Milestone and goal achievements", systemImage: "trophy.fill")
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            
+                            Toggle(isOn: $notificationsEnabled) {
+                                Text("Enable Notifications")
+                                    .font(.headline)
+                            }
+                            .onChange(of: notificationsEnabled) { _, newValue in
+                                if newValue {
+                                    NotificationHandler.shared.requestNotificationPermission()
+                                }
+                            }
+                        }
+                    } header: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "bell.badge.fill")
+                                .foregroundStyle(.orange)
+                            Text("Notifications")
+                                .foregroundStyle(.primary)
+                        }
+                        .font(.headline)
+                        .textCase(nil)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    
                     Button("Finish Setup") {
                         guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
                         
@@ -179,6 +216,32 @@ struct StartUpView: View {
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    struct SettingsRow<Content: View>: View {
+
+        let icon: String
+        let title: String
+
+        @ViewBuilder let trailing: Content
+
+        var body: some View {
+
+            HStack(spacing: 14) {
+
+                Image(systemName: icon)
+                    .font(.title3)
+                    .frame(width: 28)
+                    .foregroundStyle(.blue)
+
+                Text(title)
+                    .font(.body)
+
+                Spacer()
+
+                trailing
             }
         }
     }
