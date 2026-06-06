@@ -279,7 +279,7 @@ struct WeightUpdateSheet: View {
                         Button{
                             router.activeScreen = nil
                         } label:{
-                            Image(systemName: "xmark")
+                            Image(systemName: "chevron.left")
                                 .font(.title)
                                 .foregroundStyle(.white)
                         }
@@ -293,7 +293,7 @@ struct WeightUpdateSheet: View {
 
                         } label: {
 
-                            Image(systemName: "xmark")
+                            Image(systemName: "chevron.left")
                                 .foregroundStyle(.white)
                         }
                     }
