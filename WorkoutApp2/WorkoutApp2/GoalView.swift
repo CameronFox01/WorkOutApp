@@ -175,7 +175,7 @@ struct GoalView: View {
                             .font(.system(size: 20))
                         
                         Text("Target Body Weight")
-                            .font(.subheadline)
+                            .font(.headline)
                             .foregroundStyle(.primary)
                         
                         Spacer()
@@ -189,24 +189,25 @@ struct GoalView: View {
                     }
                     
                     // Workouts per Week row
-                    HStack(spacing: 12) {
-                        Image(systemName: "calendar")
-                            .foregroundStyle(primaryBlue)
-                            .font(.system(size: 20))
-                        
-                        Text("Workouts per Week")
-                            .font(.subheadline)
-                            .foregroundStyle(.primary)
-                        
-                        Spacer()
-                        
-                        pillField(
-                            text: $targetDaysOfWorkout,
-                            placeholder: "4",
-                            suffix: "",
-                            focus: $isEditing
-                        )
-                        //.submitScope()
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Picker("Days", selection: $targetDaysOfWorkout) {
+                                ForEach(["1","2", "3", "4", "5", "6", "7"], id: \.self) { day in
+                                    Text(day).tag(day)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+                    } header: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "calendar")
+                                .foregroundStyle(primaryBlue)
+                            Text("Workouts per Week")
+                                .foregroundStyle(.primary)
+                        }
+                        .font(.headline)
+                        .textCase(nil)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .padding(14)

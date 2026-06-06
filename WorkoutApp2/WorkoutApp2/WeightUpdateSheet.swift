@@ -169,16 +169,6 @@ struct WeightUpdateSheet: View {
                                     .monospacedDigit()
                                     .frame(width: 180)
                                     .focused($isWeightFieldFocused)
-//                                    .toolbar {
-//                                        ToolbarItemGroup(placement: .keyboard) {
-//
-//                                            Spacer()
-//
-//                                            Button("Done") {
-//                                                isWeightFieldFocused = false
-//                                            }
-//                                        }
-//                                    }
 
                                     Text(weightUnit)
                                         .font(.title3.weight(.semibold))
@@ -274,6 +264,14 @@ struct WeightUpdateSheet: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+
+                    Spacer()
+
+                    Button("Done") {
+                        isWeightFieldFocused = false
+                    }
+                }
                 if comingFromWidget {
                     ToolbarItem(placement: .topBarLeading) {
                         Button{

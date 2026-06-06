@@ -15,6 +15,7 @@ struct StartUpView: View {
     @AppStorage("userHeight") private var height: String = ""
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userGender") private var genderRaw: String = Gender.male.rawValue
+    @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
 
     @State private var selectedFeet = 5
     @State private var selectedInches = 8
@@ -118,6 +119,21 @@ struct StartUpView: View {
                         // WEIGHT
                         TextField(weightLabel, text: $weight)
                             .keyboardType(.decimalPad)
+                    }
+                    
+                    // Workout Goal Section
+                    Section(header: Text("Weekly Workout Goal")) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("How many days per week?")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Picker("Days", selection: $targetDaysOfWorkout) {
+                                ForEach(["1","2", "3", "4", "5", "6", "7"], id: \.self) { day in
+                                    Text(day).tag(day)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
                     }
                     
                     Button("Finish Setup") {
