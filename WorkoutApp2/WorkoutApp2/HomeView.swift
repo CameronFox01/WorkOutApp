@@ -578,7 +578,7 @@ struct HomeView: View {
 
         var streak = 0
 
-        var day =
+        let day =
             calendar.startOfDay(
                 for: Date()
             )

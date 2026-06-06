@@ -20,37 +20,42 @@ struct ViewPhotosInApp: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ],
-                    spacing: 12
-                ) {
-
-                    ForEach(savedPhotoURLs, id: \.self) { url in
-
-                        if let uiImage = UIImage(contentsOfFile: url.path) {
-
-                            Button {
-                                selectedImage = uiImage
-                                showSaveOptions = true
-                                selectedURL = url
-                            } label: {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(height: 120)
-                                    .frame(maxWidth: .infinity)
-                                    .clipped()
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                if savedPhotoURLs.isEmpty {
+                    EmptyPhotoView()
+                } else {
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ],
+                        spacing: 12
+                    ) {
+                        
+                        ForEach(savedPhotoURLs, id: \.self) { url in
+                            
+                            if let uiImage = UIImage(contentsOfFile: url.path) {
+                                
+                                Button {
+                                    selectedImage = uiImage
+                                    showSaveOptions = true
+                                    selectedURL = url
+                                } label: {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(height: 120)
+                                        .frame(maxWidth: .infinity)
+                                        .clipped()
+                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
+                    .padding()
                 }
-                .padding()
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color.blue, for: .navigationBar)

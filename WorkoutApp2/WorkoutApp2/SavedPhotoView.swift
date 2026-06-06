@@ -18,36 +18,40 @@ struct SavedPhotosView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ],
-                    spacing: 12
-                ) {
-                    ForEach(savedPhotoURLs, id: \.self) { url in
-
-                        if let uiImage = UIImage(contentsOfFile: url.path) {
-
-                            Button {
-                                onSelect(uiImage)
-                                dismiss()
-                            } label: {
-
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(height: 120)
-                                    .frame(maxWidth: .infinity)
-                                    .clipped()
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                if savedPhotoURLs.isEmpty {
+                   EmptyPhotoView()
+                } else {
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ],
+                        spacing: 12
+                    ) {
+                        ForEach(savedPhotoURLs, id: \.self) { url in
+                            
+                            if let uiImage = UIImage(contentsOfFile: url.path) {
+                                
+                                Button {
+                                    onSelect(uiImage)
+                                    dismiss()
+                                } label: {
+                                    
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(height: 120)
+                                        .frame(maxWidth: .infinity)
+                                        .clipped()
+                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
+                    .padding()
                 }
-                .padding()
             }
             .navigationTitle("Saved Photos")
             .navigationBarTitleDisplayMode(.inline)
@@ -97,3 +101,21 @@ struct SavedPhotosView: View {
         return dir
     }
 }
+
+func EmptyPhotoView() -> some View {
+    VStack{
+        Image(systemName: "photo")
+            .font(.largeTitle)
+            .foregroundStyle(Color.secondary)
+            .padding(.bottom, 20)
+            
+        Text("No photos have been saved.")
+            .font(.title)
+            .padding(.bottom, 20)
+        Text("Try taking a photo or checking your photo library")
+            .font(.title3)
+            .foregroundStyle(Color.secondary)
+    }
+    .padding(.top, 300)
+}
+
