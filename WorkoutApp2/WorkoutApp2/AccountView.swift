@@ -10,231 +10,543 @@ import SwiftUI
 import PhotosUI
 
 struct AccountView: View {
-    @AppStorage("userName") private var name: String = ""
-    @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
-    @AppStorage("userHeight") private var height: String = ""
-    @AppStorage("userWeight") private var weight: String = ""
-    @AppStorage("userGender") private var genderRaw: String = Gender.male.rawValue
-    
-    @AppStorage("hasCompletedSetup") private var hasCompletedSetup = true
-    
-    @AppStorage("profileImageData") private var profileImageData: Data?
-    @State private var showingProfilePhotoPicker = false
-    @State private var showingProfileCamera = false
-    
-    @State private var selectedFeet = 5
-    @State private var selectedInches = 8
-    @State private var selectedCentimeters = 173
-    
+
+    @EnvironmentObject var workoutData: WorkoutData
+
+    @AppStorage("userName")
+    private var name: String = ""
+
+    @AppStorage("userHeight")
+    private var height: String = ""
+
+    @AppStorage("userWeight")
+    private var weight: String = ""
+
+    @AppStorage("userTargetWeight")
+    private var targetWeight: String = ""
+
+    @AppStorage("userTargetDaysOfWorkout")
+    private var targetDays: String = ""
+
+    @AppStorage("unitSystem")
+    private var unitSystemRaw: String =
+        UnitSystem.metric.rawValue
+
+    @AppStorage("profileImageData")
+    private var profileImageData: Data?
+
+    @State private var showingCamera = false
+
     private var profileImage: UIImage? {
-        guard let data = profileImageData else { return nil }
+
+        guard let data = profileImageData
+        else { return nil }
+
         return UIImage(data: data)
     }
-    
-    enum Gender: String, CaseIterable, Identifiable {
-        case male = "Male"
-        case female = "Female"
-        
-        var id: String { self.rawValue }
-    }
-    
+
     var body: some View {
-        NavigationView {
-            ZStack{
+
+        NavigationStack {
+
+            ZStack {
+
                 LinearGradient(
                     colors: [
-                        Color.blue.opacity(1.0),
-                        Color.cyan.opacity(0.6),
+                        Color.blue,
+                        Color.cyan.opacity(0.7),
                         Color(.systemBackground)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                VStack{
-                    Form {
-                        
-                        Section(header: Text("Name")) {
-                            TextField("Enter your name", text: $name)
-                        }
-                        
-                        Section(header: Text("Body Info")){
-                            if unitSystem == .imperial {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("Height")
-                                    HStack {
-                                        Picker("Feet", selection: $selectedFeet) {
-                                            ForEach(3...7, id: \.self) { foot in
-                                                Text("\(foot) ft").tag(foot)
-                                            }
-                                        }
-                                        .pickerStyle(.wheel)
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 100)
 
-                                        Picker("Inches", selection: $selectedInches) {
-                                            ForEach(0...11, id: \.self) { inch in
-                                                Text("\(inch) in").tag(inch)
-                                            }
-                                        }
-                                        .pickerStyle(.wheel)
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 100)
-                                    }
-                                }
-                                .onChange(of: selectedFeet) {
-                                    height = "\((selectedFeet * 12) + selectedInches)"
-                                }
-                                .onChange(of: selectedInches) {
-                                    height = "\((selectedFeet * 12) + selectedInches)"
-                                }
-                            } else {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("Height")
-                                    Picker("Centimeters", selection: $selectedCentimeters) {
-                                        ForEach(100...250, id: \.self) { cm in
-                                            Text("\(cm) cm").tag(cm)
-                                        }
-                                    }
-                                    .pickerStyle(.wheel)
-                                    .frame(height: 100)
-                                }
-                                .onChange(of: selectedCentimeters) {
-                                    height = "\(selectedCentimeters)"
-                                }
-                            }
-                            
-                            Text(weight + " " + weightUnit)
-                            
-                        }
-                        
-                        Section(header: Text("Gender")) {
-                            Text(genderRaw)
-                        }
-                        
-                        Section(header: Text("Unit System")){
-                            Text(unitSystemRaw)
-                        }
+                ScrollView {
+
+                    VStack(
+                        spacing:24
+                    ){
+
+                        profileHeader
+
+                        progressSection
+
+                        statsSection
+
+                        shortcutsSection
+
+                        settingsButton
+
                     }
-                    .scrollContentBackground(.hidden) // This removes the Forms default background
-                    
-                    PhotosPicker(selection: Binding(get: { nil }, set: { item in
-                        guard let item else { return }
-                        Task {
-                            if let data = try? await item.loadTransferable(type: Data.self) {
-                                profileImageData = data
-                            }
-                        }
-                    }), matching: .images, photoLibrary: .shared()) {
-                        EmptyView()
-                    }
-                    .frame(width: 0, height: 0)
-                    .opacity(0.0)
-                    .accessibilityHidden(true)
-                    .onChange(of: showingProfilePhotoPicker, initial: false) { old, new in
-                        // When toggled true, programmatically trigger the PhotosPicker by reassigning selection via the binding set above.
-                    }
-                    
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbarBackground(Color.blue, for: .navigationBar)
-                    .toolbarBackground(.visible, for: .navigationBar)
-                    .toolbar {
-                        ToolbarItem(placement: .principal) {
-                            Text("Account")
-                                .font(.largeTitle).bold()
-                                .foregroundStyle(.white)
-                        }
-                    }
-                    .navigationBarTitleDisplayMode(.inline)
-                    
-                    .toolbar{
-                        ToolbarItem(placement: .navigationBarTrailing){
-                            NavigationLink(destination: SettingsView()){
-                                Image(systemName: "gear")
-                                    .font(.title)
-                            }
-                        }
-                    }
-                    .toolbar{
-                        ToolbarItem(placement: .navigationBarLeading){
-                            HStack(spacing: 0) {
-                                PhotosPicker(selection: Binding(get: { nil }, set: { item in
-                                    guard let item else { return }
-                                    Task {
-                                        if let data = try? await item.loadTransferable(type: Data.self) {
-                                            profileImageData = data
-                                        }
-                                    }
-                                }), matching: .images, photoLibrary: .shared()) {
-                                    if let uiImage = profileImage {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 50, height: 50)
-                                            .clipShape(Circle())
-                                    } else {
-                                        Image(systemName: "person.circle")
-                                            .font(.title)
-                                    }
-                                }
-                                .contextMenu {
-                                    Button("Take Photo") { showingProfileCamera = true }
-                                    if profileImageData != nil {
-                                        Button(role: .destructive) { profileImageData = nil } label: { Text("Remove Photo") }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .sheet(isPresented: $showingProfileCamera) {
-                        CameraView(image: Binding(get: { profileImage }, set: { newImage in
-                            if let img = newImage, let data = img.jpegData(compressionQuality: 0.9) {
-                                profileImageData = data
-                            }
-                        }))
-                    }
+                    .padding()
                 }
             }
-        }
-        .onAppear {
-            initializePickersFromStoredHeight()
-        }
-    }
-    
-    var weightUnit: String {
-        unitSystemRaw == UnitSystem.metric.rawValue ? "kg" : "lbs"
-    }
-    
-    var displayHeight: String {
-        if unitSystemRaw == "metric" {
-            return "\(height) cm"
-        } else {
-            let totalInches = Int(height) ?? 0
-            let feet = totalInches / 12
-            let inches = totalInches % 12
-            return "\(feet)'\(inches)\""
-        }
-    }
-    
-    var unitSystem: UnitSystem {
-        UnitSystem(rawValue: unitSystemRaw) ?? .metric
-    }
-    private func initializePickersFromStoredHeight() {
-        guard !height.isEmpty,
-              let stored = Double(height) else { return }
+            .navigationBarTitleDisplayMode(.inline)
 
-        if unitSystem == .imperial {
-            let totalInches = Int(stored.rounded())
+            .toolbar {
 
-            selectedFeet = max(3, min(7, totalInches / 12))
-            selectedInches = max(0, min(11, totalInches % 12))
-        } else {
-            let cm = Int(stored.rounded())
-            selectedCentimeters = max(100, min(250, cm))
+                ToolbarItem(
+                    placement:.principal
+                ){
+
+                    Text("Profile")
+                        .font(.largeTitle.bold())
+                        .foregroundStyle(.white)
+
+                }
+            }
         }
     }
 }
 
+extension AccountView {
+
+    private var profileHeader: some View {
+
+        VStack(
+            spacing:12
+        ){
+
+            PhotosPicker(
+                selection: Binding(
+                    get:{ nil },
+                    set:{ item in
+
+                        guard let item else {
+                            return
+                        }
+
+                        Task {
+
+                            if let data =
+                            try? await item
+                                .loadTransferable(
+                                    type: Data.self
+                                ){
+
+                                profileImageData =
+                                data
+                            }
+                        }
+                    }
+                ),
+                matching:.images
+            ){
+
+                Group {
+
+                    if let image =
+                        profileImage {
+
+                        Image(
+                            uiImage:image
+                        )
+                        .resizable()
+                        .scaledToFill()
+
+                    } else {
+
+                        Image(
+                            systemName:
+                            "person.circle.fill"
+                        )
+                        .resizable()
+                        .scaledToFit()
+                        .padding(12)
+                    }
+                }
+                .frame(
+                    width:110,
+                    height:110
+                )
+                .clipShape(
+                    Circle()
+                )
+            }
+
+            Text(
+                name.isEmpty
+                ? "Your Profile"
+                : name
+            )
+            .font(
+                .title.bold()
+            )
+            .foregroundStyle(
+                .white
+            )
+
+        }
+        .frame(
+            maxWidth:.infinity
+        )
+    }
+
+    private var progressSection: some View {
+
+        VStack(
+            spacing:16
+        ){
+
+            Text("Your Progress")
+                .font(.title3.bold())
+                .multilineTextAlignment(.center)
+            HStack {
+
+                progressCard(
+                    value:
+                    "\(workoutData.entries.count)",
+
+                    label:
+                    "Workouts"
+                )
+
+                progressCard(
+                    value:
+                    "\(currentStreak)",
+
+                    label:
+                    "Streak"
+                )
+
+                progressCard(
+                    value:
+                    "\(photoCount)",
+
+                    label:
+                    "Photos"
+                )
+
+            }
+
+        }
+        .cardStyle()
+    }
+
+    private var statsSection: some View {
+
+        VStack(
+            spacing:14
+        ){
+
+            Text("Your Stats")
+                .font(.title3.bold())
+                .multilineTextAlignment(.center)
+
+            statRow(
+                "Weight",
+                "\(weight) \(weightUnit)"
+            )
+
+            statRow(
+                "Height",
+                displayHeight
+            )
+
+            statRow(
+                "Goal Weight",
+                "\(targetWeight) \(weightUnit)"
+            )
+
+            statRow(
+                "Workout Goal",
+                "\(targetDays)/week"
+            )
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .cardStyle()
+    }
+
+    private var shortcutsSection: some View {
+
+        VStack(
+            spacing:12
+        ){
+
+            NavigationLink {
+
+                GoalView()
+
+            } label: {
+
+                shortcutRow(
+                    icon:"trophy.fill",
+                    color:.yellow,
+                    title:"Goals"
+                )
+            }
+
+            NavigationLink {
+
+                AchievedGoalsView(
+                    achievedGoals:
+                    [],
+                    comingfromWidget:
+                    false
+                )
+
+            } label: {
+
+                shortcutRow(
+                    icon:
+                    "checkmark.seal.fill",
+
+                    color:
+                    .green,
+
+                    title:
+                    "Achievements"
+                )
+            }
+
+        }
+    }
+
+    private var settingsButton: some View {
+
+        NavigationLink {
+
+            SettingsView()
+
+        } label: {
+
+            HStack {
+
+                Image(
+                    systemName:
+                    "gear"
+                )
+
+                Text(
+                    "Settings"
+                )
+
+                Spacer()
+
+                Image(
+                    systemName:
+                    "chevron.right"
+                )
+
+            }
+            .padding()
+        }
+        .cardStyle()
+    }
+}
+
+extension AccountView {
+
+    private func sectionTitle(
+        _ title:String
+    ) -> some View {
+
+        HStack {
+
+            Text(title)
+                .font(
+                    .headline.bold()
+                )
+
+            Spacer()
+
+        }
+    }
+
+    private func statRow(
+        _ title:String,
+        _ value:String
+    ) -> some View {
+
+        HStack {
+
+            Text(title)
+
+            Spacer()
+
+            Text(value)
+                .bold()
+
+        }
+    }
+
+    private func progressCard(
+        value:String,
+        label:String
+    ) -> some View {
+
+        VStack {
+
+            Text(value)
+                .font(
+                    .title.bold()
+                )
+
+            Text(label)
+                .font(
+                    .caption
+                )
+
+        }
+        .frame(
+            maxWidth:.infinity
+        )
+    }
+
+    private func shortcutRow(
+        icon:String,
+        color:Color,
+        title:String
+    ) -> some View {
+
+        HStack {
+
+            Image(
+                systemName:
+                icon
+            )
+            .foregroundStyle(
+                color
+            )
+
+            Text(title)
+
+            Spacer()
+
+            Image(
+                systemName:
+                "chevron.right"
+            )
+
+        }
+        .padding()
+        .cardStyle()
+    }
+
+    private var weightUnit:String {
+
+        unitSystemRaw ==
+        UnitSystem.metric.rawValue
+        ? "kg"
+        : "lbs"
+    }
+
+    private var displayHeight:String {
+
+        if unitSystemRaw ==
+            UnitSystem.metric.rawValue {
+
+            return "\(height) cm"
+
+        }
+
+        let inches = Int(height) ?? 0
+
+        let feet = inches / 12
+        let remaining = inches % 12
+
+        return "\(feet)'\(remaining)\""
+    }
+
+    private var currentStreak:Int {
+
+        let calendar =
+        Calendar.current
+
+        let workoutDays =
+        Set(
+            workoutData.entries.map {
+
+                calendar.startOfDay(
+                    for:$0.date
+                )
+            }
+        )
+
+        var streak = 0
+
+        var day =
+        calendar.startOfDay(
+            for: Date()
+        )
+
+        while workoutDays.contains(
+            day
+        ){
+
+            streak += 1
+
+            day =
+            calendar.date(
+                byAdding:.day,
+                value:-1,
+                to:day
+            )!
+        }
+
+        return streak
+    }
+
+    private var photoCount:Int {
+
+        profileImageData == nil
+        ? 0
+        : 1
+    }
+}
+
 #Preview {
-    AccountView()
+
+    NavigationStack {
+
+        AccountView()
+            .environmentObject(
+                previewWorkoutData
+            )
+
+    }
+
+}
+
+private var previewWorkoutData: WorkoutData {
+
+    let data = WorkoutData()
+
+    data.entries = [
+
+        WorkoutEntry(
+            workoutType: "Bench Press",
+            weight: "135",
+            reps: "8",
+            sets: "3",
+            date: Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: Date()
+            )!,
+            note: ""
+        ),
+
+        WorkoutEntry(
+            workoutType: "Squat",
+            weight: "185",
+            reps: "5",
+            sets: "3",
+            date: Date(),
+            note: ""
+        ),
+
+        WorkoutEntry(
+            workoutType: "Hip Thrust",
+            weight: "185",
+            reps: "10",
+            sets: "4",
+            date: Date(),
+            note: ""
+        )
+
+    ]
+    return data
 }
