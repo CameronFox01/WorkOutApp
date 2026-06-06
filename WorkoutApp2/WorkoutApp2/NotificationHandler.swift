@@ -52,7 +52,7 @@ class NotificationHandler {
         let content = UNMutableNotificationContent()
         
         content.title = "Weekly Weigh In"
-        content.body = "Time to log your weight for the week."
+        content.body = "Don't forget to log this weeks weight."
         content.sound = .default
         
         var components = DateComponents()
@@ -91,7 +91,7 @@ class NotificationHandler {
         let content = UNMutableNotificationContent()
 
         content.title = "Daily Weigh In"
-        content.body = "Time to log your weight today."
+        content.body = "Don't forget to log today's weight."
         content.sound = .default
 
         var components = DateComponents()
@@ -283,7 +283,7 @@ class NotificationHandler {
         // Mid-week check-in — Wednesday at 6pm
         let midweekContent = UNMutableNotificationContent()
         midweekContent.title = "Halfway There!"
-        midweekContent.body = "You're aiming for \(goalDays) workouts this week. How's it going?"
+        midweekContent.body = "You're aiming for \(goalDays) workouts this week. Keep building that momentum!"
         midweekContent.sound = .default
         
         var midweekComponents = DateComponents()
@@ -302,10 +302,10 @@ class NotificationHandler {
             trigger: midweekTrigger
         ))
         
-        // End of week push — Sunday at 10am
+        // End of week push — Saturday at 10am
         let endweekContent = UNMutableNotificationContent()
-        endweekContent.title = "Last Chance This Week!"
-        endweekContent.body = "Your goal is \(goalDays) workouts this week. Make today count!"
+        endweekContent.title = "One More Opportunity"
+        endweekContent.body = "A workout today can still move things forward."
         endweekContent.sound = .default
         
         var endweekComponents = DateComponents()

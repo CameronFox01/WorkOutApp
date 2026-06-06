@@ -40,6 +40,10 @@ struct WorkoutProgressChart: View {
             .map(\.rawValue)
             .contains(workoutName)
     }
+    
+    private var isSportsWorkout: Bool {
+        SportsWorkout.allCases.map(\.rawValue).contains(workoutName)
+    }
 
     private var isTimeCardio: Bool {
         TimeCardioWorkout.allCases
@@ -55,11 +59,14 @@ struct WorkoutProgressChart: View {
         !isDistanceCardio &&
         !isTimeCardio &&
         !isBodyWeightScale &&
+        !isSportsWorkout &&
         !BodyweightWorkout.allCases.map(\.rawValue).contains(workoutName)
     }
 
     private var unitLabel: String {
-        if isDistanceCardio {
+        if isSportsWorkout {
+            return ""
+        } else if isDistanceCardio {
             return UnitSystem(rawValue: unitSystemRaw) == .imperial ? "mi" : "km"
         } else if isTimeCardio {
             return "min"
@@ -81,6 +88,14 @@ struct WorkoutProgressChart: View {
 
         return entriesForWorkout.compactMap { entry in
 
+            // Sports Section
+            if isSportsWorkout {
+                if let reps = Double(entry.reps) {
+                    return WorkoutDataPoint(date: entry.date, value: reps)
+                }
+                return nil
+            }
+            
             // DISTANCE CARDIO
             if isDistanceCardio,
                let distance = Double(entry.weight) {

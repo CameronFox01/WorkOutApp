@@ -464,7 +464,7 @@ struct PlannedWorkoutsView: View {
 
         NotificationHandler.shared.scheduleWorkoutNotification(
             title: "Workout Reminder",
-            body: "Today's workout: \(dayTitle)",
+            body: "Today's plan: \(dayTitle)",
             weekday: weekdayInt,
             hour: components.hour ?? 8,
             minute: components.minute ?? 0,
