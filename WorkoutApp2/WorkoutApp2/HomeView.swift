@@ -582,8 +582,13 @@ struct HomeView: View {
             calendar.startOfDay(
                 for: Date()
             )
-
-        while workoutDays.contains(day) {
+        var startingDate = calendar.date(
+            byAdding: .day,
+            value: -1,
+            to: day
+        )
+        
+        while workoutDays.contains(startingDate!) {
 
             streak += 1
 
@@ -591,11 +596,15 @@ struct HomeView: View {
                 calendar.date(
                     byAdding: .day,
                     value: -1,
-                    to: day
+                    to: startingDate!
                 )
             else { break }
 
-            day = previous
+            startingDate = previous
+        }
+        
+        if workoutDays.contains(day) {
+            streak += 1
         }
 
         return streak

@@ -20,6 +20,8 @@ struct ContentView: View {
 
 
     @AppStorage("hasCompletedSetup") private var hasCompletedSetup = false
+    
+    private let sharedDefaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")!
 
     @State private var entries: [WorkoutEntry] = []
     @State private var achievedGoals: [AchievedGoal] = []
@@ -28,6 +30,7 @@ struct ContentView: View {
 
     var body: some View {
         ZStack{
+            
             if !hasCompletedSetup {
                 StartUpView()
             } else {

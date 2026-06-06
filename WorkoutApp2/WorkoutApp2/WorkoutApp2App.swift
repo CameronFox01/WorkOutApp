@@ -66,6 +66,70 @@ struct WorkoutApp2App: App {
     }
 }
 
+func migrateUserDefaultsToShared() {
+
+    let standard =
+    UserDefaults.standard
+
+    guard let shared =
+    UserDefaults(
+        suiteName:
+        "group.Fox-Studios.WorkoutApp2"
+    ) else {
+        return
+    }
+
+    // prevents running multiple times
+    if shared.bool(
+        forKey:
+        "didMigrateToSharedDefaults"
+    ) {
+        return
+    }
+
+    let keysToMove = [
+
+        "workout_entries",
+        "userName",
+        "userWeight",
+        "userHeight",
+        "userTargetWeight",
+        "userTargetDaysOfWorkout",
+        "planned_workouts",
+        "unitSystem",
+        "profileImageData"
+
+    ]
+
+    for key in keysToMove {
+
+        // only copy if shared doesn't already have data
+        if shared.object(
+            forKey:key
+        ) == nil {
+
+            let value =
+            standard.object(
+                forKey:key
+            )
+
+            shared.set(
+                value,
+                forKey:key
+            )
+        }
+    }
+
+    shared.set(
+        true,
+        forKey:
+        "didMigrateToSharedDefaults"
+    )
+
+    print("Migration complete")
+
+}
+
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     func application(
