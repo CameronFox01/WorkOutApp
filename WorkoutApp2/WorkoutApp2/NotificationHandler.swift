@@ -268,4 +268,60 @@ class NotificationHandler {
             if let error { print("Failed to schedule: \(error)") }
         }
     }
+    
+    func scheduleWeeklyWorkoutChallengeNotifications(goalDays: Int) {
+        let center = UNUserNotificationCenter.current()
+        
+        // Remove old ones first
+        center.removePendingNotificationRequests(withIdentifiers: [
+            "workout_challenge_midweek",
+            "workout_challenge_endweek"
+        ])
+        
+        guard goalDays > 0 else { return }
+        
+        // Mid-week check-in — Wednesday at 6pm
+        let midweekContent = UNMutableNotificationContent()
+        midweekContent.title = "Halfway There!"
+        midweekContent.body = "You're aiming for \(goalDays) workouts this week. How's it going?"
+        midweekContent.sound = .default
+        
+        var midweekComponents = DateComponents()
+        midweekComponents.weekday = 4  // Wednesday
+        midweekComponents.hour = 18
+        midweekComponents.minute = 0
+        
+        let midweekTrigger = UNCalendarNotificationTrigger(
+            dateMatching: midweekComponents,
+            repeats: true
+        )
+        
+        center.add(UNNotificationRequest(
+            identifier: "workout_challenge_midweek",
+            content: midweekContent,
+            trigger: midweekTrigger
+        ))
+        
+        // End of week push — Sunday at 10am
+        let endweekContent = UNMutableNotificationContent()
+        endweekContent.title = "Last Chance This Week!"
+        endweekContent.body = "Your goal is \(goalDays) workouts this week. Make today count!"
+        endweekContent.sound = .default
+        
+        var endweekComponents = DateComponents()
+        endweekComponents.weekday = 7  // Saturday
+        endweekComponents.hour = 10
+        endweekComponents.minute = 0
+        
+        let endweekTrigger = UNCalendarNotificationTrigger(
+            dateMatching: endweekComponents,
+            repeats: true
+        )
+        
+        center.add(UNNotificationRequest(
+            identifier: "workout_challenge_endweek",
+            content: endweekContent,
+            trigger: endweekTrigger
+        ))
+    }
 }

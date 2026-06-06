@@ -134,6 +134,22 @@ struct GoalView: View {
                         loadWorkoutGoals()
                         loadAchievedGoals()
                         loadAchievedMilestones()
+                        let goal = Int(targetDaysOfWorkout) ?? 0
+                        let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
+                        let notifsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+
+                        if challengeEnabled && notifsEnabled {
+                            NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
+                        }
+                    }
+                    .onChange(of: targetDaysOfWorkout) { _, newValue in
+                        let goal = Int(targetDaysOfWorkout) ?? 0
+                        let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
+                        let notifsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+
+                        if challengeEnabled && notifsEnabled {
+                            NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
+                        }
                     }
                     .scrollDismissesKeyboard(.interactively)
                 }

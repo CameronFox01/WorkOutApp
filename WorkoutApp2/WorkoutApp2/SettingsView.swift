@@ -18,6 +18,7 @@ struct SettingsView: View {
     @AppStorage("SaveToPhotosApp") private var saveToPhoto: Bool = true
     @AppStorage("showStopWatch") private var showStopWatch: Bool = true
     @AppStorage("numberOfWorkoutsToShow") private var numberOfWorkoutsToShow: Int = 12
+    @AppStorage("workoutChallengeReminder") private var workoutChallengeReminder: Bool = true
 
     @State private var showResetConfirmation = false
     @State private var showResetAccountConfirmation = false
@@ -188,6 +189,34 @@ struct SettingsView: View {
                                             .labelsHidden()
                                     }
                                     .opacity(notificationsEnabled ? 1 : 0.4)
+                                    
+                                    Divider()
+
+                                    // Notification for Weekly Workout Challenge
+                                    SettingsRow(
+                                        icon: notificationsEnabled
+                                            ? "flame.fill"
+                                            : "bell.slash.fill",
+                                        title: "Weekly Workout Challenge"
+                                    ) {
+                                        Toggle("", isOn: $workoutChallengeReminder)
+                                            .labelsHidden()
+                                    }
+                                    .opacity(notificationsEnabled ? 1 : 0.4)
+
+                                    if notificationsEnabled && workoutChallengeReminder {
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            HStack(spacing: 6) {
+                                                Image(systemName: "info.circle")
+                                                    .foregroundStyle(.secondary)
+                                                    .font(.caption)
+                                                Text("Sends a mid-week check-in (Wed) and end-of-week push (Sun) if you haven't hit your weekly goal.")
+                                                    .font(.caption)
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                        }
+                                        .padding(.leading, 42)
+                                    }
                                     
                                     //Notification Section
                                     Divider()

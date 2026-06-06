@@ -183,10 +183,8 @@ struct StartUpView: View {
                         } else {
                             height = "\(selectedCentimeters)"
                         }
-                        
-                        //                    DispatchQueue.main.async {
-                        //                         hasCompletedSetup = true
-                        //                     }
+                        let goal = Int(targetDaysOfWorkout) ?? 0
+                        NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
                         hasCompletedSetup = true
                     }
                 }
