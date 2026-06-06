@@ -277,6 +277,7 @@ extension AccountView {
                     title:"Goals"
                 )
             }
+            .font(.largeTitle)
 
             NavigationLink {
 
@@ -300,7 +301,7 @@ extension AccountView {
                     "Achievements"
                 )
             }
-
+            .font(.largeTitle)
         }
     }
 
@@ -331,6 +332,7 @@ extension AccountView {
                 )
 
             }
+            .font(.largeTitle)
             .padding()
         }
         .cardStyle()
