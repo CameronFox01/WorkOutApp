@@ -7,6 +7,7 @@
 
 // TODO: I need to get this not to say weight instead maybe say amount. 
 import SwiftUI
+import WidgetKit
 
 struct GoalView: View {
     @FocusState private var isEditing: Bool
@@ -130,31 +131,6 @@ struct GoalView: View {
                         )
                     }
                     .buttonStyle(.plain)
-                    .onAppear {
-                        loadWorkoutGoals()
-                        loadAchievedGoals()
-                        loadAchievedMilestones()
-                        let goal = Int(targetDaysOfWorkout) ?? 0
-                        let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
-                        let notifsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
-
-                        if challengeEnabled && notifsEnabled {
-                            NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
-                        }
-                        
-                        UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(targetDaysOfWorkout, forKey: "userTargetDaysOfWorkout")
-                    }
-                    .onChange(of: targetDaysOfWorkout) { _, newValue in
-                        UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(newValue, forKey: "userTargetDaysOfWorkout")
-                        
-                        let goal = Int(targetDaysOfWorkout) ?? 0
-                        let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
-                        let notifsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
-
-                        if challengeEnabled && notifsEnabled {
-                            NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
-                        }
-                    }
                     .scrollDismissesKeyboard(.interactively)
                 }
                 .onTapGesture {
@@ -165,6 +141,32 @@ struct GoalView: View {
                         Spacer()
                         Button("Done") { isEditing = false }
                     }
+                }
+            }
+            .onAppear {
+                loadWorkoutGoals()
+                loadAchievedGoals()
+                loadAchievedMilestones()
+                let goal = Int(targetDaysOfWorkout) ?? 0
+                let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
+                let notifsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+
+                if challengeEnabled && notifsEnabled {
+                    NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
+                }
+                
+                UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(targetDaysOfWorkout, forKey: "userTargetDaysOfWorkout")
+            }
+            .onChange(of: targetDaysOfWorkout) { _, newValue in
+                UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(newValue, forKey: "userTargetDaysOfWorkout")
+                WidgetCenter.shared.reloadAllTimelines() 
+                
+                let goal = Int(targetDaysOfWorkout) ?? 0
+                let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
+                let notifsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+
+                if challengeEnabled && notifsEnabled {
+                    NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
