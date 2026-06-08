@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 struct EditWorkoutView: View {
     @EnvironmentObject var workoutData: WorkoutData
@@ -371,6 +372,7 @@ struct EditWorkoutView: View {
         )
         
         saveEntriesToStorage()
+        WidgetCenter.shared.reloadAllTimelines()
         dismiss()
     }
 
@@ -379,12 +381,14 @@ struct EditWorkoutView: View {
             workoutData.entries.remove(at: index)
         }
         saveEntriesToStorage()
+        WidgetCenter.shared.reloadAllTimelines()
         dismiss()
     }
 
     private func saveEntriesToStorage() {
         if let encoded = try? JSONEncoder().encode(workoutData.entries) {
-            UserDefaults.standard.set(encoded, forKey: "workout_entries")
+            //UserDefaults.standard.set(encoded, forKey: "workout_entries")
+            UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(encoded, forKey: "workout_entries")
         }
     }
 }
