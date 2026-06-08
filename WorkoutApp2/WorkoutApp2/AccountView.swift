@@ -260,82 +260,47 @@ extension AccountView {
     }
 
     private var shortcutsSection: some View {
-
-        VStack(
-            spacing:12
-        ){
-
+        VStack(spacing: 12) {
             NavigationLink {
-
                 GoalView()
-
             } label: {
-
-                shortcutRow(
-                    icon:"trophy.fill",
-                    color:.yellow,
-                    title:"Goals"
-                )
+                shortcutRow(icon: "trophy.fill", color: .yellow, title: "Goals")
             }
-            .font(.largeTitle)
 
             NavigationLink {
-
-                AchievedGoalsView(
-                    achievedGoals:
-                    [],
-                    comingfromWidget:
-                    false
-                )
-
+                AchievedGoalsView(achievedGoals: [], comingfromWidget: false)
             } label: {
-
-                shortcutRow(
-                    icon:
-                    "checkmark.seal.fill",
-
-                    color:
-                    .green,
-
-                    title:
-                    "Achievements"
-                )
+                shortcutRow(icon: "checkmark.seal.fill", color: .green, title: "Achievements")
             }
-            .font(.largeTitle)
         }
     }
 
     private var settingsButton: some View {
-
         NavigationLink {
-
             SettingsView()
-
         } label: {
-
             HStack {
-
-                Image(
-                    systemName:
-                    "gear"
-                )
-
-                Text(
-                    "Settings"
-                )
-
+                Image(systemName: "gear")
+                    .foregroundStyle(.blue)
+                    .font(.title)
+                Text("Settings")
+                    .font(.title2)
                 Spacer()
-
-                Image(
-                    systemName:
-                    "chevron.right"
-                )
-
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.secondary)
+                    .font(.title2)
             }
-            .font(.largeTitle)
+            .font(.body)
             .padding()
+            .frame(maxWidth: .infinity)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 28)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 5)
         }
-        .cardStyle()
+        .buttonStyle(.plain)
     }
 }
 
@@ -365,11 +330,13 @@ extension AccountView {
         HStack {
 
             Text(title)
+                .font(.headline.bold())
 
             Spacer()
 
             Text(value)
-                .bold()
+                .font(.headline.bold())
+                
 
         }
     }
@@ -383,48 +350,40 @@ extension AccountView {
 
             Text(value)
                 .font(
-                    .title.bold()
+                    .largeTitle.bold()
                 )
 
             Text(label)
-                .font(
-                    .caption
-                )
+                .font(.headline.bold())
 
         }
-        .frame(
-            maxWidth:.infinity
-        )
+        .frame(maxWidth:.infinity)
     }
 
     private func shortcutRow(
-        icon:String,
-        color:Color,
-        title:String
+        icon: String,
+        color: Color,
+        title: String
     ) -> some View {
-
         HStack {
-
-            Image(
-                systemName:
-                icon
-            )
-            .foregroundStyle(
-                color
-            )
-
+            Image(systemName: icon)
+                .foregroundStyle(color)
+                .font(.title)
             Text(title)
-
+                .font(.title2)
             Spacer()
-
-            Image(
-                systemName:
-                "chevron.right"
-            )
-
+            Image(systemName: "chevron.right")
+                .foregroundStyle(.secondary)
+                .font(.title2)
         }
         .padding()
-        .cardStyle()
+        .frame(maxWidth: .infinity)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 28)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 5)
     }
 
     private var weightUnit:String {

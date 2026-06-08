@@ -228,6 +228,8 @@ struct AddWorkoutForDateView: View {
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(.white.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
+                .colorScheme(.dark)
+                .tint(.white)
         }
     }
 
