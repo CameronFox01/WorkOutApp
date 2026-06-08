@@ -20,23 +20,31 @@ struct HeatmapEntry: TimelineEntry {
     let countsByDay: [Date: Int]
     let plannedTitle: String
     let plannedWorkouts: [String]
+    let weeklyGoal: Int
 }
 
 struct HeatmapProvider: TimelineProvider {
     func placeholder(in context: Context) -> HeatmapEntry {
-        HeatmapEntry(date: Date(), countsByDay: [:], plannedTitle: "", plannedWorkouts: [])
+        HeatmapEntry(date: Date(), countsByDay: [:], plannedTitle: "", plannedWorkouts: [], weeklyGoal: loadWeeklyGoal())
     }
 
     func getSnapshot(in context: Context, completion: @escaping (HeatmapEntry) -> Void) {
         let planned = loadPlannedWorkouts(for: Date())
-        completion(HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts))
+        completion(HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts, weeklyGoal: loadWeeklyGoal()))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<HeatmapEntry>) -> Void) {
         let planned = loadPlannedWorkouts(for: Date())
-        let entry = HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts)
+        let goal = loadWeeklyGoal()
+        let entry = HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts, weeklyGoal: goal)
         let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
         completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+    }
+
+    private func loadWeeklyGoal() -> Int {
+        let defaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
+        let str = defaults?.string(forKey: "userTargetDaysOfWorkout") ?? ""
+        return Int(str) ?? 5
     }
 
     private func loadCounts() -> [Date: Int] {
@@ -183,11 +191,12 @@ struct HeatmapWidgetView: View {
                         .foregroundStyle(.white.opacity(0.6))
                 }
                 Spacer()
-                HStack(spacing: 5) {
+                HStack(spacing: 15) {
                     summaryItem(icon: "flame.fill", value: "\(totalWorkouts)", label: "Total")
-                    summaryItem(icon: "calendar", value: "\(activeDays)", label: "Active Days")
-                    summaryItem(icon: "chart.bar.fill", value: "\(bestDay)", label: "Best Day")
+                    summaryItem(icon: "calendar", value: "\(activeDays)", label: "Active Streak")
+                    weeklyProgressRing
                 }
+                .frame(maxWidth: .infinity)
             }
 
             // Heatmap
@@ -240,6 +249,42 @@ struct HeatmapWidgetView: View {
             }
         }
         .padding(14)
+    }
+    
+    private var weeklyProgressRing: some View {
+        let calendar = Calendar.current
+        let now = Date()
+        let weekStart = calendar.date(from: calendar.dateComponents(
+            [.yearForWeekOfYear, .weekOfYear], from: now
+        )) ?? now
+
+        let daysWorkedThisWeek = entry.countsByDay.keys.filter {
+            $0 >= weekStart
+        }.count
+
+        let goal = max(entry.weeklyGoal, 1)
+        let progress = min(Double(daysWorkedThisWeek) / Double(goal), 1.0)
+
+        return VStack(spacing: 2) {
+            ZStack {
+                Circle()
+                    .stroke(Color.white.opacity(0.2), lineWidth: 4)
+                    .frame(width: 36, height: 36)
+
+                Circle()
+                    .trim(from: 0, to: progress)
+                    .stroke(
+                        progress >= 1 ? Color.green : Color.cyan,
+                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: 36, height: 36)
+
+                Text("\(daysWorkedThisWeek)")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+        }
     }
 
     // MARK: - Shared grid
@@ -376,19 +421,19 @@ struct IronFoxHeatmapWidget: Widget {
 #Preview("Small", as: .systemSmall) {
     IronFoxHeatmapWidget()
 } timeline: {
-    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "", plannedWorkouts: [])
+    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "", plannedWorkouts: [], weeklyGoal: 5)
 }
 
 #Preview("Medium", as: .systemMedium) {
     IronFoxHeatmapWidget()
 } timeline: {
-    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press"])
+    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press"], weeklyGoal: 5)
 }
 
 #Preview("Large", as: .systemLarge) {
     IronFoxHeatmapWidget()
 } timeline: {
-    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press", "Calf Raises","Squats", "Lunges", "Leg Press", "Calf Raises"])
+    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press", "Calf Raises","Squats", "Lunges", "Leg Press", "Calf Raises"], weeklyGoal: 5)
 }
 
 private let sampleCounts: [Date: Int] = {

@@ -210,7 +210,7 @@ struct SettingsView: View {
                                                 Image(systemName: "info.circle")
                                                     .foregroundStyle(.secondary)
                                                     .font(.caption)
-                                                Text("Sends a mid-week check-in (Wed) and end-of-week push (Sun) if you haven't hit your weekly goal.")
+                                                Text("Sends a mid-week check-in (Wed) and end-of-week push (Sat) if you haven't hit your weekly goal.")
                                                     .font(.caption)
                                                     .foregroundStyle(.secondary)
                                             }

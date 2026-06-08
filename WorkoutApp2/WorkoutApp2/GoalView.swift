@@ -141,8 +141,12 @@ struct GoalView: View {
                         if challengeEnabled && notifsEnabled {
                             NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
                         }
+                        
+                        UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(targetDaysOfWorkout, forKey: "userTargetDaysOfWorkout")
                     }
                     .onChange(of: targetDaysOfWorkout) { _, newValue in
+                        UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(newValue, forKey: "userTargetDaysOfWorkout")
+                        
                         let goal = Int(targetDaysOfWorkout) ?? 0
                         let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
                         let notifsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
