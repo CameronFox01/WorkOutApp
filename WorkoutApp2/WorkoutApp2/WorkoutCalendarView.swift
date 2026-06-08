@@ -17,6 +17,8 @@ struct WorkoutCalendarView: View {
     @State private var currentMonthOffset: Int = 0
     @State private var selectedDate: Date =
         Calendar.current.startOfDay(for: Date())
+    
+    @State private var showingAddWorkout = false
 
     @EnvironmentObject var workoutData: WorkoutData
     private var calendar: Calendar { .current }
@@ -346,6 +348,22 @@ struct WorkoutCalendarView: View {
                                 .overlay(
                                     Color.white.opacity(0.15)
                                 )
+                            
+                            // MARK: - Workouts
+                            HStack {
+                                Spacer()
+                                Button {
+                                    showingAddWorkout = true
+                                } label: {
+                                    Label("Add Workout", systemImage: "plus.circle.fill")
+                                        .font(.subheadline.bold())
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                        .background(.white.opacity(0.15), in: Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
 
                             // MARK: - Workouts
                             if selectedDayEntries.isEmpty {
@@ -476,6 +494,10 @@ struct WorkoutCalendarView: View {
                     }
                     .padding()
                 }
+            }
+            .sheet(isPresented: $showingAddWorkout) {
+                AddWorkoutForDateView(date: selectedDate)
+                    .environmentObject(workoutData)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
