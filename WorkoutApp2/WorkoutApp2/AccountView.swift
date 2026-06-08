@@ -452,40 +452,29 @@ extension AccountView {
         return "\(feet)'\(remaining)\""
     }
 
-    private var currentStreak:Int {
+    private var currentStreak: Int {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
 
-        let calendar =
-        Calendar.current
-
-        let workoutDays =
-        Set(
+        let workoutDays = Set(
             workoutData.entries.map {
-
-                calendar.startOfDay(
-                    for:$0.date
-                )
+                calendar.startOfDay(for: $0.date)
             }
         )
 
         var streak = 0
 
-        var day =
-        calendar.startOfDay(
-            for: Date()
-        )
-
-        while workoutDays.contains(
-            day
-        ){
-
+        // If they've already worked out today, count it
+        if workoutDays.contains(today) {
             streak += 1
+        }
 
-            day =
-            calendar.date(
-                byAdding:.day,
-                value:-1,
-                to:day
-            )!
+        // Walk backwards from yesterday
+        var day = calendar.date(byAdding: .day, value: -1, to: today)!
+
+        while workoutDays.contains(day) {
+            streak += 1
+            day = calendar.date(byAdding: .day, value: -1, to: day)!
         }
 
         return streak
