@@ -69,6 +69,12 @@ struct ContentView: View {
 
                    case .workoutDetail:
                        WorkoutCalendarView(entries: entries, comingFromWidget: true)
+                           .onAppear {
+                               entries = workoutData.entries
+                           }
+                           .onChange(of: workoutData.entries.count) { _, _ in
+                                  entries = workoutData.entries 
+                              }
                    
                    case .weight: // This comes from one of the notifications
                        WeightUpdateSheet(

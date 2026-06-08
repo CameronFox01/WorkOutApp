@@ -32,6 +32,7 @@ struct WorkoutApp2App: App {
                                 isBooting = false
                             }
                         }
+                    //migrateUserDefaultsToShared()
                 } else {
                     if hasCompletedSetup {
                         ContentView()
