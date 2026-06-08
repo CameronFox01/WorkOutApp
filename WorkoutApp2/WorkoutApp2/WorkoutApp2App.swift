@@ -32,7 +32,6 @@ struct WorkoutApp2App: App {
                                 isBooting = false
                             }
                         }
-                    //migrateUserDefaultsToShared()
                 } else {
                     if hasCompletedSetup {
                         ContentView()
@@ -68,6 +67,51 @@ struct WorkoutApp2App: App {
 }
 
 func migrateUserDefaultsToShared() {
+    let standard = UserDefaults.standard
+    guard let shared = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2") else {
+        print("FAILED TO GET SHARED DEFAULTS")
+        return
+    }
+
+    // Decode both stores
+    let standardEntries: [WorkoutEntry] = {
+        guard let data = standard.data(forKey: "workout_entries"),
+              let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data)
+        else { return [] }
+        return decoded
+    }()
+
+    let sharedEntries: [WorkoutEntry] = {
+        guard let data = shared.data(forKey: "workout_entries"),
+              let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data)
+        else { return [] }
+        return decoded
+    }()
+
+    print("Standard entries: \(standardEntries.count)")
+    print("Shared entries: \(sharedEntries.count)")
+
+    // Merge by combining both and deduplicating by ID
+    var merged = sharedEntries
+    let existingIDs = Set(sharedEntries.map { $0.id })
+    for entry in standardEntries {
+        if !existingIDs.contains(entry.id) {
+            merged.append(entry)
+        }
+    }
+
+    // Sort by date
+    merged.sort { $0.date < $1.date }
+
+    print("Merged entries: \(merged.count)")
+
+    if let encoded = try? JSONEncoder().encode(merged) {
+        shared.set(encoded, forKey: "workout_entries")
+        standard.set(encoded, forKey: "workout_entries")  // keep standard in sync too
+    }
+}
+
+func debugStorage() {
 
     let standard =
     UserDefaults.standard
@@ -80,54 +124,131 @@ func migrateUserDefaultsToShared() {
         return
     }
 
-    // prevents running multiple times
-    if shared.bool(
-        forKey:
-        "didMigrateToSharedDefaults"
-    ) {
-        return
-    }
+    print("========== STANDARD ==========")
 
-    let keysToMove = [
+    if let data =
+        standard.data(
+            forKey:"workout_entries"
+        ) {
 
-        "workout_entries",
-        "userName",
-        "userWeight",
-        "userHeight",
-        "userTargetWeight",
-        "userTargetDaysOfWorkout",
-        "planned_workouts",
-        "unitSystem",
-        "profileImageData"
+        print(
+            "Workout bytes:",
+            data.count
+        )
 
-    ]
+        if let workouts =
+            try? JSONDecoder().decode(
+                [WorkoutEntry].self,
+                from:data
+            ) {
 
-    for key in keysToMove {
-
-        // only copy if shared doesn't already have data
-        if shared.object(
-            forKey:key
-        ) == nil {
-
-            let value =
-            standard.object(
-                forKey:key
+            print(
+                "Workout count:",
+                workouts.count
             )
 
-            shared.set(
-                value,
-                forKey:key
+            print(
+                "First workout:",
+                workouts.first?.date ?? Date()
+            )
+
+            print(
+                "Last workout:",
+                workouts.last?.date ?? Date()
             )
         }
+
+    } else {
+
+        print(
+            "No workout entries"
+        )
     }
 
-    shared.set(
-        true,
-        forKey:
-        "didMigrateToSharedDefaults"
+    print(
+        "Weight:",
+        standard.string(
+            forKey:"userWeight"
+        ) ?? "nil"
     )
 
-    print("Migration complete")
+    print(
+        "Target Days:",
+        standard.string(
+            forKey:"userTargetDaysOfWorkout"
+        ) ?? "nil"
+    )
+
+    print(
+        "Unit:",
+        standard.string(
+            forKey:"unitSystem"
+        ) ?? "nil"
+    )
+
+
+
+    print("========== SHARED ==========")
+
+    if let data =
+        shared.data(
+            forKey:"workout_entries"
+        ) {
+
+        print(
+            "Workout bytes:",
+            data.count
+        )
+
+        if let workouts =
+            try? JSONDecoder().decode(
+                [WorkoutEntry].self,
+                from:data
+            ) {
+
+            print(
+                "Workout count:",
+                workouts.count
+            )
+
+            print(
+                "First workout:",
+                workouts.first?.date ?? Date()
+            )
+
+            print(
+                "Last workout:",
+                workouts.last?.date ?? Date()
+            )
+        }
+
+    } else {
+
+        print(
+            "No workout entries"
+        )
+    }
+
+    print(
+        "Weight:",
+        shared.string(
+            forKey:"userWeight"
+        ) ?? "nil"
+    )
+
+    print(
+        "Target Days:",
+        shared.string(
+            forKey:"userTargetDaysOfWorkout"
+        ) ?? "nil"
+    )
+
+    print(
+        "Unit:",
+        shared.string(
+            forKey:"unitSystem"
+        ) ?? "nil"
+    )
 
 }
 
@@ -138,10 +259,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
 
-        // Set this class as the notification delegate
+        migrateUserDefaultsToShared()
+
+        // Set this class as notification delegate
         UNUserNotificationCenter.current().delegate = self
 
-        // Register defaults so UserDefaults never returns false unexpectedly
         UserDefaults.standard.register(defaults: [
             "notificationsEnabled": true,
             "weighInReminder": true,
@@ -149,7 +271,6 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             "goalReminder": true
         ])
 
-        // Request permission and schedule reminders
         NotificationHandler.shared.requestNotificationPermission()
         NotificationHandler.shared.scheduleWeighInReminder()
 
@@ -210,7 +331,7 @@ enum AppRoute {
 class AppRouter: ObservableObject {
 
     @Published var selectedTab: Tab = .home
-    @Published var activeScreen: Screen? = nil   // 👈 NEW
+    @Published var activeScreen: Screen? = nil 
 
     enum Tab {
         case home

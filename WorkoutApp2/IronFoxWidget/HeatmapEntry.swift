@@ -361,11 +361,22 @@ struct HeatmapWidgetView: View {
 
     private var currentStreak: Int {
         var streak = 0
-        var day = calendar.startOfDay(for: entry.date)
+        let today = calendar.startOfDay(for: entry.date)
+        
+        // Start from yesterday — don't penalize today for being incomplete
+        var day = calendar.date(byAdding: .day, value: -1, to: today)!
+        
+        // If they already worked out today, count today too
+        if let todayCount = entry.countsByDay[today], todayCount > 0 {
+            streak += 1
+        }
+        
+        // Walk backwards from yesterday
         while let count = entry.countsByDay[day], count > 0 {
             streak += 1
             day = calendar.date(byAdding: .day, value: -1, to: day)!
         }
+        
         return streak
     }
 

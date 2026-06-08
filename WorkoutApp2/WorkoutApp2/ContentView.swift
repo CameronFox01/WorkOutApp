@@ -73,7 +73,7 @@ struct ContentView: View {
                                entries = workoutData.entries
                            }
                            .onChange(of: workoutData.entries.count) { _, _ in
-                                  entries = workoutData.entries 
+                                  entries = workoutData.entries
                               }
                    
                    case .weight: // This comes from one of the notifications
@@ -207,8 +207,25 @@ struct ContentView: View {
     }
 
     private func loadEntries() {
-        if let data = UserDefaults.standard.data(forKey: "workout_entries"),
-           let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
+
+        guard let shared =
+        UserDefaults(
+            suiteName:
+            "group.Fox-Studios.WorkoutApp2"
+        ) else {
+            return
+        }
+
+        if let data =
+        shared.data(
+            forKey:"workout_entries"
+        ),
+
+        let decoded =
+        try? JSONDecoder().decode(
+            [WorkoutEntry].self,
+            from:data
+        ) {
 
             entries = decoded
 
@@ -219,7 +236,8 @@ struct ContentView: View {
 
             } else if !workoutsList.contains(selectedWorkout) {
 
-                selectedWorkout = workoutsList.first ?? ""
+                selectedWorkout =
+                workoutsList.first ?? ""
             }
         }
     }
