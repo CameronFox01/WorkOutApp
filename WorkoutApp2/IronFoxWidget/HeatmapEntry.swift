@@ -192,8 +192,15 @@ struct HeatmapWidgetView: View {
                 }
                 Spacer()
                 HStack(spacing: 15) {
-                    summaryItem(icon: "flame.fill", value: "\(totalWorkouts)", label: "Total")
-                    summaryItem(icon: "calendar", value: "\(activeDays)", label: "Active Streak")
+                    summaryItem(icon: "calendar",
+                                value: "\(totalWorkouts)",
+                                label: "Total"
+                    )
+                    summaryItem(
+                        icon: "flame.fill",
+                        value: "\(currentStreak)",
+                        label: "Streak"
+                    )
                     weeklyProgressRing
                 }
                 .frame(maxWidth: .infinity)
@@ -337,23 +344,6 @@ struct HeatmapWidgetView: View {
             }
         }
     }
-  //Was bring used for the Large Widget just couldn't get it. Saving incase I revist this.
-//    private func workoutPill(_ name: String) -> some View {
-//        HStack(spacing: 4) {
-//            Circle()
-//                .fill(.green.opacity(0.7))
-//                .frame(width: 6, height: 6)
-//            Text(name)
-//                .font(.caption.bold())
-//                .foregroundStyle(.white.opacity(0.85))
-//                .lineLimit(1)
-//                .minimumScaleFactor(0.6)  // ✅ shrinks text before truncating
-//        }
-//        .padding(.horizontal, 8)
-//        .padding(.vertical, 4)
-//        .frame(maxWidth: .infinity)  // ✅ each pill takes equal width
-//        .background(.white.opacity(0.12), in: Capsule())
-//    }
     
     private var todayCount: Int {
         entry.countsByDay[calendar.startOfDay(for: entry.date)] ?? 0
