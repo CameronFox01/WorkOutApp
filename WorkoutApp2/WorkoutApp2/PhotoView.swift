@@ -121,6 +121,7 @@ struct PhotoView: View {
                         leftImage = newValue
                         if let img = newValue {
                             saveToAppStorage(image: img, side: "left")
+                            saveGalleryPhoto(image: img)
                         }
                     }
                 ))
@@ -132,6 +133,7 @@ struct PhotoView: View {
                         rightImage = newValue
                         if let img = newValue {
                             saveToAppStorage(image: img, side: "right")
+                            saveGalleryPhoto(image: img)
                         }
                     }
                 ))
@@ -225,6 +227,19 @@ struct PhotoView: View {
 
         } catch {
             print("Failed to load saved photos: \(error)")
+        }
+    }
+    
+    private func saveGalleryPhoto(image: UIImage) {
+        guard let data = image.jpegData(compressionQuality: 0.9) else { return }
+
+        let filename = "\(UUID().uuidString).jpg"
+        let url = documentsDirectory().appendingPathComponent(filename)
+
+        do {
+            try data.write(to: url)
+        } catch {
+            print(error)
         }
     }
 
