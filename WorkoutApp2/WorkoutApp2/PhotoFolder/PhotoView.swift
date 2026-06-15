@@ -139,10 +139,14 @@ struct PhotoView: View {
                 ))
             }
             .sheet(isPresented: $showingSavedPhotos) {
-                SavedPhotosView { image in
-                    selectedGalleryImage = image
-                    showingSidePicker = true
-                }
+                SavedPhotosView(
+                    onSelect: { image in
+                            selectedGalleryImage = image
+                            showingSidePicker = true
+                        },
+                        leftImage: leftImage,
+                        rightImage: rightImage
+                ) 
             }
             .confirmationDialog(
                 "Use Photo",

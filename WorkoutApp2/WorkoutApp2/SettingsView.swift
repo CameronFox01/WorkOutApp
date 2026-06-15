@@ -470,7 +470,7 @@ struct SettingsView: View {
                                     .font(.headline)
                                 
                                 // Change this to the actual webpage once published.
-                                Link("Visit Webpage", destination: URL(string: "http://www.cameronfox.me")!)
+                                Link("Visit Webpage", destination: URL(string: "http://cameronfox.me/publishedapps/ironfox")!)
 
                                 Text("Version \(appVersion)")
                                     .font(.footnote)
