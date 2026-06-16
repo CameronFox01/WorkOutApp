@@ -20,22 +20,18 @@ struct CaloriesDetailView: View {
         Hmanager.lastFiveDaysSteps
     }
 
-    private var lastFiveDaysCalories: [(date: Date, calories: Int)] {
-        lastFiveDaysSteps.map {
-            ($0.date, Int(Double($0.steps) * 0.04))
-        }
-    }
+    var lastFiveDaysActiveCalories: [Date: Double] = [:]
 
-    private var fiveDayAverageCalories: Int {
-
-        let total = lastFiveDaysCalories.reduce(0) {
-            $0 + $1.calories
-        }
-
-        return lastFiveDaysCalories.isEmpty
-        ? 0
-        : total / lastFiveDaysCalories.count
-    }
+//    private var fiveDayAverageCalories: Int {
+//
+//        let total = Hmanager.lastFiveDaysCalories.reduce(0) {
+//            $0 + $1.calories
+//        }
+//
+//        return Hmanager.lastFiveDaysCalories.isEmpty
+//        ? 0
+//        : total / Hmanager.lastFiveDaysCalories.count
+//    }
 
     private var estimatedCaloriesToday: Int {
         Int(Double(Hmanager.steps) * 0.04)
@@ -103,17 +99,29 @@ struct CaloriesDetailView: View {
                                     .frame(width: 280, height: 280)
 
                                 VStack(spacing: 10) {
-
-                                    Text("\(Int(Hmanager.activeCalories))")
-                                        .font(
-                                            .system(
-                                                size: 60,
-                                                weight: .bold,
-                                                design: .rounded
+                                    if Hmanager.activeCalories == 0 {
+                                        Text("\(Int(Int(Double(Hmanager.steps) * 0.04)))")
+                                            .font(
+                                                .system(
+                                                    size: 60,
+                                                    weight: .bold,
+                                                    design: .rounded
+                                                )
                                             )
-                                        )
-                                        .foregroundStyle(.white)
-                                        .monospacedDigit()
+                                            .foregroundStyle(.white)
+                                            .monospacedDigit()
+                                    } else {
+                                        Text("\(Int(Hmanager.activeCalories))")
+                                            .font(
+                                                .system(
+                                                    size: 60,
+                                                    weight: .bold,
+                                                    design: .rounded
+                                                )
+                                            )
+                                            .foregroundStyle(.white)
+                                            .monospacedDigit()
+                                    }
 
                                     Text("kcal")
                                         .font(.title3.weight(.semibold))
@@ -211,7 +219,7 @@ struct CaloriesDetailView: View {
 
                                     Spacer()
 
-                                    Text("\(fiveDayAverageCalories)")
+                                    Text("\(Hmanager.fiveDayAverageCalories)")
                                         .bold()
                                 }
 
@@ -251,10 +259,10 @@ struct CaloriesDetailView: View {
                                 )
 
                             // MARK: - Chart
-                            if !lastFiveDaysCalories.isEmpty {
+                            if !Hmanager.lastFiveDaysCalories.isEmpty {
 
                                 FiveDayCaloriesBarChart(
-                                    data: lastFiveDaysCalories
+                                    data: Hmanager.lastFiveDaysCalories
                                 )
                                 .frame(height: 220)
                             } else {
@@ -296,9 +304,10 @@ struct CaloriesDetailView: View {
                 }
             }
             .onAppear {
-
                 Hmanager.fetchSteps()
                 Hmanager.fetchLastFiveDaysSteps()
+                Hmanager.fetchActiveCalories()
+                Hmanager.fetchLastFiveDaysActiveCalories()
             }
         }
     }

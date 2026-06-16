@@ -15,7 +15,7 @@ class HealthManager: ObservableObject {
     
     let healthStore = HKHealthStore()
     
-    @Published var steps: Int = 0  // ✅ Add this published property
+    @Published var steps: Int = 0 
     @Published var distance: Double = 0
     @Published var activeCalories: Double = 0
     @Published var flightsClimbed: Int = 0
@@ -113,6 +113,46 @@ class HealthManager: ObservableObject {
             }
         }
         healthStore.execute(query)
+    }
+    
+    var fiveDayAverageCalories: Int {
+
+        let total = lastFiveDaysCalories.reduce(0) {
+            $0 + $1.calories
+        }
+
+        return lastFiveDaysCalories.isEmpty
+        ? 0
+        : total / lastFiveDaysCalories.count
+    }
+    
+    var lastFiveDaysCalories: [(date: Date, calories: Int)] {
+
+        lastFiveDaysSteps.map { stepDay in
+
+            let healthCalories =
+                lastFiveDaysActiveCalories.first {
+                    Calendar.current.isDate(
+                        $0.date,
+                        inSameDayAs: stepDay.date
+                    )
+                }?.calories ?? 0
+
+            return (
+                date: stepDay.date,
+                calories: healthCalories > 0
+                    ? healthCalories
+                    : Int(Double(stepDay.steps) * 0.04)
+            )
+        }
+    }
+    
+    func caloriesForDay(steps: Int, healthKitCalories: Double?) -> Int {
+        if let hk = healthKitCalories, hk > 0 {
+            return Int(hk)
+        } else {
+            return Int(Double(steps) * 0.04)
+        }
     }
 
     func fetchLastFiveDaysSteps() {

@@ -144,12 +144,16 @@ struct HomeView: View {
                                             .font(.title2.bold())
                                             .frame(maxWidth: .infinity, alignment: .center)
                                         
+                                        if Hmanager.activeCalories == 0 {
+                                            Text("\(Int(Int(Double(Hmanager.steps) * 0.04))) kcal")
+                                                .font(.title2).bold()
+                                        } else {
+                                            Text("\(Int(Hmanager.activeCalories)) kcal")
+                                                .font(.title2).bold()
+                                        }
                                         
-                                        Text("\(Int(Hmanager.activeCalories)) kcal")
-                                            .font(.title2).bold()
-                                        
-                                        if !lastFiveDaysCalories.isEmpty {
-                                            FiveDayCaloriesBarChart(data: lastFiveDaysCalories)
+                                        if !Hmanager.lastFiveDaysCalories.isEmpty {
+                                            FiveDayCaloriesBarChart(data: Hmanager.lastFiveDaysCalories)
                                                 .frame(height: 60)
                                                 .padding(.top, 4)
                                             
@@ -157,7 +161,7 @@ struct HomeView: View {
                                                 Text("5-day avg:")
                                                     .font(.caption)
                                                     .foregroundStyle(.secondary)
-                                                Text("\(fiveDayAverageCalories)")
+                                                Text("\(Hmanager.fiveDayAverageCalories)")
                                                     .font(.caption)
                                                     .bold()
                                                     .foregroundStyle(.secondary)
@@ -744,15 +748,6 @@ struct HomeView: View {
     }
     
     private var estimatedCaloriesToday: Int { Int(Double(Hmanager.steps) * 0.04) }
-    
-    private var lastFiveDaysCalories: [(date: Date, calories: Int)] {
-        lastFiveDaysSteps.map { ($0.date, Int(Double($0.steps) * 0.04)) }
-    }
-    
-    private var fiveDayAverageCalories: Int {
-        let total = lastFiveDaysCalories.reduce(0) { $0 + $1.calories }
-        return lastFiveDaysCalories.isEmpty ? 0 : total / lastFiveDaysCalories.count
-    }
     
     private var currentWeightValue: Double? { Double(weight) }
     private var targetWeightValue: Double? { Double(targetWeight) }
