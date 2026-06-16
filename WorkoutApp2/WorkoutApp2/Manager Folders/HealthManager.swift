@@ -7,8 +7,11 @@
 
 import Foundation
 import HealthKit
+import SwiftUI
 
 class HealthManager: ObservableObject {
+    @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
+    
     // In HealthManager
     @Published var lastFiveDaysSteps: [(date: Date, steps: Int)] = []
     @Published var lastFiveDaysActiveCalories: [(date: Date, calories: Int)] = []
@@ -115,6 +118,7 @@ class HealthManager: ObservableObject {
         healthStore.execute(query)
     }
     
+    // Calories Section
     var fiveDayAverageCalories: Int {
 
         let total = lastFiveDaysCalories.reduce(0) {
@@ -152,6 +156,75 @@ class HealthManager: ObservableObject {
             return Int(hk)
         } else {
             return Int(Double(steps) * 0.04)
+        }
+    }
+    
+    func fetchLastFiveDaysActiveCalories() {
+        let calorieType = HKQuantityType(.activeEnergyBurned)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        var results: [(date: Date, calories: Int)] = []
+        let group = DispatchGroup()
+
+        for dayOffset in (0..<5).reversed() {
+            guard let day = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
+
+            let isToday = dayOffset == 0
+            let endOfDay = isToday ? Date() : (calendar.date(byAdding: .day, value: 1, to: day) ?? day)
+
+            let predicate = HKQuery.predicateForSamples(withStart: day, end: endOfDay)
+
+            group.enter()
+            let query = HKStatisticsQuery(quantityType: calorieType, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, _ in
+                let kcal = Int(result?.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0)
+                results.append((date: day, calories: kcal))
+                group.leave()
+            }
+            healthStore.execute(query)
+        }
+
+        group.notify(queue: .main) {
+            self.lastFiveDaysActiveCalories = results.sorted { $0.date < $1.date }
+        }
+    }
+    
+    // Steps/Distance Section
+    var getLastFiveDaysSteps: [(date: Date, steps: Int)] {
+        lastFiveDaysSteps
+    }
+
+    var fiveDayAverageSteps: Int {
+
+        let total = getLastFiveDaysSteps.reduce(0) { $0 + $1.steps }
+
+        return getLastFiveDaysSteps.isEmpty
+        ? 0
+        : total / getLastFiveDaysSteps.count
+    }
+    
+    var unitSystem: UnitSystem {
+        get {
+            UnitSystem(rawValue: unitSystemRaw) ?? .metric
+        }
+        set {
+            unitSystemRaw = newValue.rawValue
+        }
+    }
+    
+     var formattedDistance: String {
+
+        if unitSystem == .metric {
+
+            let km = distance / 1000
+
+            return String(format: "%.2f km", km)
+
+        } else {
+
+            let miles = distance / 1609.34
+
+            return String(format: "%.2f mi", miles)
         }
     }
 
@@ -195,36 +268,6 @@ class HealthManager: ObservableObject {
 
         group.notify(queue: .main) {
             self.lastFiveDaysSteps = results.sorted { $0.date < $1.date }
-        }
-    }
-    
-    func fetchLastFiveDaysActiveCalories() {
-        let calorieType = HKQuantityType(.activeEnergyBurned)
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        var results: [(date: Date, calories: Int)] = []
-        let group = DispatchGroup()
-
-        for dayOffset in (0..<5).reversed() {
-            guard let day = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
-
-            let isToday = dayOffset == 0
-            let endOfDay = isToday ? Date() : (calendar.date(byAdding: .day, value: 1, to: day) ?? day)
-
-            let predicate = HKQuery.predicateForSamples(withStart: day, end: endOfDay)
-
-            group.enter()
-            let query = HKStatisticsQuery(quantityType: calorieType, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, _ in
-                let kcal = Int(result?.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0)
-                results.append((date: day, calories: kcal))
-                group.leave()
-            }
-            healthStore.execute(query)
-        }
-
-        group.notify(queue: .main) {
-            self.lastFiveDaysActiveCalories = results.sorted { $0.date < $1.date }
         }
     }
     

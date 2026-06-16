@@ -14,35 +14,6 @@ struct DistanceDetailView: View {
     @AppStorage("dailyStepsGoal")
     private var dailyStepsGoal: Int = 10000
 
-    private var lastFiveDaysSteps: [(date: Date, steps: Int)] {
-        Hmanager.lastFiveDaysSteps
-    }
-
-    private var fiveDayAverageSteps: Int {
-
-        let total = lastFiveDaysSteps.reduce(0) { $0 + $1.steps }
-
-        return lastFiveDaysSteps.isEmpty
-        ? 0
-        : total / lastFiveDaysSteps.count
-    }
-
-    private var formattedDistance: String {
-
-        if unitSystem == .metric {
-
-            let km = Hmanager.distance / 1000
-
-            return String(format: "%.2f km", km)
-
-        } else {
-
-            let miles = Hmanager.distance / 1609.34
-
-            return String(format: "%.2f mi", miles)
-        }
-    }
-
     private var progress: CGFloat {
 
         guard dailyStepsGoal > 0 else { return 0 }
@@ -196,7 +167,7 @@ struct DistanceDetailView: View {
                                     Image(systemName: "location.fill")
                                         .font(.title2)
 
-                                    Text(formattedDistance)
+                                    Text(Hmanager.formattedDistance)
                                         .font(.title.bold())
 
                                     Text("Distance")
@@ -228,16 +199,16 @@ struct DistanceDetailView: View {
 
                                 Spacer()
 
-                                Text("Avg \(fiveDayAverageSteps)")
+                                Text("Avg \(Hmanager.fiveDayAverageSteps)")
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(.white.opacity(0.7))
                             }
                             .foregroundStyle(.white)
 
-                            if !lastFiveDaysSteps.isEmpty {
+                            if !Hmanager.getLastFiveDaysSteps.isEmpty {
 
                                 FiveDayStepsBarChartWithValues(
-                                    data: lastFiveDaysSteps
+                                    data: Hmanager.getLastFiveDaysSteps
                                 )
                                 .frame(height: 220)
 

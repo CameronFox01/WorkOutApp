@@ -137,7 +137,7 @@ struct HomeView: View {
                             .cardStyle()
                             
                             // Calorie Section
-                            NavigationLink(destination: CaloriesDetailView(unitSystem: unitSystem)
+                            NavigationLink(destination: CaloriesDetailView(unitSystem: Hmanager.unitSystem)
                                 .environmentObject(Hmanager)) {
                                     VStack(alignment: .center, spacing: 8) {
                                         Text("Calories Today")
@@ -194,7 +194,7 @@ struct HomeView: View {
                             ],
                             spacing: 16
                         ) {
-                            NavigationLink(destination: DistanceDetailView(unitSystem: unitSystem)
+                            NavigationLink(destination: DistanceDetailView(unitSystem: Hmanager.unitSystem)
                                 .environmentObject(Hmanager)) {
                                     VStack(alignment: .center, spacing: 8) {
                                         Text("Steps Today")
@@ -207,8 +207,8 @@ struct HomeView: View {
                                             .bold()
                                         
                                         // 5-day mini bar chart
-                                        if !lastFiveDaysSteps.isEmpty {
-                                            FiveDayStepsBarChart(data: lastFiveDaysSteps)
+                                        if !Hmanager.getLastFiveDaysSteps.isEmpty {
+                                            FiveDayStepsBarChart(data: Hmanager.getLastFiveDaysSteps)
                                                 .frame(height: 60)
                                                 .padding(.top, 4)
                                             
@@ -216,7 +216,7 @@ struct HomeView: View {
                                                 Text("5-day avg:")
                                                     .font(.caption)
                                                     .foregroundStyle(.secondary)
-                                                Text("\(fiveDayAverageSteps)")
+                                                Text("\(Hmanager.fiveDayAverageSteps)")
                                                     .font(.caption)
                                                     .bold()
                                                     .foregroundStyle(.secondary)
@@ -393,7 +393,7 @@ struct HomeView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(isPresented: $isPresentingWeightSheet) {
                 WeightUpdateSheet(
-                    unitSystem: unitSystem,
+                    unitSystem: Hmanager.unitSystem,
                     weightUnit: weightUnit,
                     comingFromWidget: false,
                     currentWeight: $weight,
@@ -452,17 +452,12 @@ struct HomeView: View {
     }
     
     // MARK: - Computed properties
-    
-    var unitSystem: UnitSystem {
-        UnitSystem(rawValue: unitSystemRaw) ?? .metric
-    }
-    
     var heightUnit: String {
-        unitSystem == .metric ? "cm" : "in"
+        Hmanager.unitSystem == .metric ? "cm" : "in"
     }
     
     var weightUnit: String {
-        unitSystem == .metric ? "kg" : "lbs"
+        Hmanager.unitSystem == .metric ? "kg" : "lbs"
     }
     
     var weightDifference: Double? {
@@ -725,26 +720,6 @@ struct HomeView: View {
         }
         
         return Array(result.prefix(numberOfWorkoutsToShow))
-    }
-    
-    // Section to formate the distance pulled from the health app.
-    var formattedDistance: String {
-        if unitSystem == .metric {
-            let km = Hmanager.distance / 1000
-            return String(format: "%.2f km", km)
-        } else {
-            let miles = Hmanager.distance / 1609.34
-            return String(format: "%.2f mi", miles)
-        }
-    }
-    
-    private var lastFiveDaysSteps: [(date: Date, steps: Int)] {
-        Hmanager.lastFiveDaysSteps
-    }
-    
-    private var fiveDayAverageSteps: Int {
-        let total = lastFiveDaysSteps.reduce(0) { $0 + $1.steps }
-        return lastFiveDaysSteps.isEmpty ? 0 : total / lastFiveDaysSteps.count
     }
     
     private var estimatedCaloriesToday: Int { Int(Double(Hmanager.steps) * 0.04) }
