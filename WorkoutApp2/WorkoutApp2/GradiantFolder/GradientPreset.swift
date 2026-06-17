@@ -46,9 +46,22 @@ struct GradientPreset: Identifiable, Equatable, Codable {
 extension GradientPreset {
     /// The color closest to where the toolbar sits (top of the gradient).
     var topColor: Color {
+        colors.first?.color.opacity(0.4) ?? .blue
+    }
+    
+    /// The first two colors of the preset, softened for use as a card background.
+    var cardColors: [Color] {
+        let base = swiftUIColors
+        guard base.count >= 2 else {
+            return [Color.blue.opacity(0.95), Color.cyan.opacity(0.5)]
+        }
+        return [base[0].opacity(0.95), base[1].opacity(0.5)]
+    }
+    
+    /// the color for the symbols and text
+    var textColor: Color {
         colors.first?.color ?? .blue
     }
 }
 
-//Color.blue.opacity(1.0),
-//Color.cyan.opacity(0.6),
+

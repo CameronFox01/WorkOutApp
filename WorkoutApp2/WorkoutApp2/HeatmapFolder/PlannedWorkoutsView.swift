@@ -152,7 +152,7 @@ struct PlannedWorkoutsView: View {
                         .padding(.vertical, 10)
                         .background(
                             selectedDay == day
-                                ? Color.blue
+                                ? gradientSettings.selectedPreset.textColor
                                 : Color.white.opacity(0.12)
                         )
                         .clipShape(Capsule())

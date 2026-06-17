@@ -263,13 +263,23 @@ extension AccountView {
             NavigationLink {
                 GoalView()
             } label: {
-                shortcutRow(icon: "trophy.fill", color: .yellow, title: "Goals")
+                shortcutRow(
+                    icon: "trophy.fill",
+                    color: .yellow,
+                    title: "Goals",
+                    textColor: gradientSettings.selectedPreset.textColor
+                )
             }
 
             NavigationLink {
                 AchievedGoalsView(achievedGoals: [], comingfromWidget: false)
             } label: {
-                shortcutRow(icon: "checkmark.seal.fill", color: .green, title: "Achievements")
+                shortcutRow(
+                    icon: "checkmark.seal.fill",
+                    color: .green,
+                    title: "Achievements",
+                    textColor: gradientSettings.selectedPreset.textColor
+                )
             }
         }
     }
@@ -362,7 +372,8 @@ extension AccountView {
     private func shortcutRow(
         icon: String,
         color: Color,
-        title: String
+        title: String,
+        textColor: Color = .primary
     ) -> some View {
         HStack {
             Image(systemName: icon)
@@ -370,6 +381,7 @@ extension AccountView {
                 .font(.title)
             Text(title)
                 .font(.title2)
+                .foregroundStyle(textColor)
             Spacer()
             Image(systemName: "chevron.right")
                 .foregroundStyle(.secondary)

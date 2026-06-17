@@ -274,7 +274,6 @@ struct CaloriesDetailView: View {
                         .background(
                             RoundedRectangle(cornerRadius: 28)
                                 .fill(.white.opacity(0.12))
-                                .background(.ultraThinMaterial)
                         )
                         .padding(.horizontal)
 

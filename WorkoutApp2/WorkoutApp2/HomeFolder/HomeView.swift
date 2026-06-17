@@ -342,6 +342,7 @@ struct HomeView: View {
                             RoundedRectangle(cornerRadius: 22)
                                 .fill(.ultraThinMaterial)
                         )
+                        .foregroundStyle(gradientSettings.selectedPreset.textColor)
                     }
                     .padding(.horizontal)
                 }
@@ -888,6 +889,8 @@ struct CardStyle: ViewModifier {
 }
 
 struct WorkoutTypeCardView: View {
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
     let entry: WorkoutEntry
     let weightUnit: String
 
@@ -956,10 +959,7 @@ struct WorkoutTypeCardView: View {
         .frame(maxWidth: .infinity, minHeight: 165, alignment: .topLeading)
         .background(
             LinearGradient(
-                colors: [
-                    Color.blue.opacity(0.95),
-                    Color.cyan.opacity(0.5)
-                ],
+                colors: gradientSettings.selectedPreset.cardColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

@@ -187,7 +187,7 @@ struct AllImportedWorkoutsView: View {
                 .padding(.vertical, 8)
                 .background(
                     isSelected
-                    ? Color.blue
+                    ? gradientSettings.selectedPreset.textColor
                     : Color.white.opacity(0.12)
                 )
                 .clipShape(Capsule())

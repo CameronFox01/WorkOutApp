@@ -98,6 +98,7 @@ struct PhotoView: View {
                             Button { showingSavedPhotos = true } label: {
                                 Label("Choose from Saved Photos", systemImage: "photo.on.rectangle")
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .foregroundStyle(gradientSettings.selectedPreset.textColor)
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.large)
@@ -113,6 +114,7 @@ struct PhotoView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
+                        .tint(gradientSettings.selectedPreset.textColor)
                     }
                     .padding()
                 }

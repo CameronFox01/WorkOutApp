@@ -143,6 +143,8 @@ struct WorkoutProgressChart: View {
             return nil
         }
     }
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -174,7 +176,7 @@ struct WorkoutProgressChart: View {
                             x: .value("Date", latest.date),
                             y: .value("Value", latest.value)
                         )
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(gradientSettings.selectedPreset.textColor)
                         .annotation(position: .top) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("\(format(latest.value)) \(unitLabel)")

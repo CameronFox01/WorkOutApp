@@ -61,6 +61,8 @@ struct GoalView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     generalGoalsCard
+                        .padding(.bottom, 20)
+                        .padding(.top, 10)
                     workoutGoalsSection
                     NavigationLink {
                         
@@ -185,14 +187,14 @@ struct GoalView: View {
         private var generalGoalsCard: some View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("General Goals")
-                    .font(.headline).bold()
+                    .font(.title2).bold()
                     .padding(.bottom, 4)
                 
                 VStack(spacing: 12) {
                     // Target Body Weight row
                     HStack(spacing: 12) {
                         Image(systemName: "scalemass")
-                            .foregroundStyle(primaryBlue)
+                            .foregroundStyle(gradientSettings.selectedPreset.textColor)
                             .font(.system(size: 20))
                         
                         Text("Target Body Weight")
@@ -206,7 +208,6 @@ struct GoalView: View {
                                   suffix: weightUnit,
                                   focus: $isEditing
                         )
-                        //.submitScope()
                     }
                     
                     // Workouts per Week row
@@ -222,7 +223,7 @@ struct GoalView: View {
                     } header: {
                         HStack(spacing: 6) {
                             Image(systemName: "calendar")
-                                .foregroundStyle(primaryBlue)
+                                .foregroundStyle(gradientSettings.selectedPreset.textColor)
                             Text("Workouts per Week")
                                 .foregroundStyle(.primary)
                         }
@@ -243,9 +244,10 @@ struct GoalView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "dumbbell")
-                        .foregroundStyle(primaryBlue)
+                        .foregroundStyle(gradientSettings.selectedPreset.textColor)
+                        .font(.title2)
                     Text("Workout Goals")
-                        .font(.headline).bold()
+                        .font(.title2).bold()
                 }
                 .padding(.horizontal, 2)
                 
@@ -625,6 +627,8 @@ struct GoalView: View {
             private var weightUnit: String { unitSystem == .metric ? "kg" : "lbs" }
             private var distanceUnit: String { unitSystem == .imperial ? "mi" : "km" }
             
+            @EnvironmentObject var gradientSettings: GradientSettings
+            
             var body: some View {
                 VStack(alignment: .leading, spacing: 12) {
                     Button {
@@ -632,7 +636,7 @@ struct GoalView: View {
                             isExpanded.toggle() } } label: {
                                 HStack {
                                     Image(systemName: systemImage)
-                                        .foregroundColor(symbolColor) // 👈 only icon
+                                        .foregroundStyle(gradientSettings.selectedPreset.textColor)// 👈 only icon
                                     Text(title)
                                         .font(.headline)
                                         .foregroundColor(.primary) // keep text color normal
@@ -652,6 +656,7 @@ struct GoalView: View {
                                 }
                             }
                             .pickerStyle(MenuPickerStyle())
+                            .tint(gradientSettings.selectedPreset.textColor)
                             // ✅ When selection changes, load any previously saved goal for it
                             .onChange(of: selection) { _, newSelection in
                                 let key = "goal_\(newSelection.rawValue)"

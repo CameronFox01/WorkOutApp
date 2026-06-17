@@ -225,7 +225,7 @@ struct ImportView: View {
                             )) {
                                 HStack(spacing: 12) {
                                     Image(systemName: icon(for: category))
-                                        .foregroundStyle(Color.accentColor)
+                                        .foregroundStyle(gradientSettings.selectedPreset.textColor)
                                     VStack(alignment: .leading) {
                                         Text(category.title)
                                         Text("Tap to log")
@@ -422,6 +422,7 @@ struct ImportView: View {
                             showingAddWorkout = true
                         } label: {
                             Label("Add Custom Workout", systemImage: "plus")
+                                .foregroundStyle(gradientSettings.selectedPreset.textColor)
                         }
                     }
                     .padding(.horizontal)
@@ -486,6 +487,7 @@ struct ImportView: View {
                 .pickerStyle(.menu)
                 .padding(12)
                 .background(secondaryCardColor, in: RoundedRectangle(cornerRadius: 12))
+                .tint(gradientSettings.selectedPreset.textColor)
             }
             .padding(16)
             .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
@@ -573,7 +575,8 @@ struct ImportView: View {
                     .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
-            .tint(.accentColor)
+            //.tint(.accentColor)
+            .tint(gradientSettings.selectedPreset.textColor)
         }
 
         // MARK: - Row Builder
