@@ -1309,6 +1309,7 @@ struct WorkoutCalendarView: View {
     NavigationStack {
         WorkoutCalendarView(entries: sampleEntries, comingFromWidget: false)
             .environmentObject(WorkoutData())
+            .environmentObject(GradientSettings())
     }
 }
 

@@ -34,4 +34,5 @@ struct LaunchScreen: View {
 
 #Preview {
     LaunchScreen()
+        .environmentObject(GradientSettings())
 }

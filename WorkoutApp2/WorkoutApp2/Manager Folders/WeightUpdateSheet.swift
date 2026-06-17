@@ -389,5 +389,6 @@ struct WeightUpdateSheet_Previews: PreviewProvider {
 
     static var previews: some View {
         PreviewWrapper()
+            .environmentObject(GradientSettings())
     }
 }

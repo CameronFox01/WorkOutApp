@@ -311,4 +311,5 @@ struct TimeViewBig: View {
         startTime: .constant(Date()),
         timerString: .constant("00:00")
     )
+    .environmentObject(GradientSettings())
 }

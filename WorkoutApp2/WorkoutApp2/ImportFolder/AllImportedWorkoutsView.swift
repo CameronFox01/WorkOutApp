@@ -346,6 +346,7 @@ private struct WorkoutEntryCard: View {
     NavigationStack {
         AllImportedWorkoutsView()
             .environmentObject(sampleWorkoutData)
+            .environmentObject(GradientSettings())
     }
 }
 

@@ -706,5 +706,6 @@ struct ImportView: View {
 
 #Preview {
     ImportView()
+        .environmentObject(GradientSettings())
 }
 

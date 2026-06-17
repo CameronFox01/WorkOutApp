@@ -168,6 +168,7 @@ struct WeeklyRecapCard: View {
             workoutsPlanned: 5,
             streak: 12
         )
+        .environmentObject(GradientSettings())
         .padding()
     }
 }

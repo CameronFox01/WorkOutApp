@@ -386,11 +386,13 @@ struct WorkoutChartView: View {
     if isWeighted {
         NavigationView {
             WorkoutChartView(workoutName: "Bench Press", entries: weightedEntries)
+                .environmentObject(GradientSettings())
         }
     }
     else {
         NavigationView{
             WorkoutChartView(workoutName: "Brisk Walking", entries: distanceEntries)
+                .environmentObject(GradientSettings())
         }
     }
 }

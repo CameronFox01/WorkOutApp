@@ -261,4 +261,5 @@ struct WeeklyRecapView: View {
             photosAdded: 2
         )
     )
+    .environmentObject(GradientSettings())
 }

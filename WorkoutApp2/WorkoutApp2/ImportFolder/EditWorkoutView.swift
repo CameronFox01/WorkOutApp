@@ -400,5 +400,6 @@ struct EditWorkoutView: View {
     NavigationStack {
         EditWorkoutView(entry: WorkoutEntry(workoutType: "Bench Press", weight: "185", reps: "8", sets: "4", date: Date(), note: "That was hard"))
             .environmentObject(WorkoutData())
+            .environmentObject(GradientSettings())
     }
 }

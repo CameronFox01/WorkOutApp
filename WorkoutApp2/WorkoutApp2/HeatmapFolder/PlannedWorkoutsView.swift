@@ -523,4 +523,5 @@ struct PlannedWorkoutsView: View {
 
 #Preview {
     PlannedWorkoutsView()
+        .environmentObject(GradientSettings())
 }

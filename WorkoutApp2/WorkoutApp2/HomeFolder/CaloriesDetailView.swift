@@ -326,5 +326,6 @@ struct CaloriesDetailView: View {
     NavigationStack {
         CaloriesDetailView(unitSystem: .metric)
             .environmentObject(HealthManager()) // 2. Inject your manager here
+            .environmentObject(GradientSettings())
     }
 }

@@ -801,9 +801,6 @@ struct GoalView: View {
     NavigationStack {
         GoalView()
             .environmentObject(WorkoutData())
+            .environmentObject(GradientSettings())
     }
 }
-
-//let saved = UserDefaults.standard.string(forKey: "goal_Bench Press") ?? "0"
-// use this to grab the goal in the future.
-

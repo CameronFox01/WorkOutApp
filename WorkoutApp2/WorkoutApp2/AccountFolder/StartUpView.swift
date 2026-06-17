@@ -338,5 +338,6 @@ struct StartUpView: View {
 
 #Preview {
     StartUpView()
+        .environmentObject(GradientSettings())
 }
 

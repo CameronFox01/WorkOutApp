@@ -326,4 +326,5 @@ struct PhotoView: View {
 
 #Preview {
     PhotoView()
+        .environmentObject(GradientSettings())
 }

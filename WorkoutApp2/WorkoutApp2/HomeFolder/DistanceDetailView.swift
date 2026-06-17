@@ -316,6 +316,7 @@ struct DistanceDetailView: View {
             NavigationView {
                 DistanceDetailView(unitSystem: .imperial)
                     .environmentObject(manager)
+                    .environmentObject(GradientSettings())
             }
         }
     }

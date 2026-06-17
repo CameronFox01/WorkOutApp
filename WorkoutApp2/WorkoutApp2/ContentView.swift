@@ -249,5 +249,6 @@ struct ContentView_Previews: PreviewProvider {
             .environmentObject(WorkoutData())
             .environmentObject(HealthManager())
             .environmentObject(AppRouter())
+            .environmentObject(GradientSettings())
     }
 }

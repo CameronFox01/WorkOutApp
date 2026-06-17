@@ -1012,6 +1012,7 @@ struct HomeView_Previews: PreviewProvider {
         HomeView()
             .environmentObject(WorkoutData())
             .environmentObject(HealthManager())
+            .environmentObject(GradientSettings())
     }
 }
 

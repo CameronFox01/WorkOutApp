@@ -451,6 +451,7 @@ extension AccountView {
     NavigationStack {
 
         AccountView()
+            .environmentObject(GradientSettings())
             .environmentObject(
                 previewWorkoutData
             )
