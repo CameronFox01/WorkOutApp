@@ -43,6 +43,9 @@ struct AllImportedWorkoutsView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: WorkoutCategory? = nil
     
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
     var scrollToID: UUID?
     @EnvironmentObject var workoutData: WorkoutData
 
@@ -56,10 +59,7 @@ struct AllImportedWorkoutsView: View {
         ZStack {
             // Same gradient as TimeViewBig
             LinearGradient(
-                colors: [
-                    Color.blue.opacity(0.9),
-                    Color.black
-                ],
+                colors: gradientSettings.darkGradientColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -132,7 +132,7 @@ struct AllImportedWorkoutsView: View {
                 }
             }
         }
-        .toolbarBackground(Color.blue, for: .navigationBar)
+        .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {

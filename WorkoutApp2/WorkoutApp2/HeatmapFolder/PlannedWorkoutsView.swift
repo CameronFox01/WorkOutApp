@@ -45,6 +45,9 @@ struct PlannedWorkoutsView: View {
 
     // MARK: - Focus
     @FocusState private var isEditing: Bool
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     // MARK: - State
     @State private var selectedDay: Weekday = .sun
@@ -68,10 +71,7 @@ struct PlannedWorkoutsView: View {
 
                 // Same gradient as TimeViewBig
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(0.9),
-                        Color.black
-                    ],
+                    colors: gradientSettings.darkGradientColors,
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -107,7 +107,7 @@ struct PlannedWorkoutsView: View {
                     savedToast
                 }
             }
-            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .principal) {

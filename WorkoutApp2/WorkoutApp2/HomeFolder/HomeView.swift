@@ -26,6 +26,9 @@ struct HomeView: View {
     @AppStorage("userOriginalWeight") private var originalWeight: String = ""
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
     //Profil Image Saved here
     @AppStorage("profileImageData") private var profileImageData: Data?
     
@@ -68,11 +71,7 @@ struct HomeView: View {
         NavigationView {
             ZStack{
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(1.0),
-                        Color.cyan.opacity(0.6),
-                        Color(.systemBackground)
-                    ],
+                    colors: gradientSettings.selectedPreset.swiftUIColors,
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -378,17 +377,7 @@ struct HomeView: View {
                     }
                 }
             }
-            .toolbarBackground(
-                LinearGradient(
-                    colors: [
-                        Color.blue.opacity(0.75),
-                        Color.cyan.opacity(0.45)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                for: .navigationBar
-            )
+            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(isPresented: $isPresentingWeightSheet) {

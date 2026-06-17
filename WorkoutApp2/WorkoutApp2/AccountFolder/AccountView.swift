@@ -44,6 +44,9 @@ struct AccountView: View {
 
         return UIImage(data: data)
     }
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     var body: some View {
 
@@ -52,11 +55,7 @@ struct AccountView: View {
             ZStack {
 
                 LinearGradient(
-                    colors: [
-                        Color.blue,
-                        Color.cyan.opacity(0.7),
-                        Color(.systemBackground)
-                    ],
+                    colors: gradientSettings.selectedPreset.swiftUIColors,
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -83,7 +82,7 @@ struct AccountView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-
+            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbar {
 
                 ToolbarItem(

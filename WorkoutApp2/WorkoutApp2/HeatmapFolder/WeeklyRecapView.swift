@@ -27,15 +27,15 @@ struct WeeklyRecapView: View {
         Double(recap.workoutsPlanned)
     }
 
+    //Color Gradiant
+    @StateObject private var gradientSettings = GradientSettings()
+    
     var body: some View {
 
         ZStack {
 
             LinearGradient(
-                colors: [
-                    Color.blue.opacity(0.9),
-                    Color.black
-                ],
+                colors: gradientSettings.darkGradientColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

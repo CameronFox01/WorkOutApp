@@ -29,12 +29,15 @@ struct AddWorkoutForDateView: View {
     private var isDistanceCardio: Bool { selectedCategory == .distanceCardio }
     private var isTimeCardio: Bool { selectedCategory == .timeCardio }
     private var usesWeight: Bool { selectedCategory.usesWeight && !isDistanceCardio && !isTimeCardio }
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     var body: some View {
         NavigationStack {
             ZStack {
                 LinearGradient(
-                    colors: [Color.blue.opacity(0.9), Color.black],
+                    colors: gradientSettings.darkGradientColors,
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -162,7 +165,7 @@ struct AddWorkoutForDateView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .principal) {

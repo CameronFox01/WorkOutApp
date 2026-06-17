@@ -2,6 +2,9 @@ import SwiftUI
 
 struct WorkoutChartView: View {
     @State private var selectedEntryID: UUID?
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     let workoutName: String
     let entries: [WorkoutEntry]
@@ -11,10 +14,7 @@ struct WorkoutChartView: View {
         ZStack {
             // Same gradient as TimeViewBig
             LinearGradient(
-                colors: [
-                    Color.blue.opacity(0.9),
-                    Color.black
-                ],
+                colors: gradientSettings.darkGradientColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -35,7 +35,7 @@ struct WorkoutChartView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Color.blue, for: .navigationBar)
+        .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {

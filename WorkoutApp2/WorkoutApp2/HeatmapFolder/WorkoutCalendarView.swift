@@ -22,6 +22,9 @@ struct WorkoutCalendarView: View {
 
     @EnvironmentObject var workoutData: WorkoutData
     private var calendar: Calendar { .current }
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     enum Weekday: String, CaseIterable, Identifiable {
 
@@ -152,10 +155,7 @@ struct WorkoutCalendarView: View {
 
                 // MARK: - Background
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(0.9),
-                        Color.black
-                    ],
+                    colors: gradientSettings.darkGradientColors,
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )

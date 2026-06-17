@@ -26,6 +26,9 @@ struct WeightUpdateSheet: View {
     let unitSystemRaw: String
 
     @Environment(\.dismiss) private var dismiss
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     private var bodyWeightEntries: [WorkoutEntry] {
         entries
@@ -56,10 +59,7 @@ struct WeightUpdateSheet: View {
 
                 // MARK: - Background
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(0.9),
-                        Color.black
-                    ],
+                    colors: gradientSettings.darkGradientColors,
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )

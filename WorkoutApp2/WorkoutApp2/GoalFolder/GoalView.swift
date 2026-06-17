@@ -32,6 +32,9 @@ struct GoalView: View {
     
     @State private var workoutTargetWeights: [String: String] = [:]
     
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
     private var unitSystem: UnitSystem {
         UnitSystem(rawValue: unitSystemRaw) ?? .metric
     }
@@ -50,11 +53,7 @@ struct GoalView: View {
     var body: some View {
         ZStack{
             LinearGradient(
-                colors: [
-                    Color.blue.opacity(1.0),
-                    Color.cyan.opacity(0.6),
-                    Color(.systemBackground)
-                ],
+                colors: gradientSettings.selectedPreset.swiftUIColors,
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -170,7 +169,7 @@ struct GoalView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .principal) {

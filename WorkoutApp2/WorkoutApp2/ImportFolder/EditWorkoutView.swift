@@ -21,6 +21,9 @@ struct EditWorkoutView: View {
     @State private var date: Date = Date()
     @State private var notes: String = ""
     @State private var workoutGoal: String = ""
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     @FocusState private var focusedField: Field?
 
@@ -69,7 +72,7 @@ struct EditWorkoutView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color.blue.opacity(0.9), Color.black],
+                colors: gradientSettings.darkGradientColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

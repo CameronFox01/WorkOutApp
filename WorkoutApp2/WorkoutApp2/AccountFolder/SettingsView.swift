@@ -77,15 +77,14 @@ struct SettingsView: View {
     //Notification for Goals Section
     @AppStorage("goalReminder") private var goalReminder: Bool = true
     
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
     var body: some View {
         NavigationView {
             ZStack{
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(1.0),
-                        Color.cyan.opacity(0.6),
-                        Color(.systemBackground)
-                    ],
+                    colors: gradientSettings.selectedPreset.swiftUIColors,
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -383,6 +382,11 @@ struct SettingsView: View {
                                     }
                                 }
                             }
+                            
+                            // APPEARANCE SECTION
+                            SettingsCard(title: "Background") {
+                                GradientPickerSection()
+                            }
 
                             // RESET SECTION
                             SettingsCard(title: "Danger Zone") {
@@ -503,11 +507,12 @@ struct SettingsView: View {
                     }
                     
                     .navigationBarTitleDisplayMode(.inline)
-                    .toolbarBackground(Color.blue, for: .navigationBar)
+                    .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
                     .toolbarBackground(.visible, for: .navigationBar)
                 }
             }
         }
+        .environmentObject(gradientSettings)
         .onChange(of: weighInReminder) { _, newValue in
             if newValue {
                 weighInWeeklyReminder = false
@@ -752,5 +757,6 @@ private var appVersion: String {
 #Preview {
     SettingsView()
         .environmentObject(WorkoutData())
+        .environmentObject(GradientSettings())
 }
 

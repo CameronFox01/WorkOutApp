@@ -10,6 +10,9 @@ struct CaloriesDetailView: View {
 
     @EnvironmentObject var Hmanager: HealthManager
     @Environment(\.dismiss) private var dismiss
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     let unitSystem: UnitSystem
 
@@ -21,18 +24,7 @@ struct CaloriesDetailView: View {
     }
 
     var lastFiveDaysActiveCalories: [Date: Double] = [:]
-
-//    private var fiveDayAverageCalories: Int {
-//
-//        let total = Hmanager.lastFiveDaysCalories.reduce(0) {
-//            $0 + $1.calories
-//        }
-//
-//        return Hmanager.lastFiveDaysCalories.isEmpty
-//        ? 0
-//        : total / Hmanager.lastFiveDaysCalories.count
-//    }
-
+    
     private var estimatedCaloriesToday: Int {
         Int(Double(Hmanager.steps) * 0.04)
     }
@@ -58,10 +50,7 @@ struct CaloriesDetailView: View {
 
                 // MARK: - Background
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(0.9),
-                        Color.black
-                    ],
+                    colors: gradientSettings.darkGradientColors,
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )

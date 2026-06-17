@@ -22,6 +22,9 @@ struct StartUpView: View {
     @State private var selectedInches = 8
     @State private var selectedCentimeters = 173
     
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
     enum Gender: String, CaseIterable, Identifiable {
         case male = "Male"
         case female = "Female"
@@ -32,11 +35,7 @@ struct StartUpView: View {
         NavigationView {
             ZStack{
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(1.0),
-                        Color.cyan.opacity(0.6),
-                        Color(.systemBackground)
-                    ],
+                    colors: gradientSettings.selectedPreset.swiftUIColors,
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -190,7 +189,7 @@ struct StartUpView: View {
                 }
                 .scrollContentBackground(.hidden)
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackground(Color.blue, for: .navigationBar)
+                .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
                 .toolbarBackground(.visible, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .principal) {

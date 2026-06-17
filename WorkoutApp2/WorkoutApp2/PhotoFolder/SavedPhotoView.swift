@@ -19,9 +19,6 @@ struct SavedPhotosView: View {
     let rightImage: UIImage?
     
     var body: some View {
-//        let sections = PhotoOrganizer.groupedByMonth(
-//            photos: photos
-//        )
         NavigationView {
             ScrollView {
 

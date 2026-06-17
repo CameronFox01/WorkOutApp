@@ -164,6 +164,9 @@ struct ImportView: View {
     
     @State private var notes: [WorkoutCategory: String] = [:]
     
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
     // Weight Stuff
     @AppStorage("userWeight") private var currentWeight: String = ""
 
@@ -192,11 +195,7 @@ struct ImportView: View {
         NavigationView {
             ZStack{
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(1.0),
-                        Color.cyan.opacity(0.6),
-                        Color(.systemBackground)
-                    ],
+                    colors: gradientSettings.selectedPreset.swiftUIColors,
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -272,7 +271,7 @@ struct ImportView: View {
             .onDisappear {
                 resetImportView()
             }
-            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -316,6 +315,9 @@ struct ImportView: View {
 
         @State private var showingAddWorkout = false
         @State private var newWorkoutName = ""
+        
+        //Color Gradiant
+        @EnvironmentObject var gradientSettings: GradientSettings
         
         @Environment(\.dismiss) private var dismiss
         @Environment(\.colorScheme) private var colorScheme
@@ -401,11 +403,7 @@ struct ImportView: View {
         var body: some View {
             ZStack {
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(1.0),
-                        Color.cyan.opacity(0.6),
-                        Color(.systemBackground)
-                    ],
+                    colors: gradientSettings.selectedPreset.swiftUIColors,
                     startPoint: .top,
                     endPoint: .bottom
                 )

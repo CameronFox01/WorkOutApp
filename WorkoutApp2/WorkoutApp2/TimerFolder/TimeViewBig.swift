@@ -20,6 +20,9 @@ struct TimeViewBig: View {
     @Binding var isStopWatchRunning: Bool
     @Binding var startTime: Date
     @Binding var stopWatchString: String
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let stopWatch = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -47,10 +50,7 @@ struct TimeViewBig: View {
 
                 // MARK: - Background
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(0.9),
-                        Color.black
-                    ],
+                    colors: gradientSettings.darkGradientColors,
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )

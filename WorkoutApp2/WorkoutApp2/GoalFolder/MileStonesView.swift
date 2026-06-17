@@ -11,6 +11,9 @@ struct MilestonesView: View {
     let comingfromWidget: Bool
     
     @EnvironmentObject var router: AppRouter
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     private var workoutMilestones: [Milestone] {
         milestones.filter { !$0.title.hasSuffix("Workout Days") }
@@ -23,11 +26,7 @@ struct MilestonesView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [
-                    Color.blue.opacity(1.0),
-                    Color.cyan.opacity(0.6),
-                    Color(.systemBackground)
-                ],
+                colors: gradientSettings.selectedPreset.swiftUIColors,
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -115,7 +114,7 @@ struct MilestonesView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Color.blue, for: .navigationBar)
+        .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             if comingfromWidget {

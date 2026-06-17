@@ -13,6 +13,9 @@ struct DistanceDetailView: View {
 
     @AppStorage("dailyStepsGoal")
     private var dailyStepsGoal: Int = 10000
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     private var progress: CGFloat {
 
@@ -33,10 +36,7 @@ struct DistanceDetailView: View {
 
                 // MARK: - Background
                 LinearGradient(
-                    colors: [
-                        Color.blue.opacity(0.9),
-                        Color.black
-                    ],
+                    colors: gradientSettings.darkGradientColors,
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )

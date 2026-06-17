@@ -55,13 +55,9 @@ struct WeeklyRecapCard: View {
 
                     Text("This Week")
                         .font(.headline)
-//                        .foregroundStyle(
-//                            .white.opacity(0.7)
-//                        )
 
                     Text(message)
                         .font(.title3.bold())
-                        //.foregroundStyle(.white)
                 }
 
                 Spacer()

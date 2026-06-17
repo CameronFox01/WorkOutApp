@@ -16,6 +16,7 @@ struct WorkoutApp2App: App {
     @StateObject private var workoutData = WorkoutData()
     @StateObject var healthManager = HealthManager()
     @StateObject private var router = AppRouter()
+    @StateObject private var gradientSettings = GradientSettings()
     
     @State private var isBooting: Bool = true
 
@@ -27,6 +28,7 @@ struct WorkoutApp2App: App {
             Group {
                 if isBooting {
                     LaunchScreen()
+                        .environmentObject(gradientSettings)
                         .onAppear {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                                 isBooting = false
@@ -38,11 +40,13 @@ struct WorkoutApp2App: App {
                             .environmentObject(workoutData)
                             .environmentObject(healthManager)
                             .environmentObject(router)
+                            .environmentObject(gradientSettings)
                     } else {
                         StartUpView()
                             .environmentObject(workoutData)
                             .environmentObject(healthManager)
                             .environmentObject(router)
+                            .environmentObject(gradientSettings)
                     }
                 }
             }

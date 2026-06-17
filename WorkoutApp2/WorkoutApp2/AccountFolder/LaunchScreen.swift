@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct LaunchScreen: View {
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue, Color.black]),
+                colors: gradientSettings.darkGradientColors,
                 startPoint: .topTrailing,
                 endPoint: .bottomLeading
             )
