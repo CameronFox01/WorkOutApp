@@ -106,9 +106,10 @@ struct TimeViewBig: View {
                                         .foregroundStyle(.white.opacity(0.7))
                                 }
                             }
-
+                            .padding(.bottom, 20)
+                            
                             // MARK: - Timer Controls
-                            HStack(spacing: 28) {
+                            HStack(spacing: 40) {
 
                                 controlButton(
                                     icon: "minus",
@@ -136,6 +137,7 @@ struct TimeViewBig: View {
                             }
                         }
                         .padding(.top, 20)
+                        .padding(.bottom, 40)
 
                         // MARK: - Stopwatch Card
                         VStack(alignment: .leading, spacing: 18) {

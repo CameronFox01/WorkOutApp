@@ -27,9 +27,6 @@ struct TimerView: View {
     @AppStorage("totalSeconds") private var totalSeconds: Int = 60
     @AppStorage("remainingSeconds") private var remainingSeconds: Int = 60
     @AppStorage("isCountdownRunning") private var isCountdownRunning: Bool = false
-    //@State private var totalSeconds: Int = 60
-    //@State private var remainingSeconds: Int = 60
-    //@State private var isCountdownRunning: Bool = false
 
     private let countdownTimer =
         Timer.publish(every: 1, on: .main, in: .common).autoconnect()
