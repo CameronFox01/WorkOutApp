@@ -17,6 +17,11 @@ struct StartUpView: View {
     @AppStorage("userGender") private var genderRaw: String = Gender.male.rawValue
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
+    
+    //Stuff for import data
+    @EnvironmentObject var workoutData: WorkoutData
+    @StateObject private var exporter = WorkoutDataExporter()
+    @State private var showingImporter = false
 
     @State private var selectedFeet = 5
     @State private var selectedInches = 8
@@ -172,6 +177,46 @@ struct StartUpView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     
+                    Section {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Switching from another app or device? You can import your existing workout history now.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+
+                            Button {
+                                showingImporter = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "square.and.arrow.down")
+                                    Text("Import Workouts (CSV)")
+                                    Spacer()
+                                }
+                            }
+
+                            if let summary = exporter.lastImportSummary {
+                                Label(summary, systemImage: "checkmark.circle.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.green)
+                            }
+
+                            if let error = exporter.importError {
+                                Label(error, systemImage: "exclamationmark.triangle.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                            }
+                        }
+                    } header: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "square.and.arrow.down.on.square.fill")
+                                .foregroundStyle(.blue)
+                            Text("Import Data")
+                                .foregroundStyle(.primary)
+                        }
+                        .font(.headline)
+                        .textCase(nil)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    
                     Button("Finish Setup") {
                         guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
                         
@@ -185,6 +230,19 @@ struct StartUpView: View {
                         let goal = Int(targetDaysOfWorkout) ?? 0
                         NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
                         hasCompletedSetup = true
+                    }
+                }
+                .fileImporter(
+                    isPresented: $showingImporter,
+                    allowedContentTypes: [.commaSeparatedText, .plainText],
+                    allowsMultipleSelection: false
+                ) { result in
+                    switch result {
+                    case .success(let urls):
+                        guard let url = urls.first else { return }
+                        exporter.importCSV(from: url, into: workoutData)
+                    case .failure(let error):
+                        exporter.importError = error.localizedDescription
                     }
                 }
                 .scrollContentBackground(.hidden)

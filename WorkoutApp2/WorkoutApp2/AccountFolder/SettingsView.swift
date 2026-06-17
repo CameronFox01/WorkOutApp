@@ -411,6 +411,11 @@ struct SettingsView: View {
                             SettingsCard(title: "Background") {
                                 GradientPickerSection()
                             }
+                            
+                            // DATA SECTION
+                            SettingsCard(title: "Data") {
+                                DataExportSection()
+                            }
 
                             // RESET SECTION
                             SettingsCard(title: "Danger Zone") {
