@@ -71,7 +71,16 @@ extension GradientPreset {
     /// The color used for active heatmap cells — avoids green when the theme itself is green,
     /// since green-on-green would be invisible.
     var heatmapAccentColor: Color {
-        mainColor.isGreenish ? .orange : .green
+        if mainColor.isGreenish { return .orange }
+        if mainColor.isWarmToned { return .blue }
+        return .green
+    }
+    
+    //This is for the calories graph to change color
+    var caloriesAccentColor: Color {
+        if mainColor.isGreenish { return .orange }
+        if mainColor.isWarmToned { return .blue}
+        return .orange
     }
 }
 
@@ -93,4 +102,18 @@ extension Color {
         // Low saturation means it's closer to gray/white/black, not a "true" green
         return isInGreenRange && saturation > 0.15
     }
-}
+    
+    var isWarmToned: Bool {
+        let uiColor = UIColor(self)
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+
+        let hueDegrees = hue * 360
+        // Red through yellow, wrapping past 0°/360° to catch pink/red variants
+        let isInWarmRange = hueDegrees <= 50 || hueDegrees >= 340
+
+        return isInWarmRange && saturation > 0.15
+    }}

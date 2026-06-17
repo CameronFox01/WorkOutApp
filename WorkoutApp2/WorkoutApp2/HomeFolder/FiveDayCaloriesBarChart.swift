@@ -7,6 +7,8 @@
 import SwiftUI
 //This is just the bar chart for the Calories
 struct FiveDayCaloriesBarChart: View {
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
     let data: [(date: Date, calories: Int)]
 
     private var maxCalories: Double {
@@ -41,7 +43,7 @@ struct FiveDayCaloriesBarChart: View {
                             let heightRatio = CGFloat(Double(item.calories) / maxCalories)
 
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.orange.opacity(0.7))
+                                .fill(gradientSettings.selectedPreset.caloriesAccentColor)
                                 .frame(width: barWidth,
                                        height: max(4, chartHeight * heightRatio))
                         }
@@ -74,5 +76,6 @@ struct FiveDayCaloriesBarChart: View {
         FiveDayCaloriesBarChart(data: sampleData)
             .frame(height: 120)
             .padding()
+            .environmentObject(GradientSettings())
     }
 }
