@@ -8,6 +8,10 @@ import SwiftUI
 
 struct GradientPickerSection: View {
     @EnvironmentObject var gradientSettings: GradientSettings
+    
+    //Widget Color Section
+    @AppStorage("widgetUsesGradientBackground", store: UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2"))
+    private var widgetUsesGradientBackground: Bool = false
 
     @State private var customColor1: Color = .blue
     @State private var customColor2: Color = .cyan
@@ -75,6 +79,16 @@ struct GradientPickerSection: View {
                 }
                 .padding(.top, 4)
             }
+            
+            Divider()
+            
+            SettingsRow(
+                    icon: "square.fill.on.square.fill",
+                    title: "Widget Uses Gradient"
+                ) {
+                    Toggle("", isOn: $widgetUsesGradientBackground)
+                        .labelsHidden()
+                }
         }
     }
 }

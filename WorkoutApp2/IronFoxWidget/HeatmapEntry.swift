@@ -21,12 +21,26 @@ struct HeatmapEntry: TimelineEntry {
     let plannedTitle: String
     let plannedWorkouts: [String]
     let weeklyGoal: Int
-    let gradientPreset: GradientPreset 
+    let gradientPreset: GradientPreset
+    let usesGradientBackground: Bool
 }
 
 struct HeatmapProvider: TimelineProvider {
     func placeholder(in context: Context) -> HeatmapEntry {
-        HeatmapEntry(date: Date(), countsByDay: [:], plannedTitle: "", plannedWorkouts: [], weeklyGoal: loadWeeklyGoal(), gradientPreset: loadGradientPreset())
+        HeatmapEntry(
+            date: Date(),
+            countsByDay: [:],
+            plannedTitle: "",
+            plannedWorkouts: [],
+            weeklyGoal: loadWeeklyGoal(),
+            gradientPreset: loadGradientPreset(),
+            usesGradientBackground: loadUsesGradientBackground()
+        )
+    }
+    
+    private func loadUsesGradientBackground() -> Bool {
+        let defaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
+        return defaults?.bool(forKey: "widgetUsesGradientBackground") ?? false
     }
     
     private func loadGradientPreset() -> GradientPreset {
@@ -40,13 +54,28 @@ struct HeatmapProvider: TimelineProvider {
 
     func getSnapshot(in context: Context, completion: @escaping (HeatmapEntry) -> Void) {
         let planned = loadPlannedWorkouts(for: Date())
-        completion(HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts, weeklyGoal: loadWeeklyGoal(), gradientPreset: loadGradientPreset()))
+        completion(HeatmapEntry(
+            date: Date(),
+            countsByDay: loadCounts(),
+            plannedTitle: planned.title,
+            plannedWorkouts: planned.workouts,
+            weeklyGoal: loadWeeklyGoal(),
+            gradientPreset: loadGradientPreset(),
+            usesGradientBackground: loadUsesGradientBackground())
+        )
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<HeatmapEntry>) -> Void) {
         let planned = loadPlannedWorkouts(for: Date())
         let goal = loadWeeklyGoal()
-        let entry = HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts, weeklyGoal: goal, gradientPreset: loadGradientPreset())
+        let entry = HeatmapEntry(
+            date: Date(),
+            countsByDay: loadCounts(),
+            plannedTitle: planned.title,
+            plannedWorkouts: planned.workouts,
+            weeklyGoal: goal,
+            gradientPreset: loadGradientPreset(),
+            usesGradientBackground: loadUsesGradientBackground())
         let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
         completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
     }
@@ -118,11 +147,17 @@ struct HeatmapWidgetView: View {
         }
         .widgetURL(URL(string: "ironfox://workoutDetail")!)
         .containerBackground(for: .widget) {
-            Rectangle().fill(
-                colorScheme == .dark
-                ? Color.black
-                : entry.gradientPreset.mainColor
-            )
+            if colorScheme == .dark {
+                    Color.black
+                } else if entry.usesGradientBackground {
+                    LinearGradient(
+                        colors: entry.gradientPreset.cardColors,
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                } else {
+                    entry.gradientPreset.mainColor
+                }
         }
     }
 
@@ -434,19 +469,19 @@ struct IronFoxHeatmapWidget: Widget {
 #Preview("Small", as: .systemSmall) {
     IronFoxHeatmapWidget()
 } timeline: {
-    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "", plannedWorkouts: [], weeklyGoal: 5, gradientPreset: GradientPreset.presets[0])
+    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "", plannedWorkouts: [], weeklyGoal: 5, gradientPreset: GradientPreset.presets[0], usesGradientBackground: false)
 }
 
 #Preview("Medium", as: .systemMedium) {
     IronFoxHeatmapWidget()
 } timeline: {
-    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press"], weeklyGoal: 5, gradientPreset: GradientPreset.presets[0])
+    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press"], weeklyGoal: 5, gradientPreset: GradientPreset.presets[0], usesGradientBackground: false)
 }
 
 #Preview("Large", as: .systemLarge) {
     IronFoxHeatmapWidget()
 } timeline: {
-    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press", "Calf Raises","Squats", "Lunges", "Leg Press", "Calf Raises"], weeklyGoal: 5, gradientPreset: GradientPreset.presets[0])
+    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press", "Calf Raises","Squats", "Lunges", "Leg Press", "Calf Raises"], weeklyGoal: 5, gradientPreset: GradientPreset.presets[0], usesGradientBackground: false)
 }
 
 private let sampleCounts: [Date: Int] = {

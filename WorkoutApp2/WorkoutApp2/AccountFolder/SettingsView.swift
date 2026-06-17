@@ -8,6 +8,7 @@
 
 import SwiftUI
 import Foundation
+import WidgetKit
 
 struct SettingsView: View {
     @EnvironmentObject var workoutData: WorkoutData
@@ -23,6 +24,10 @@ struct SettingsView: View {
     //Boolean for kcal vs Calories
     @AppStorage("energyLabel")
     private var energyLabel: String = "Calories"
+    
+    // Widget Background Color
+    @AppStorage("widgetUsesGradientBackground", store: UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2"))
+    private var widgetUsesGradientBackground: Bool = false
 
     @State private var showResetConfirmation = false
     @State private var showResetAccountConfirmation = false
@@ -532,6 +537,9 @@ struct SettingsView: View {
             }
         }
         .environmentObject(gradientSettings)
+        .onChange(of: widgetUsesGradientBackground) { _, _ in
+            WidgetCenter.shared.reloadAllTimelines()
+        }
         .onChange(of: weighInReminder) { _, newValue in
             if newValue {
                 weighInWeeklyReminder = false
