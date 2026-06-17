@@ -110,8 +110,14 @@ struct WeeklyRecapCard: View {
                     value: "\(streak)",
                     label: "Streak"
                 )
+                
+                stat(
+                    icon: "calendar",
+                    value: "\(workoutsCompleted)/\(workoutsPlanned)",
+                    label: "Goal"
+                )
 
-                Spacer()
+                
             }
         }
         .padding(22)
