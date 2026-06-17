@@ -29,7 +29,7 @@ struct DataExportSection: View {
                     Spacer()
                 }
                 .foregroundStyle(.blue)
-                .font(.title2)
+                .font(.subheadline)
             }
             .padding(.bottom, 10)
 
@@ -44,7 +44,7 @@ struct DataExportSection: View {
                     Spacer()
                 }
                 .foregroundStyle(.blue)
-                .font(.title2)
+                .font(.subheadline)
             }
             .padding(.top, 10)
         }
