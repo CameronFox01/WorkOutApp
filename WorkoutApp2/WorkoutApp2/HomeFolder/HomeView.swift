@@ -26,6 +26,10 @@ struct HomeView: View {
     @AppStorage("userOriginalWeight") private var originalWeight: String = ""
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     
+    //Calories or kCal here
+    @AppStorage("energyLabel")
+    private var energyLabel: String = "Calories"
+    
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
     
@@ -144,10 +148,10 @@ struct HomeView: View {
                                             .frame(maxWidth: .infinity, alignment: .center)
                                         
                                         if Hmanager.activeCalories == 0 {
-                                            Text("\(Int(Int(Double(Hmanager.steps) * 0.04))) kcal")
+                                            Text("\(Int(Int(Double(Hmanager.steps) * 0.04))) \(energyLabel)")
                                                 .font(.title2).bold()
                                         } else {
-                                            Text("\(Int(Hmanager.activeCalories)) kcal")
+                                            Text("\(Int(Hmanager.activeCalories)) \(energyLabel)")
                                                 .font(.title2).bold()
                                         }
                                         

@@ -13,6 +13,10 @@ struct CaloriesDetailView: View {
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
+    
+    //Calories or kCal here
+    @AppStorage("energyLabel")
+    private var energyLabel: String = "Calories"
 
     let unitSystem: UnitSystem
 
@@ -112,7 +116,7 @@ struct CaloriesDetailView: View {
                                             .monospacedDigit()
                                     }
 
-                                    Text("kcal")
+                                    Text("\(energyLabel)")
                                         .font(.title3.weight(.semibold))
                                         .foregroundStyle(
                                             .white.opacity(0.7)
@@ -195,7 +199,7 @@ struct CaloriesDetailView: View {
 
                                     Spacer()
 
-                                    Text("\(Int(Hmanager.activeCalories)) kcal")
+                                    Text("\(Int(Hmanager.activeCalories)) \(energyLabel)")
                                         .bold()
                                 }
 

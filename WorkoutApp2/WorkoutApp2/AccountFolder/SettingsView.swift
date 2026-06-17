@@ -19,6 +19,10 @@ struct SettingsView: View {
     @AppStorage("showStopWatch") private var showStopWatch: Bool = true
     @AppStorage("numberOfWorkoutsToShow") private var numberOfWorkoutsToShow: Int = 12
     @AppStorage("workoutChallengeReminder") private var workoutChallengeReminder: Bool = true
+    
+    //Boolean for kcal vs Calories
+    @AppStorage("energyLabel")
+    private var energyLabel: String = "Calories"
 
     @State private var showResetConfirmation = false
     @State private var showResetAccountConfirmation = false
@@ -112,13 +116,28 @@ struct SettingsView: View {
                                 }
 
                                 Divider()
-
+                                // Section for the Stop watch to be shown
                                 SettingsRow(
                                     icon: "timer",
-                                    title: "Show Stopwatch"
+                                    title: "Workout Timer"
+                                ){
+                                    Picker("", selection: $showStopWatch){
+                                        Text("Stopwatch").tag(true)
+                                        Text("Timer").tag(false)
+                                    }
+                                }
+                                
+                                Divider()
+                                // Section for th calories settings
+                                SettingsRow(
+                                    icon: "flame.fill",
+                                    title: "Energy Units"
                                 ) {
-                                    Toggle("", isOn: $showStopWatch)
-                                        .labelsHidden()
+                                    Picker("", selection: $energyLabel) {
+                                        Text("Calories").tag("Calories")
+                                        Text("kcal").tag("kcal")
+                                    }
+                                    .pickerStyle(.menu)
                                 }
                             }
 
