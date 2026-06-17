@@ -22,6 +22,7 @@ struct StartUpView: View {
     @EnvironmentObject var workoutData: WorkoutData
     @StateObject private var exporter = WorkoutDataExporter()
     @State private var showingImporter = false
+    @State private var showingShareSheet = false
 
     @State private var selectedFeet = 5
     @State private var selectedInches = 8
@@ -191,6 +192,23 @@ struct StartUpView: View {
                                     Text("Import Workouts (CSV)")
                                     Spacer()
                                 }
+                            }
+                            Divider()
+                            Text("Expected columns: workoutType, weight, reps, sets (optional), date, note (optional). Column order and capitalization don't matter — common synonyms like \"Type\" or \"Reps\" are also recognized.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.vertical, 10)
+                            Divider()
+                            Button {
+                                exporter.prepareTemplate()
+                                showingShareSheet = exporter.exportURL != nil
+                            } label: {
+                                HStack {
+                                    Image(systemName: "doc.text")
+                                    Text("Download CSV Template")
+                                    Spacer()
+                                }
+                                .foregroundStyle(.blue)
                             }
 
                             if let summary = exporter.lastImportSummary {

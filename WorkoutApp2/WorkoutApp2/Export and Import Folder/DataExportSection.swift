@@ -34,7 +34,7 @@ struct DataExportSection: View {
             .padding(.bottom, 10)
 
             Divider()
-
+            
             Button {
                 showingImporter = true
             } label: {
@@ -47,6 +47,23 @@ struct DataExportSection: View {
                 .font(.subheadline)
             }
             .padding(.top, 10)
+            
+            Text("Expected columns: workoutType, weight, reps, sets (optional), date, note (optional). Column order and capitalization don't matter — common synonyms like \"Type\" or \"Reps\" are also recognized.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.vertical, 10)
+            Divider()
+            Button {
+                exporter.prepareTemplate()
+                showingShareSheet = exporter.exportURL != nil
+            } label: {
+                HStack {
+                    Image(systemName: "doc.text")
+                    Text("Download CSV Template")
+                    Spacer()
+                }
+                .foregroundStyle(.blue)
+            }
         }
         .sheet(isPresented: $showingShareSheet) {
             if let url = exporter.exportURL {

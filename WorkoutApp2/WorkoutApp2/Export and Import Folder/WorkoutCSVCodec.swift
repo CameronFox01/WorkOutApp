@@ -40,7 +40,7 @@ enum WorkoutCSVCodec {
         return "\"\(escaped)\""
     }
 
-    // MARK: - Import (own format only — for now)
+    // MARK: - Import (own format + tolerant third-party CSVs)
 
     struct ImportResult {
         let imported: [WorkoutEntry]
@@ -48,10 +48,61 @@ enum WorkoutCSVCodec {
         let skippedInvalid: Int
     }
 
-    /// Parses CSV text produced by `encode`, skipping rows that are malformed or duplicates
-    /// of entries already present in `existing`.
+    /// Recognized column name variants, keyed by canonical field name.
+    /// Lets imports succeed even when headers don't exactly match our own export format.
+    private static let columnAliases: [String: [String]] = [
+        "workouttype": ["workouttype", "type", "exercise", "workout", "name"],
+        "weight":      ["weight", "lbs", "kg", "load"],
+        "reps":        ["reps", "repetitions", "rep"],
+        "sets":        ["sets", "set"],
+        "date":        ["date", "datetime", "timestamp", "day"],
+        "note":        ["note", "notes", "comment", "comments"]
+    ]
+
+    /// Maps a CSV header row to column indices using the alias table above.
+    /// workoutType, weight, reps, and date are required; sets and note are optional.
+    private static func resolveColumnIndex(header: [String]) -> [String: Int]? {
+        let normalizedHeader = header.map { $0.lowercased().trimmingCharacters(in: .whitespaces) }
+        var resolved: [String: Int] = [:]
+
+        for (canonical, aliases) in columnAliases {
+            if let index = normalizedHeader.firstIndex(where: { aliases.contains($0) }) {
+                resolved[canonical] = index
+            }
+        }
+
+        guard resolved["workouttype"] != nil,
+              resolved["weight"] != nil,
+              resolved["reps"] != nil,
+              resolved["date"] != nil else {
+            return nil
+        }
+
+        return resolved
+    }
+
+    /// Tries ISO 8601 first (our own export format), then falls back to a few
+    /// common hand-entered formats so third-party or manually-built CSVs still import.
+    private static func parseDate(_ raw: String) -> Date? {
+        let iso = ISO8601DateFormatter()
+        if let date = iso.date(from: raw) { return date }
+
+        let fallbackFormats = ["MM/dd/yyyy", "yyyy-MM-dd", "M/d/yyyy", "MM-dd-yyyy"]
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+
+        for format in fallbackFormats {
+            formatter.dateFormat = format
+            if let date = formatter.date(from: raw) {
+                return date
+            }
+        }
+        return nil
+    }
+
+    /// Parses CSV text — our own export or a reasonably-formatted third-party one —
+    /// skipping rows that are malformed or duplicates of entries already present in `existing`.
     static func decode(_ csvText: String, existing: [WorkoutEntry]) -> ImportResult {
-        let formatter = ISO8601DateFormatter()
         let calendar = Calendar.current
 
         // Build a lookup of existing entries' duplicate keys for fast skip-checking.
@@ -67,25 +118,27 @@ enum WorkoutCSVCodec {
             return ImportResult(imported: [], skippedDuplicates: 0, skippedInvalid: 0)
         }
 
-        let columnIndex = Dictionary(uniqueKeysWithValues: header.enumerated().map { ($1.lowercased(), $0) })
-
-        guard let typeIdx = columnIndex["workouttype"],
-              let weightIdx = columnIndex["weight"],
-              let repsIdx = columnIndex["reps"],
-              let setsIdx = columnIndex["sets"],
-              let dateIdx = columnIndex["date"] else {
-            // Header doesn't match expected schema at all.
+        guard let columnIndex = resolveColumnIndex(header: header) else {
+            // Header doesn't contain the required columns (even accounting for aliases).
             return ImportResult(imported: [], skippedDuplicates: 0, skippedInvalid: rows.count - 1)
         }
-        let noteIdx = columnIndex["note"]
+
+        let typeIdx = columnIndex["workouttype"]!
+        let weightIdx = columnIndex["weight"]!
+        let repsIdx = columnIndex["reps"]!
+        let dateIdx = columnIndex["date"]!
+        let setsIdx = columnIndex["sets"]   // optional
+        let noteIdx = columnIndex["note"]   // optional
+
+        let requiredMaxIndex = max(typeIdx, weightIdx, repsIdx, dateIdx)
 
         for row in rows.dropFirst() {
-            guard row.count > max(typeIdx, weightIdx, repsIdx, setsIdx, dateIdx) else {
+            guard row.count > requiredMaxIndex else {
                 skippedInvalid += 1
                 continue
             }
 
-            guard let date = formatter.date(from: row[dateIdx]) else {
+            guard let date = parseDate(row[dateIdx]) else {
                 skippedInvalid += 1
                 continue
             }
@@ -94,7 +147,7 @@ enum WorkoutCSVCodec {
                 workoutType: row[typeIdx],
                 weight: row[weightIdx],
                 reps: row[repsIdx],
-                sets: row[setsIdx],
+                sets: setsIdx.flatMap { row[safe: $0] } ?? "",
                 date: date,
                 note: noteIdx.flatMap { row[safe: $0] } ?? ""
             )

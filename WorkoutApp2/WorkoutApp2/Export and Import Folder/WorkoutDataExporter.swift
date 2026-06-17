@@ -14,6 +14,17 @@ final class WorkoutDataExporter: ObservableObject {
     @Published var lastImportSummary: String?
     @Published var importError: String?
 
+    func prepareTemplate() {
+        let sample = """
+        workoutType,weight,reps,sets,date,note
+        Bench Press,135,8,3,2026-06-01T12:00:00Z,felt strong today
+        Squat,225,5,5,2026-06-02T12:00:00Z,
+        """
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("IronFox-Template.csv")
+        try? sample.write(to: url, atomically: true, encoding: .utf8)
+        exportURL = url
+    }
+    
     /// Writes the CSV to a temp file and returns its URL, ready for a share sheet.
     func prepareExport(entries: [WorkoutEntry]) {
         let csv = WorkoutCSVCodec.encode(entries)
