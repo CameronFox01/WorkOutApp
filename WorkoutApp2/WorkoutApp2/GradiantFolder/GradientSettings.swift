@@ -7,15 +7,17 @@
 
 
 import SwiftUI
+import WidgetKit
 
 @MainActor
 class GradientSettings: ObservableObject {
     @Published var selectedPreset: GradientPreset
 
     private let storageKey = "selectedGradientPreset"
+    private let defaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
 
     init() {
-        if let data = UserDefaults.standard.data(forKey: storageKey),
+        if let data = defaults?.data(forKey: storageKey),
            let decoded = try? JSONDecoder().decode(GradientPreset.self, from: data) {
             selectedPreset = decoded
         } else {
@@ -35,8 +37,9 @@ class GradientSettings: ObservableObject {
 
     private func save() {
         if let encoded = try? JSONEncoder().encode(selectedPreset) {
-            UserDefaults.standard.set(encoded, forKey: storageKey)
+            defaults?.set(encoded, forKey: storageKey)
         }
+        WidgetCenter.shared.reloadAllTimelines() // tell widgets to refresh now
     }
 }
 

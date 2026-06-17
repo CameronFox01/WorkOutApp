@@ -62,6 +62,35 @@ extension GradientPreset {
     var textColor: Color {
         colors.first?.color ?? .blue
     }
+    
+    /// The first color at full strength — for use where a faded tint would wash out.
+     var mainColor: Color {
+         colors.first?.color ?? .blue
+     }
+    
+    /// The color used for active heatmap cells — avoids green when the theme itself is green,
+    /// since green-on-green would be invisible.
+    var heatmapAccentColor: Color {
+        mainColor.isGreenish ? .orange : .green
+    }
 }
 
+extension Color {
+    /// Rough check for whether this color sits in the "green" hue range.
+    var isGreenish: Bool {
+        let uiColor = UIColor(self)
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
 
+        // Green sits roughly between 80°-160° on the 360° hue wheel.
+        // HSB hue is normalized 0-1, so that's 0.22-0.44.
+        let hueDegrees = hue * 360
+        let isInGreenRange = hueDegrees >= 70 && hueDegrees <= 170
+
+        // Low saturation means it's closer to gray/white/black, not a "true" green
+        return isInGreenRange && saturation > 0.15
+    }
+}

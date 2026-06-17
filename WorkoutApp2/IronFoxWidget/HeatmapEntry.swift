@@ -21,22 +21,32 @@ struct HeatmapEntry: TimelineEntry {
     let plannedTitle: String
     let plannedWorkouts: [String]
     let weeklyGoal: Int
+    let gradientPreset: GradientPreset 
 }
 
 struct HeatmapProvider: TimelineProvider {
     func placeholder(in context: Context) -> HeatmapEntry {
-        HeatmapEntry(date: Date(), countsByDay: [:], plannedTitle: "", plannedWorkouts: [], weeklyGoal: loadWeeklyGoal())
+        HeatmapEntry(date: Date(), countsByDay: [:], plannedTitle: "", plannedWorkouts: [], weeklyGoal: loadWeeklyGoal(), gradientPreset: loadGradientPreset())
+    }
+    
+    private func loadGradientPreset() -> GradientPreset {
+        let defaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
+        guard let data = defaults?.data(forKey: "selectedGradientPreset"),
+              let decoded = try? JSONDecoder().decode(GradientPreset.self, from: data) else {
+            return GradientPreset.presets[0]
+        }
+        return decoded
     }
 
     func getSnapshot(in context: Context, completion: @escaping (HeatmapEntry) -> Void) {
         let planned = loadPlannedWorkouts(for: Date())
-        completion(HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts, weeklyGoal: loadWeeklyGoal()))
+        completion(HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts, weeklyGoal: loadWeeklyGoal(), gradientPreset: loadGradientPreset()))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<HeatmapEntry>) -> Void) {
         let planned = loadPlannedWorkouts(for: Date())
         let goal = loadWeeklyGoal()
-        let entry = HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts, weeklyGoal: goal)
+        let entry = HeatmapEntry(date: Date(), countsByDay: loadCounts(), plannedTitle: planned.title, plannedWorkouts: planned.workouts, weeklyGoal: goal, gradientPreset: loadGradientPreset())
         let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
         completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
     }
@@ -86,6 +96,7 @@ struct HeatmapWidgetView: View {
     var entry: HeatmapEntry
     @Environment(\.widgetFamily) var family
     @Environment(\.colorScheme) private var colorScheme
+    
     private let calendar = Calendar.current
 
     var body: some View {
@@ -110,7 +121,7 @@ struct HeatmapWidgetView: View {
             Rectangle().fill(
                 colorScheme == .dark
                 ? Color.black
-                : Color.blue
+                : entry.gradientPreset.mainColor
             )
         }
     }
@@ -243,7 +254,7 @@ struct HeatmapWidgetView: View {
                     VStack(spacing: 2) {
                         Text("\(entry.plannedWorkouts.count)")
                             .font(.title.bold())
-                            .foregroundStyle(.green)
+                            .foregroundStyle(entry.gradientPreset.heatmapAccentColor)
                         Text(entry.plannedWorkouts.count == 1 ? "workout" : "workouts")
                             .font(.caption2)
                             .foregroundStyle(.white.opacity(0.6))
@@ -281,7 +292,7 @@ struct HeatmapWidgetView: View {
                 Circle()
                     .trim(from: 0, to: progress)
                     .stroke(
-                        progress >= 1 ? Color.green : Color.cyan,
+                        progress >= 1 ? entry.gradientPreset.heatmapAccentColor : Color.cyan,
                         style: StrokeStyle(lineWidth: 4, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
@@ -333,7 +344,7 @@ struct HeatmapWidgetView: View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.caption)
-                .foregroundStyle(.green)
+                .foregroundStyle(entry.gradientPreset.heatmapAccentColor)
             VStack(alignment: .leading, spacing: 1) {
                 Text(value)
                     .font(.subheadline.bold())
@@ -392,11 +403,12 @@ struct HeatmapWidgetView: View {
     }
 
     private func color(count: Int) -> Color {
+        let accent = entry.gradientPreset.heatmapAccentColor
         switch count {
         case 0:     return Color.white.opacity(0.28)
-        case 1:     return Color.green.opacity(0.45)
-        case 2...3: return Color.green.opacity(0.7)
-        default:    return .green
+        case 1:     return accent.opacity(0.45)
+        case 2...3: return accent.opacity(0.7)
+        default:    return accent
         }
     }
 
@@ -422,19 +434,19 @@ struct IronFoxHeatmapWidget: Widget {
 #Preview("Small", as: .systemSmall) {
     IronFoxHeatmapWidget()
 } timeline: {
-    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "", plannedWorkouts: [], weeklyGoal: 5)
+    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "", plannedWorkouts: [], weeklyGoal: 5, gradientPreset: GradientPreset.presets[0])
 }
 
 #Preview("Medium", as: .systemMedium) {
     IronFoxHeatmapWidget()
 } timeline: {
-    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press"], weeklyGoal: 5)
+    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press"], weeklyGoal: 5, gradientPreset: GradientPreset.presets[0])
 }
 
 #Preview("Large", as: .systemLarge) {
     IronFoxHeatmapWidget()
 } timeline: {
-    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press", "Calf Raises","Squats", "Lunges", "Leg Press", "Calf Raises"], weeklyGoal: 5)
+    HeatmapEntry(date: .now, countsByDay: sampleCounts, plannedTitle: "Leg Day", plannedWorkouts: ["Squats", "Lunges", "Leg Press", "Calf Raises","Squats", "Lunges", "Leg Press", "Calf Raises"], weeklyGoal: 5, gradientPreset: GradientPreset.presets[0])
 }
 
 private let sampleCounts: [Date: Int] = {
