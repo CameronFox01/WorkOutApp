@@ -9,7 +9,9 @@ import SwiftUI
 struct FiveDayCaloriesBarChart: View {
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
+    
     let data: [(date: Date, calories: Int)]
+    let comingFromDetail: Bool
 
     private var maxCalories: Double {
         max(Double(data.map { $0.calories }.max() ?? 1), 1)
@@ -29,6 +31,13 @@ struct FiveDayCaloriesBarChart: View {
             let totalSpacing = spacing * CGFloat(max(dataCount - 1, 0))
             let barWidth = (geo.size.width - totalSpacing) / CGFloat(dataCount)
             let chartHeight = geo.size.height - 20
+            
+            
+            let textColor: Color = comingFromDetail
+                ? .white
+                : gradientSettings.selectedPreset.textOnDarkBackground
+            
+            
 
             HStack(alignment: .bottom, spacing: spacing) {
                 ForEach(data.indices, id: \.self) { i in
@@ -50,7 +59,7 @@ struct FiveDayCaloriesBarChart: View {
 
                         Text(weekdayFormatter.string(from: item.date))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(textColor)
                             .frame(width: barWidth)
                     }
                 }
@@ -73,7 +82,10 @@ struct FiveDayCaloriesBarChart: View {
     ]
 
     VStack {
-        FiveDayCaloriesBarChart(data: sampleData)
+        FiveDayCaloriesBarChart(
+            data: sampleData,
+            comingFromDetail: false
+        )
             .frame(height: 120)
             .padding()
             .environmentObject(GradientSettings())

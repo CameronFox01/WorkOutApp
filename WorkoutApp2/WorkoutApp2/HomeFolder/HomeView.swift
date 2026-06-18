@@ -156,7 +156,10 @@ struct HomeView: View {
                                         }
                                         
                                         if !Hmanager.lastFiveDaysCalories.isEmpty {
-                                            FiveDayCaloriesBarChart(data: Hmanager.lastFiveDaysCalories)
+                                            FiveDayCaloriesBarChart(
+                                                data: Hmanager.lastFiveDaysCalories,
+                                                comingFromDetail: false
+                                            )
                                                 .frame(height: 60)
                                                 .padding(.top, 4)
                                             
@@ -771,7 +774,10 @@ struct FiveDayStepsBarChartWithValues: View {
         df.dateFormat = "E"
         return df
     }
-
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
+    
     public var body: some View {
         GeometryReader { geo in
             let spacing: CGFloat = 8
@@ -788,7 +794,7 @@ struct FiveDayStepsBarChartWithValues: View {
                         // ✅ Step count sits just above the bar
                         Text("\(item.steps)")
                             .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white)
                             .frame(width: barWidth)
 
                         ZStack(alignment: .bottom) {
@@ -799,7 +805,7 @@ struct FiveDayStepsBarChartWithValues: View {
 
                             // Filled bar
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.accentColor.opacity(0.7))
+                                .fill(gradientSettings.selectedPreset.stepsAccentColor)
                                 .frame(width: barWidth, height: barHeight)
                         }
 

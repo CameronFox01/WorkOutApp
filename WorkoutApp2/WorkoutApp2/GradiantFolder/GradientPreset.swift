@@ -82,6 +82,19 @@ extension GradientPreset {
         if mainColor.isWarmToned { return .blue}
         return .orange
     }
+    
+    //This is for the steps graph to change color
+    var stepsAccentColor: Color {
+        if mainColor.isDarkBlueish { return .orange }
+        return .blue
+    }
+    
+    var textOnDarkBackground: Color {
+        if mainColor.isDark {
+            return .white
+        }
+        return .secondary
+    }
 }
 
 extension Color {
@@ -93,12 +106,12 @@ extension Color {
         var brightness: CGFloat = 0
         var alpha: CGFloat = 0
         uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
-
+        
         // Green sits roughly between 80°-160° on the 360° hue wheel.
         // HSB hue is normalized 0-1, so that's 0.22-0.44.
         let hueDegrees = hue * 360
         let isInGreenRange = hueDegrees >= 70 && hueDegrees <= 170
-
+        
         // Low saturation means it's closer to gray/white/black, not a "true" green
         return isInGreenRange && saturation > 0.15
     }
@@ -110,10 +123,36 @@ extension Color {
         var brightness: CGFloat = 0
         var alpha: CGFloat = 0
         uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
-
+        
         let hueDegrees = hue * 360
         // Red through yellow, wrapping past 0°/360° to catch pink/red variants
         let isInWarmRange = hueDegrees <= 50 || hueDegrees >= 340
-
+        
         return isInWarmRange && saturation > 0.15
-    }}
+    }
+    
+    var isDarkBlueish: Bool {
+        let uiColor = UIColor(self)
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+
+        let hueDegrees = hue * 360
+        let isInBlueRange = hueDegrees >= 190 && hueDegrees <= 250
+
+        return isInBlueRange && saturation > 0.15 && brightness < 0.55
+    }
+    
+    var isDark: Bool {
+        let uiColor = UIColor(self)
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+
+        return brightness < 0.45
+    }
+}

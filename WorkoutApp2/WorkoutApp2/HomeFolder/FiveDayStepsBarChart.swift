@@ -8,6 +8,9 @@
 import SwiftUI
 // This is straight up just the bar chart for the Steps
 struct FiveDayStepsBarChart: View {
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
     let data: [(date: Date, steps: Int)]
 
     private var maxSteps: Double {
@@ -38,7 +41,7 @@ struct FiveDayStepsBarChart: View {
 
                             let heightRatio = CGFloat(Double(item.steps) / maxSteps)
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.accentColor.opacity(0.7))
+                                .fill(gradientSettings.selectedPreset.stepsAccentColor)
                                 .frame(width: barWidth, height: max(4, chartHeight * heightRatio))
                         }
 
@@ -71,5 +74,6 @@ struct FiveDayStepsBarChart: View {
         FiveDayStepsBarChart(data: sampleData)
             .frame(height: 120)
             .padding()
+            .environmentObject(GradientSettings())
     }
 }

@@ -255,7 +255,8 @@ struct CaloriesDetailView: View {
                             if !Hmanager.lastFiveDaysCalories.isEmpty {
 
                                 FiveDayCaloriesBarChart(
-                                    data: Hmanager.lastFiveDaysCalories
+                                    data: Hmanager.lastFiveDaysCalories,
+                                    comingFromDetail: true
                                 )
                                 .frame(height: 220)
                             } else {
