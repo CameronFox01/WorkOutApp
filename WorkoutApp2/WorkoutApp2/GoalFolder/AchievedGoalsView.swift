@@ -22,6 +22,10 @@ struct AchievedGoalsView: View {
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
+    
+    private var isDark: Bool {
+        gradientSettings.selectedPreset.mainColor.isDark
+    }
 
     // Optional: you can also recompute here if you want live refresh,
     // but using the passed-in array keeps it simple.
@@ -39,10 +43,10 @@ struct AchievedGoalsView: View {
 
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.seal.fill")
-                            .foregroundStyle(.green)
+                            .foregroundStyle(gradientSettings.selectedPreset.heatmapAccentColor)
                         Text("Goals Achieved")
                             .font(.title2.bold())
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(isDark ? .white : .black)
                         Spacer()
                     }
                     .padding(.horizontal)
@@ -51,9 +55,9 @@ struct AchievedGoalsView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "sparkles")
                                 .font(.largeTitle)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(isDark ? .white : .black)
                             Text("No goals reached yet — keep going!")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(isDark ? .white : .black)
                                 .font(.headline)
                         }
                         .frame(maxWidth: .infinity, minHeight: 240)

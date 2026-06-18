@@ -14,6 +14,10 @@ struct MilestonesView: View {
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
+    
+    private var isDark: Bool {
+        gradientSettings.selectedPreset.mainColor.isDark
+    }
 
     private var workoutMilestones: [Milestone] {
         milestones.filter { !$0.title.hasSuffix("Workout Days") }
@@ -40,7 +44,7 @@ struct MilestonesView: View {
                             .foregroundStyle(.yellow)
                         Text("Milestones")
                             .font(.title2.bold())
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(isDark ? .white : .black)
                         Spacer()
                     }
                     .padding(.horizontal)
@@ -49,9 +53,9 @@ struct MilestonesView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "sparkles")
                                 .font(.largeTitle)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(isDark ? .white : .black)
                             Text("No milestones reached yet — keep going!")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(isDark ? .white : .black)
                                 .font(.headline)
                         }
                         .frame(maxWidth: .infinity, minHeight: 240)
@@ -66,7 +70,7 @@ struct MilestonesView: View {
                                         .foregroundStyle(.orange)
                                     Text("Workouts Logged")
                                         .font(.headline)
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(isDark ? .white : .black)
                                 }
                                 .padding(.horizontal)
 
@@ -91,7 +95,7 @@ struct MilestonesView: View {
                                         .foregroundStyle(.cyan)
                                     Text("Days Worked Out")
                                         .font(.headline)
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(isDark ? .white : .black)
                                 }
                                 .padding(.horizontal)
 

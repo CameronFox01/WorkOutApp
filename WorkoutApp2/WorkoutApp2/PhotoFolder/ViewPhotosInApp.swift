@@ -11,6 +11,8 @@ import PhotosUI
 struct ViewPhotosInApp: View {
 
     @Environment(\.dismiss) private var dismiss
+    
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     @State private var photos: [SavedPhoto] = []
     @State private var selectedImage: UIImage?
@@ -19,64 +21,73 @@ struct ViewPhotosInApp: View {
 
     var body: some View {
         NavigationView {
-
-            ScrollView {
-
-                let sections = PhotoOrganizer.groupedByMonth(
-                    photos: photos
+            ZStack{
+                // Consistent Gradient Background
+                LinearGradient(
+                    colors: gradientSettings.selectedPreset.swiftUIColors,
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
-
-                if photos.isEmpty {
-                    EmptyPhotoView()
-                } else {
-
-                    VStack(alignment: .leading, spacing: 20) {
-
-                        ForEach(sections) { section in
-
-                            Text(section.title)
-                                .font(.title2.bold())
-                                .padding(.horizontal)
-
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible()),
-                                    GridItem(.flexible()),
-                                    GridItem(.flexible())
-                                ],
-                                spacing: 12
-                            ) {
-
-                                ForEach(section.photos) { photo in
-
-                                    if let uiImage = UIImage(contentsOfFile: photo.url.path) {
-
-                                        Button {
-                                            selectedImage = uiImage
-                                            showSaveOptions = true
-                                            selectedURL = photo.url
-                                        } label: {
-
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(height: 120)
-                                                .frame(maxWidth: .infinity)
-                                                .clipped()
-                                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    
+                    let sections = PhotoOrganizer.groupedByMonth(
+                        photos: photos
+                    )
+                    
+                    if photos.isEmpty {
+                        EmptyPhotoView()
+                    } else {
+                        
+                        VStack(alignment: .leading, spacing: 20) {
+                            
+                            ForEach(sections) { section in
+                                
+                                Text(section.title)
+                                    .font(.title2.bold())
+                                    .padding(.horizontal)
+                                
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible()),
+                                        GridItem(.flexible()),
+                                        GridItem(.flexible())
+                                    ],
+                                    spacing: 12
+                                ) {
+                                    
+                                    ForEach(section.photos) { photo in
+                                        
+                                        if let uiImage = UIImage(contentsOfFile: photo.url.path) {
+                                            
+                                            Button {
+                                                selectedImage = uiImage
+                                                showSaveOptions = true
+                                                selectedURL = photo.url
+                                            } label: {
+                                                
+                                                Image(uiImage: uiImage)
+                                                    .resizable()
+                                                    .scaledToFill()
+                                                    .frame(height: 120)
+                                                    .frame(maxWidth: .infinity)
+                                                    .clipped()
+                                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                            }
+                                            .buttonStyle(.plain)
                                         }
-                                        .buttonStyle(.plain)
                                     }
                                 }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
                         }
+                        .padding(.top)
                     }
-                    .padding(.top)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.blue, for: .navigationBar)
+            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
 
             .toolbar {
@@ -129,4 +140,5 @@ struct ViewPhotosInApp: View {
 
 #Preview {
     ViewPhotosInApp()
+        .environmentObject(GradientSettings())
 }

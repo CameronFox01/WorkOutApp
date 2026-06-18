@@ -47,7 +47,7 @@ struct FiveDayStepsBarChart: View {
 
                         Text(weekdayFormatter.string(from: item.date))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
                             .frame(width: barWidth)
                     }
                 }

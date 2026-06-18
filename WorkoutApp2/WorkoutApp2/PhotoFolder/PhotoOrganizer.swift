@@ -96,11 +96,32 @@ enum PhotoOrganizer {
 }
 
 struct EmptyPhotoView: View {
+    @EnvironmentObject var gradientSettings: GradientSettings
+
+    private var isDark: Bool {
+        gradientSettings.selectedPreset.mainColor.isDark
+    }
+
     var body: some View {
-        ContentUnavailableView(
-            "No Photos Saved",
-            systemImage: "photo.on.rectangle.angled",
-            description: Text("Try taking a photo or checking your photo library.")
-        )
+        VStack(spacing: 12) {
+            Spacer()
+
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.system(size: 60))
+                .foregroundStyle(isDark ? .white : .secondary)
+
+            Text("No Photos Saved")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundStyle(isDark ? .white : .black)
+
+            Text("Try taking a photo or checking your photo library.")
+                .font(.subheadline)
+                .foregroundStyle(isDark ? .white : .secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
+            Spacer()
+        }
     }
 }

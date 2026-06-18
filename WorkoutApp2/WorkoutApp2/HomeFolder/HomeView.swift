@@ -120,13 +120,13 @@ struct HomeView: View {
                                     }
                                     
                                     // Progress percentage from original weight
-                                    if let pct = progressPercentText, let color = progressColor {
+                                    if let pct = progressPercentText {
                                         HStack(spacing: 6) {
                                             Image(systemName: "chart.line.uptrend.xyaxis")
-                                                .foregroundStyle(color)
+                                                .foregroundStyle(gradientSettings.selectedPreset.greenTextOnDarkBackground)
                                             Text(pct)
                                                 .font(.subheadline).bold()
-                                                .foregroundStyle(color)
+                                                .foregroundStyle(gradientSettings.selectedPreset.greenTextOnDarkBackground)
                                         }
                                     } else {
                                         Text("Set target weight to see progress")
@@ -166,11 +166,11 @@ struct HomeView: View {
                                             HStack {
                                                 Text("5-day avg:")
                                                     .font(.caption)
-                                                    .foregroundStyle(.secondary)
+                                                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
                                                 Text("\(Hmanager.fiveDayAverageCalories)")
                                                     .font(.caption)
                                                     .bold()
-                                                    .foregroundStyle(.secondary)
+                                                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
                                             }
                                         } else {
                                             Text("5-day history unavailable")
@@ -221,16 +221,16 @@ struct HomeView: View {
                                             HStack {
                                                 Text("5-day avg:")
                                                     .font(.caption)
-                                                    .foregroundStyle(.secondary)
+                                                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
                                                 Text("\(Hmanager.fiveDayAverageSteps)")
                                                     .font(.caption)
                                                     .bold()
-                                                    .foregroundStyle(.secondary)
+                                                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
                                             }
                                         } else {
                                             Text("5-day history unavailable")
                                                 .font(.caption)
-                                                .foregroundStyle(.secondary)
+                                                .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
                                         }
                                     }
                                 }
