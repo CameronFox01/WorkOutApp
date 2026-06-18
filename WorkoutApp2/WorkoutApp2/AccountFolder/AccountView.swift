@@ -270,6 +270,7 @@ extension AccountView {
                     textColor: gradientSettings.selectedPreset.textColor
                 )
             }
+            .padding(.bottom, 10)
 
             NavigationLink {
                 AchievedGoalsView(achievedGoals: [], comingfromWidget: false)
