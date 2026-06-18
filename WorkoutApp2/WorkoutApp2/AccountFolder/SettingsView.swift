@@ -37,6 +37,10 @@ struct SettingsView: View {
     // Keyboard focus
     @FocusState private var workoutsFieldFocused: Bool
     
+    // FaceID section
+    @AppStorage("faceIDEnabled") private var faceIDEnabled: Bool = false
+    @AppStorage("lockGracePeriodSeconds") private var lockGracePeriodSeconds: Int = 0
+    
     //Notification Section
     //Settings for the entire section
     @AppStorage("notificationsEnabled")
@@ -410,6 +414,35 @@ struct SettingsView: View {
                             // APPEARANCE SECTION
                             SettingsCard(title: "Background") {
                                 GradientPickerSection()
+                            }
+                            
+                            // Face ID SECTION
+                            SettingsCard(title: "Security") {
+                                SettingsRow(
+                                    icon: "faceid",
+                                    title: "Require Face ID"
+                                ) {
+                                    Toggle("", isOn: $faceIDEnabled)
+                                        .labelsHidden()
+                                }
+
+                                if faceIDEnabled {
+                                    Divider()
+
+                                    SettingsRow(
+                                        icon: "clock",
+                                        title: "Lock After"
+                                    ) {
+                                        Picker("", selection: $lockGracePeriodSeconds) {
+                                            ForEach(LockGracePeriod.allCases) { option in
+                                                Text(option.label).tag(option.rawValue)
+                                            }
+                                        }
+                                        .labelsHidden()
+                                        .lineLimit(1)
+                                        .fixedSize(horizontal: true, vertical: false)
+                                    }
+                                }
                             }
                             
                             // DATA SECTION
