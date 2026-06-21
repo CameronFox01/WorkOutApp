@@ -66,7 +66,8 @@ struct PhotoView: View {
                             }
                         }
                         .padding()
-                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+                        .cardStyle()
+                        //.background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
                         .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
 
                         // 2. Actions Card
@@ -104,7 +105,8 @@ struct PhotoView: View {
                             .controlSize(.large)
                         }
                         .padding()
-                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+                        .cardStyle()
+                        //.background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
                         .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
                         
                         Spacer()
@@ -192,18 +194,17 @@ struct PhotoView: View {
         }
     }
 
-    @ViewBuilder
+    
     private func photoPickerButton(title: String, selection: Binding<PhotosPickerItem?>) -> some View {
-        PhotosPicker(selection: selection, matching: .images) {
-            HStack {
-                Image(systemName: "photo")
-                Text(title)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(10)
-            .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+        let textColor = gradientSettings.selectedPreset.textColor
+
+        return PhotosPicker(selection: selection, matching: .images) {
+            Label(title, systemImage: "photo")
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundStyle(textColor)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.bordered)
+        .controlSize(.large)
     }
     
     private func loadPersistentImages() {

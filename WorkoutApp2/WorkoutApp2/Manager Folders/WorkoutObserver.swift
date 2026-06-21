@@ -33,6 +33,7 @@ class WorkoutData: ObservableObject {
            let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
             entries = decoded
         }
+        loadMilestones()
     }
 
     func save() {
@@ -61,7 +62,7 @@ class WorkoutData: ObservableObject {
                     Milestone(
                         title: "\(number) Workouts",
                         description: "Completed \(number) workouts",
-                        icon: "🏋️",          // ✅ added missing icon
+                        icon: "dumbbell.fill",          // ✅ added missing icon
                         dateReached: nil     // ✅ fixed label (was achievedDate:)
                     )
                 )
@@ -73,14 +74,42 @@ class WorkoutData: ObservableObject {
                     Milestone(
                         title: "\(number) Workout Days",
                         description: "Worked out on \(number) different days",
-                        icon: "📅",          // ✅ added missing icon
+                        icon: "calendar",          // ✅ added missing icon
                         dateReached: nil     // ✅ fixed label (was achievedDate:)
                     )
                 )
             }
         }
 
-        achievedMilestones = results.sorted { $0.title < $1.title }
+        achievedMilestones = results.sorted { a, b in
+            // Group by type first (workout_ before days_)
+            let aIsWorkout = a.title.contains("Workouts") && !a.title.contains("Days")
+            let bIsWorkout = b.title.contains("Workouts") && !b.title.contains("Days")
+
+            if aIsWorkout != bIsWorkout {
+                return aIsWorkout // workout milestones first
+            }
+
+            // Then sort numerically within each group
+            let numA = Int(a.title.components(separatedBy: " ").first ?? "") ?? 0
+            let numB = Int(b.title.components(separatedBy: " ").first ?? "") ?? 0
+            return numA < numB
+        }
+    }
+    
+    func orderMilestones(_ milestones: [Milestone]) -> [Milestone] {
+        return milestones.sorted { a, b in
+            let aIsWorkout = a.title.contains("Workouts") && !a.title.contains("Days")
+            let bIsWorkout = b.title.contains("Workouts") && !b.title.contains("Days")
+
+            if aIsWorkout != bIsWorkout {
+                return aIsWorkout
+            }
+
+            let numA = Int(a.title.components(separatedBy: " ").first ?? "") ?? 0
+            let numB = Int(b.title.components(separatedBy: " ").first ?? "") ?? 0
+            return numA < numB
+        }
     }
 
     func add(entry: WorkoutEntry) {
@@ -134,24 +163,46 @@ class WorkoutData: ObservableObject {
         guard notificationsEnabled && milestonesEnabled else { return }
 
         let count = entries.count
-        let milestones = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
+        let workoutMilestones = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
+        let dayMilestones = [7, 14, 30, 60, 90, 180, 365, 500, 1000]
 
         let completedData = UserDefaults.standard.data(forKey: "completedMilestonesData") ?? Data()
         var completed = (try? JSONDecoder().decode(Set<String>.self, from: completedData)) ?? []
 
-        for milestone in milestones {
+        // Workout count milestones
+        for milestone in workoutMilestones {
             let key = "workout_\(milestone)"
             if count >= milestone && !completed.contains(key) {
                 completed.insert(key)
-                if let encoded = try? JSONEncoder().encode(completed) {
-                    UserDefaults.standard.set(encoded, forKey: "completedMilestonesData")
-                }
                 NotificationHandler.shared.sendInstantNotification(
                     title: "Milestone Reached!",
                     body: "You've logged \(milestone) workouts!",
-                    identifier: "workout_\(milestone)"
+                    identifier: key
                 )
             }
         }
+
+        // Unique days worked out milestones
+        let uniqueDays = Set(entries.map {
+            Calendar.current.startOfDay(for: $0.date)
+        }).count
+
+        for milestone in dayMilestones {
+            let key = "days_\(milestone)"
+            if uniqueDays >= milestone && !completed.contains(key) {
+                completed.insert(key)
+                NotificationHandler.shared.sendInstantNotification(
+                    title: "Consistency Milestone!",
+                    body: "You've worked out on \(milestone) different days!",
+                    identifier: key
+                )
+            }
+        }
+
+        if let encoded = try? JSONEncoder().encode(completed) {
+            UserDefaults.standard.set(encoded, forKey: "completedMilestonesData")
+        }
+
+        loadMilestones()
     }
 }

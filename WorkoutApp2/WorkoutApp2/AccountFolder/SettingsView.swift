@@ -78,6 +78,9 @@ struct SettingsView: View {
         of: Date()
     )?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
     
+    @AppStorage("weeklyPhotoReminderDay") private var weeklyPhotoReminderDay: Int = 1   // Sunday
+    @AppStorage("monthlyPhotoReminderDay") private var monthlyPhotoReminderDay: Int = 1  // 1st of month
+    
     @AppStorage("weeklyWeighInDay")
     private var weeklyWeighInDay: Int = 1
     
@@ -86,9 +89,29 @@ struct SettingsView: View {
     private var completedMilestonesData: Data = Data()
     //Notification settings for milestones to be sent
     @AppStorage("milestonesReminder") private var milesstoneReminder: Bool = true
-
     //Notification for Goals Section
     @AppStorage("goalReminder") private var goalReminder: Bool = true
+    //Notification to remind you to take a weekly Progress Photo
+    @AppStorage("weeklyProgressPhotoReminder") private var weeklyProgressPhotoReminder: Bool = true
+    @AppStorage("weeklyPhotoReminderTime")
+    private var weeklyPhotoReminderTime: Double =
+    Calendar.current.date(
+        bySettingHour: 8,
+        minute: 0,
+        second: 0,
+        of: Date()
+    )?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
+    
+    @AppStorage("monthlyProgressPhotoReminder") private var monthlyProgressPhotoReminder: Bool = false
+    @AppStorage("monthlyPhotoReminderTime")
+    private var monthlyPhotoReminderTime: Double =
+    Calendar.current.date(
+        bySettingHour: 8,
+        minute: 0,
+        second: 0,
+        of: Date()
+    )?.timeIntervalSince1970 ?? Date().timeIntervalSince1970
+    
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
@@ -249,9 +272,8 @@ struct SettingsView: View {
                                     Divider()
                                     
                                     Text("Weight Settings")
-                                        .font(.title2).bold()
+                                        .font(.title3).bold()
                                         .padding(.top, 16)
-                                        .padding(.bottom, 0)
                                     
                                     //Notification for Daily weigh ins
                                     SettingsCard(title: "") {
@@ -395,7 +417,6 @@ struct SettingsView: View {
                                                 .font(.subheadline)
                                                 
                                             }
-                                            
                                         }
                                         .padding()
                                         .background(
@@ -408,6 +429,149 @@ struct SettingsView: View {
                                         )
                                         
                                     }
+                                    
+                                Text("Photo Settings")
+                                        .font(.title3).bold()
+                                        .padding(.top, 10)
+                                    // Notification for Weekly Photos
+                                    SettingsCard(title: "") {
+                                        VStack(spacing: 16) {
+                                            
+                                            // WEIGH IN REMINDER CARD
+                                            VStack(spacing: 12) {
+                                                
+                                                SettingsRow(
+                                                    icon: weeklyProgressPhotoReminder ? "bell.fill" : "bell.slash.fill",
+                                                    title: "Weekly Photo Reminder"
+                                                ) {
+                                                    Toggle("", isOn: $weeklyProgressPhotoReminder)
+                                                        .labelsHidden()
+                                                        .disabled(!notificationsEnabled)
+                                                }
+                                                .opacity(notificationsEnabled ? 1 : 0.4)
+                                                
+                                                if notificationsEnabled && weeklyProgressPhotoReminder {
+                                                    Divider()
+
+                                                    SettingsRow(icon: "clock.fill", title: "Time") {
+                                                        DatePicker(
+                                                            "",
+                                                            selection: Binding(
+                                                                get: { Date(timeIntervalSince1970: weeklyPhotoReminderTime) },
+                                                                set: { weeklyPhotoReminderTime = $0.timeIntervalSince1970 }
+                                                            ),
+                                                            displayedComponents: .hourAndMinute
+                                                        )
+                                                        .labelsHidden()
+                                                    }
+
+                                                    Picker("Day", selection: $weeklyPhotoReminderDay) {
+                                                        Text("Sunday").tag(1)
+                                                        Text("Monday").tag(2)
+                                                        Text("Tuesday").tag(3)
+                                                        Text("Wednesday").tag(4)
+                                                        Text("Thursday").tag(5)
+                                                        Text("Friday").tag(6)
+                                                        Text("Saturday").tag(7)
+                                                    }
+                                                } else {
+                                                    
+                                                    HStack {
+                                                        
+                                                        Image(systemName: "moon.zzz.fill")
+                                                            .foregroundStyle(.secondary)
+                                                        
+                                                        Text("Reminder disabled")
+                                                            .foregroundStyle(.secondary)
+                                                        
+                                                        Spacer()
+                                                    }
+                                                    .font(.subheadline)
+                                                    
+                                                }
+                                                
+                                            }
+                                            .padding()
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 18)
+                                                    .fill(
+                                                        notificationsEnabled && weeklyProgressPhotoReminder
+                                                        ? Color.blue.opacity(0.12)
+                                                        : Color.gray.opacity(0.08)
+                                                    )
+                                            )
+                                            
+                                        }
+                                        
+                                    }
+                                    
+                                    //Notification for Monthly Photos
+                                    SettingsCard(title: "") {
+                                        VStack(spacing: 16) {
+
+                                            SettingsRow(
+                                                icon: monthlyProgressPhotoReminder ? "bell.fill" : "bell.slash.fill",
+                                                title: "Monthly Photo Reminder"
+                                            ) {
+                                                Toggle("", isOn: $monthlyProgressPhotoReminder)
+                                                    .labelsHidden()
+                                                    .disabled(!notificationsEnabled)
+                                            }
+                                            .opacity(notificationsEnabled ? 1 : 0.4)
+
+                                            if notificationsEnabled && monthlyProgressPhotoReminder {
+
+                                                Divider()
+
+                                                SettingsRow(
+                                                    icon: "clock.fill",
+                                                    title: "Time"
+                                                ) {
+                                                    DatePicker(
+                                                        "",
+                                                        selection: Binding(
+                                                            get: {
+                                                                Date(timeIntervalSince1970: monthlyPhotoReminderTime)
+                                                            },
+                                                            set: {
+                                                                monthlyPhotoReminderTime = $0.timeIntervalSince1970 
+                                                            }
+                                                        ),
+                                                        displayedComponents: .hourAndMinute
+                                                    )
+                                                    .labelsHidden()
+                                                }
+                                                
+                                                // Monthly photo day picker — day of month, not day of week
+                                                Picker("Day of Month", selection: $monthlyPhotoReminderDay) {
+                                                    ForEach(1...28, id: \.self) { day in
+                                                        Text(dayOfMonthLabel(day)).tag(day)
+                                                    }
+                                                }
+
+                                            } else {
+
+                                                HStack {
+                                                    Image(systemName: "moon.zzz.fill")
+                                                        .foregroundStyle(.secondary)
+                                                    Text("Reminder disabled")
+                                                        .foregroundStyle(.secondary)
+                                                    Spacer()
+                                                }
+                                                .font(.subheadline)
+                                            }
+                                        }
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 18)
+                                                .fill(
+                                                    notificationsEnabled && monthlyProgressPhotoReminder
+                                                    ? Color.blue.opacity(0.12)
+                                                    : Color.gray.opacity(0.08)
+                                                )
+                                        )
+                                    }
+                                    
                                 }
                             }
                             
@@ -605,11 +769,97 @@ struct SettingsView: View {
         .onChange(of: workoutData.entries.count) { _, _ in
             checkWorkoutMilestones()
         }
+        .onChange(of: weeklyProgressPhotoReminder) { _, newValue in
+            if newValue {
+                // Turn off monthly when weekly turns on
+                monthlyProgressPhotoReminder = false
+                NotificationHandler.shared.removeNotification(identifier: "monthly_photo_reminder")
+            }
+            updateWeeklyPhotoReminder()
+        }
+
+        .onChange(of: monthlyProgressPhotoReminder) { _, newValue in
+            if newValue {
+                // Turn off weekly when monthly turns on
+                weeklyProgressPhotoReminder = false
+                NotificationHandler.shared.removeNotification(identifier: "weekly_photo_reminder")
+            }
+            updateMonthlyPhotoReminder()
+        }
+
+        .onChange(of: weeklyPhotoReminderTime) { _, _ in
+            updateWeeklyPhotoReminder()
+        }
+
+        .onChange(of: weeklyPhotoReminderDay) { _, _ in
+            updateWeeklyPhotoReminder()
+        }
+
+        .onChange(of: monthlyPhotoReminderTime) { _, _ in
+            updateMonthlyPhotoReminder()
+        }
+
+        .onChange(of: monthlyPhotoReminderDay) { _, _ in
+            updateMonthlyPhotoReminder()
+        }
+
+        .onChange(of: notificationsEnabled) { _, _ in
+            updateWeighInReminder()
+            updateWeeklyPhotoReminder()
+            updateMonthlyPhotoReminder()
+        }
         .onAppear {
             updateWeighInReminder()
             updateWeeklyWeighInReminder()
             checkWorkoutMilestones()
+            updateWeeklyPhotoReminder()
+            updateMonthlyPhotoReminder()
         }
+    }
+    
+    private func updateWeeklyPhotoReminder() {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ["weekly_photo_reminder"])
+
+        guard notificationsEnabled else { return }
+        guard weeklyProgressPhotoReminder else { return }
+
+        let reminderDate = Date(timeIntervalSince1970: weeklyPhotoReminderTime)
+        let components = Calendar.current.dateComponents([.hour, .minute], from: reminderDate)
+
+        NotificationHandler.shared.scheduleWeeklyPhotoReminder(
+            hour: components.hour ?? 8,
+            minute: components.minute ?? 0,
+            weekday: weeklyPhotoReminderDay
+        )
+    }
+
+    private func updateMonthlyPhotoReminder() {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ["monthly_photo_reminder"])
+
+        guard notificationsEnabled else { return }
+        guard monthlyProgressPhotoReminder else { return }
+
+        let reminderDate = Date(timeIntervalSince1970: monthlyPhotoReminderTime)
+        let components = Calendar.current.dateComponents([.hour, .minute], from: reminderDate)
+
+        NotificationHandler.shared.scheduleMonthlyPhotoReminder(
+            hour: components.hour ?? 8,
+            minute: components.minute ?? 0,
+            dayOfMonth: monthlyPhotoReminderDay
+        )
+    }
+    
+    private func dayOfMonthLabel(_ day: Int) -> String {
+        let suffix: String
+        switch day {
+        case 1, 21: suffix = "st"
+        case 2, 22: suffix = "nd"
+        case 3, 23: suffix = "rd"
+        default:    suffix = "th"
+        }
+        return "\(day)\(suffix)"
     }
     
     // Function to delete all stored photos

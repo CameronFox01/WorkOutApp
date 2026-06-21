@@ -117,7 +117,7 @@ struct EmptyPhotoView: View {
 
             Text("Try taking a photo or checking your photo library.")
                 .font(.subheadline)
-                .foregroundStyle(isDark ? .white : .secondary)
+                .foregroundStyle(isDark ? .white : .black)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 

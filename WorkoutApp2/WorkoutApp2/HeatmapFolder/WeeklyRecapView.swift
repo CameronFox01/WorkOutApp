@@ -169,6 +169,7 @@ struct WeeklyRecapView: View {
             .foregroundStyle(.yellow)
 
             Text("Most Improved Exercise")
+                .foregroundStyle(.white)
 
             Text(recap.strongestExercise)
                 .font(.title2.bold())

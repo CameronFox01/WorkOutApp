@@ -24,7 +24,7 @@ struct ViewPhotosInApp: View {
             ZStack{
                 // Consistent Gradient Background
                 LinearGradient(
-                    colors: gradientSettings.selectedPreset.swiftUIColors,
+                    colors: gradientSettings.selectedPreset.darkVariant(),
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -47,7 +47,7 @@ struct ViewPhotosInApp: View {
                                 Text(section.title)
                                     .font(.title2.bold())
                                     .padding(.horizontal)
-                                
+                                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                                 LazyVGrid(
                                     columns: [
                                         GridItem(.flexible()),

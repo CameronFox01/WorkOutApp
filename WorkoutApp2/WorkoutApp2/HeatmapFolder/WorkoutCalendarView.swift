@@ -11,6 +11,9 @@ struct WorkoutCalendarView: View {
     let entries: [WorkoutEntry]
     let comingFromWidget: Bool
     
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
+    
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var router: AppRouter
 
@@ -23,8 +26,6 @@ struct WorkoutCalendarView: View {
     @EnvironmentObject var workoutData: WorkoutData
     private var calendar: Calendar { .current }
     
-    //Color Gradiant
-    @EnvironmentObject var gradientSettings: GradientSettings
 
     enum Weekday: String, CaseIterable, Identifiable {
 
@@ -223,7 +224,7 @@ struct WorkoutCalendarView: View {
                                     Text(day.display)
                                         .font(.caption.bold())
                                         .foregroundStyle(
-                                            .white.opacity(0.7)
+                                            .white.opacity(0.7) // this just does the inside of the Big view.
                                         )
                                 }
                             }
@@ -318,7 +319,6 @@ struct WorkoutCalendarView: View {
                         .background(
                             RoundedRectangle(cornerRadius: 28)
                                 .fill(.white.opacity(0.12))
-                                .background(.ultraThinMaterial)
                         )
 
                         // MARK: - Selected Day Card
@@ -436,7 +436,6 @@ struct WorkoutCalendarView: View {
                         .background(
                             RoundedRectangle(cornerRadius: 28)
                                 .fill(.white.opacity(0.12))
-                                .background(.ultraThinMaterial)
                         )
 
                         // MARK: - Planned Workouts
@@ -487,7 +486,6 @@ struct WorkoutCalendarView: View {
                         .background(
                             RoundedRectangle(cornerRadius: 28)
                                 .fill(.white.opacity(0.12))
-                                .background(.ultraThinMaterial)
                         )
 
                         Spacer(minLength: 40)

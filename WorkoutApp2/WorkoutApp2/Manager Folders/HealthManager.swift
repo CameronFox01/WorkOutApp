@@ -18,7 +18,7 @@ class HealthManager: ObservableObject {
     
     let healthStore = HKHealthStore()
     
-    @Published var steps: Int = 0 
+    @Published var steps: Int = 0
     @Published var distance: Double = 0
     @Published var activeCalories: Double = 0
     @Published var flightsClimbed: Int = 0

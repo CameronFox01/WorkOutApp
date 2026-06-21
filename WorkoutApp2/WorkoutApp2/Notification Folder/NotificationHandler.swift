@@ -9,7 +9,6 @@ import Foundation
 import UserNotifications
 
 class NotificationHandler {
-
     static let shared = NotificationHandler()
 
     func requestNotificationPermission() {
@@ -35,6 +34,74 @@ class NotificationHandler {
                 withIdentifiers: [identifier]
             )
 
+    }
+    
+    func scheduleWeeklyPhotoReminder(hour: Int, minute: Int, weekday: Int) {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ["weekly_photo_reminder"])
+
+        let content = UNMutableNotificationContent()
+        content.title = "Progress Photo Time"
+        content.body = "Take your weekly progress photo to track your journey."
+        content.sound = .default
+
+        var components = DateComponents()
+        components.hour = hour
+        components.minute = minute
+        components.weekday = weekday
+
+        let trigger = UNCalendarNotificationTrigger(
+            dateMatching: components,
+            repeats: true
+        )
+
+        let request = UNNotificationRequest(
+            identifier: "weekly_photo_reminder",
+            content: content,
+            trigger: trigger
+        )
+
+        center.add(request) { error in
+            if let error {
+                print("Failed to schedule weekly photo reminder: \(error)")
+            } else {
+                print("Weekly photo reminder scheduled")
+            }
+        }
+    }
+
+    func scheduleMonthlyPhotoReminder(hour: Int, minute: Int, dayOfMonth: Int) {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ["monthly_photo_reminder"])
+
+        let content = UNMutableNotificationContent()
+        content.title = "Monthly Progress Check"
+        content.body = "A month has passed — take a progress photo and see how far you've come."
+        content.sound = .default
+
+        var components = DateComponents()
+        components.hour = hour
+        components.minute = minute
+        components.day = dayOfMonth  // day of month, not weekday
+
+        let trigger = UNCalendarNotificationTrigger(
+            dateMatching: components,
+            repeats: true
+        )
+
+        let request = UNNotificationRequest(
+            identifier: "monthly_photo_reminder",
+            content: content,
+            trigger: trigger
+        )
+
+        center.add(request) { error in
+            if let error {
+                print("Failed to schedule monthly photo reminder: \(error)")
+            } else {
+                print("Monthly photo reminder scheduled")
+            }
+        }
     }
     
     func scheduleWeeklyWeighInNotification(

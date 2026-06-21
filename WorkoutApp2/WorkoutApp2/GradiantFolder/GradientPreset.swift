@@ -96,6 +96,20 @@ extension GradientPreset {
         return .secondary
     }
     
+    var bigTextOnDarkBackground: Color {
+        if mainColor.isDark {
+            return .white
+        }
+        return .black
+    }
+    
+    var subTextOnDarkBackground: Color {
+        if mainColor.isDark {
+            return .white
+        }
+        return .secondary
+    }
+    
     var greenTextOnDarkBackground: Color {
         if mainColor.isDark {
             return Color(red: 80/255, green: 200/255, blue: 120/255)

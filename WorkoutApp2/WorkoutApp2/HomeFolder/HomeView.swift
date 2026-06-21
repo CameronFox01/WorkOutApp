@@ -287,10 +287,13 @@ struct HomeView: View {
                                 
                                 Text("Recent Workouts")
                                     .font(.system(size: 30, weight: .bold))
+                                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                                    .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
                                 
                                 Text("Your latest progress")
                                     .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(gradientSettings.selectedPreset.subTextOnDarkBackground)
+                                    .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
                             }
                             
                             Spacer()
@@ -344,6 +347,7 @@ struct HomeView: View {
                             Image(systemName: "chevron.right")
                                 .foregroundStyle(.secondary)
                         }
+                        .font(.title3)
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 22)
@@ -825,6 +829,9 @@ struct FiveDayStepsBarChartWithValues: View {
 
 private struct WorkoutHeatMapView: View {
     let entries: [WorkoutEntry]
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     private var countsByDay: [Date: Int] {
         let calendar = Calendar.current
@@ -857,7 +864,7 @@ private struct WorkoutHeatMapView: View {
                         .frame(height: 30)
                     Text(day.formatted(.dateTime.weekday(.narrow)))
                         .font(.system(size: 12))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(gradientSettings.selectedPreset.textOnDarkBackground)
                 }
             }
         }
@@ -869,7 +876,6 @@ struct CardStyle: ViewModifier {
     func body(content: Content) -> some View {
 
         content
-            //.padding(18)
             .frame(
                 maxWidth: .infinity,
                 minHeight: 120,

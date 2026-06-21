@@ -36,6 +36,8 @@ struct AccountView: View {
     private var profileImageData: Data?
 
     @State private var showingCamera = false
+    
+    @State private var achievedGoals: [AchievedGoal] = []
 
     private var profileImage: UIImage? {
 
@@ -273,7 +275,7 @@ extension AccountView {
             .padding(.bottom, 10)
 
             NavigationLink {
-                AchievedGoalsView(achievedGoals: [], comingfromWidget: false)
+                AchievedGoalsView(achievedGoals: achievedGoals, comingfromWidget: false)
             } label: {
                 shortcutRow(
                     icon: "checkmark.seal.fill",

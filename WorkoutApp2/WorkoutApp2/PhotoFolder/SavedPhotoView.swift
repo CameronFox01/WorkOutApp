@@ -10,6 +10,9 @@ import SwiftUI
 struct SavedPhotosView: View {
 
     @Environment(\.dismiss) private var dismiss
+    
+    //Color Gradiant
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     let onSelect: (UIImage) -> Void
 
@@ -20,93 +23,104 @@ struct SavedPhotosView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-
-                VStack(alignment: .leading) {
-
-                    // 👇 EMPTY STATE FIRST
-                    if photos.isEmpty {
-
-                        EmptyPhotoView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                    } else {
-
-                        // 👇 your existing UI
-
-                        if leftImage != nil || rightImage != nil {
-
-                            Text("Current Comparison")
-                                .font(.title2.bold())
+            ZStack {
+                // Consistent Gradient Background
+                LinearGradient(
+                    colors: gradientSettings.selectedPreset.darkVariant(),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    
+                    VStack(alignment: .leading) {
+                        
+                        // 👇 EMPTY STATE FIRST
+                        if photos.isEmpty {
+                            
+                            EmptyPhotoView()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            
+                        } else {
+                            
+                            // 👇 your existing UI
+                            
+                            if leftImage != nil || rightImage != nil {
+                                
+                                Text("Current Comparison")
+                                    .font(.title2.bold())
+                                    .padding(.horizontal)
+                                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                                
+                                HStack {
+                                    
+                                    if let leftImage {
+                                        Image(uiImage: leftImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 150, height: 200)
+                                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    }
+                                    
+                                    if let rightImage {
+                                        Image(uiImage: rightImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 150, height: 200)
+                                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    }
+                                }
                                 .padding(.horizontal)
-
-                            HStack {
-
-                                if let leftImage {
-                                    Image(uiImage: leftImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 150, height: 200)
-                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                                }
-
-                                if let rightImage {
-                                    Image(uiImage: rightImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 150, height: 200)
-                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                                }
                             }
-                            .padding(.horizontal)
-                        }
-
-                        let sections = PhotoOrganizer.groupedByMonth(photos: photos)
-
-                        ForEach(sections) { section in
-
-                            Text(section.title)
-                                .font(.title2.bold())
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal)
-
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible()),
-                                    GridItem(.flexible()),
-                                    GridItem(.flexible())
-                                ],
-                                spacing: 12
-                            ) {
-
-                                ForEach(section.photos) { photo in
-
-                                    if let uiImage = UIImage(contentsOfFile: photo.url.path) {
-
-                                        Button {
-                                            onSelect(uiImage)
-                                            dismiss()
-                                        } label: {
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(height: 120)
-                                                .frame(maxWidth: .infinity)
-                                                .clipped()
-                                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            
+                            let sections = PhotoOrganizer.groupedByMonth(photos: photos)
+                            
+                            ForEach(sections) { section in
+                                
+                                Text(section.title)
+                                    .font(.title2.bold())
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal)
+                                
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible()),
+                                        GridItem(.flexible()),
+                                        GridItem(.flexible())
+                                    ],
+                                    spacing: 12
+                                ) {
+                                    
+                                    ForEach(section.photos) { photo in
+                                        
+                                        if let uiImage = UIImage(contentsOfFile: photo.url.path) {
+                                            
+                                            Button {
+                                                onSelect(uiImage)
+                                                dismiss()
+                                            } label: {
+                                                Image(uiImage: uiImage)
+                                                    .resizable()
+                                                    .scaledToFill()
+                                                    .frame(height: 120)
+                                                    .frame(maxWidth: .infinity)
+                                                    .clipped()
+                                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                            }
                                         }
                                     }
                                 }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
                         }
                     }
                 }
-            }
-            .navigationTitle("Saved Photos")
-            .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                loadSavedPhotos()
+                .navigationTitle("Saved Photos")
+                .navigationBarTitleDisplayMode(.inline)
+                .onAppear {
+                    loadSavedPhotos()
+                }
             }
         }
     }

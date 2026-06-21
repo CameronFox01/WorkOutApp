@@ -1,7 +1,6 @@
 //
 //  ContentView.swift
 //  WorkoutApp2
-//
 //  Created by Cameron Fox on 6/4/25.
 //
 

@@ -107,7 +107,7 @@ struct GoalView: View {
                     .buttonStyle(.plain)
                     NavigationLink {
                         MilestonesView(
-                            milestones: achievedMilestones,
+                            milestones: workoutData.achievedMilestones,
                             comingfromWidget: false
                         )
                     } label: {
