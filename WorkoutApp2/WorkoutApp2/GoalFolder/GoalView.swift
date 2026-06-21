@@ -14,7 +14,6 @@ struct GoalView: View {
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
-    
     @EnvironmentObject var workoutData: WorkoutData
     
     @State private var selectedBodyWeight: BodyweightWorkout = .airSquats
@@ -67,7 +66,7 @@ struct GoalView: View {
                     NavigationLink {
                         
                         AchievedGoalsView(
-                            achievedGoals: achievedGoals,
+                            achievedGoals: workoutData.achievedGoals,
                             comingfromWidget: false
                         )
                         
@@ -146,7 +145,6 @@ struct GoalView: View {
             }
             .onAppear {
                 loadWorkoutGoals()
-                loadAchievedGoals()
                 loadAchievedMilestones()
                 let goal = Int(targetDaysOfWorkout) ?? 0
                 let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
@@ -458,42 +456,6 @@ struct GoalView: View {
             }
         }
         
-        @State private var achievedGoals: [AchievedGoal] = []
-        
-        private func loadAchievedGoals() {
-            // Build a comprehensive list of workout names (same as loadWorkoutGoals)
-            let allWorkouts = BodyweightWorkout.allCases.map(\.rawValue)
-            + PushWorkout.allCases.map(\.rawValue)
-            + PullWorkout.allCases.map(\.rawValue)
-            + LegWorkout.allCases.map(\.rawValue)
-            + GluteWorkout.allCases.map(\.rawValue)
-            + BicepWorkout.allCases.map(\.rawValue)
-            + TricepWorkout.allCases.map(\.rawValue)
-            + AbsWorkout.allCases.map(\.rawValue)
-            + DistanceCardioWorkout.allCases.map(\.rawValue)
-            + TimeCardioWorkout.allCases.map(\.rawValue)
-            + SportsWorkout.allCases.map(\.rawValue)
-            + StretchRoutine.allCases.map(\.rawValue)
-            
-            var results: [AchievedGoal] = []
-            
-            for workout in allWorkouts {
-                let goalKey = "goal_\(workout)"
-                let completedKey = "goalReached_\(workout)" // matches your WorkoutData.checkGoalAchieved(for:)
-                
-                guard let goalValue = UserDefaults.standard.string(forKey: goalKey), !goalValue.isEmpty else {
-                    continue
-                }
-                
-                let reached = UserDefaults.standard.bool(forKey: completedKey)
-                if reached {
-                    results.append(AchievedGoal(workout: workout, target: goalValue, dateReached: nil))
-                }
-            }
-            
-            // Optionally sort alphabetically
-            achievedGoals = results.sorted { $0.workout.localizedCaseInsensitiveCompare($1.workout) == .orderedAscending }
-        }
     
         @State private var achievedMilestones: [Milestone] = []
 
