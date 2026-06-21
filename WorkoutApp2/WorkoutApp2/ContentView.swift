@@ -164,19 +164,45 @@ struct ContentView: View {
         .onAppear(perform: authenticator)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
-                backgroundedAt = Date()
+                // Only record background time if Face ID is actually enabled
+                if faceIDEnabled {
+                    backgroundedAt = Date()
+                }
+
             } else if newPhase == .active {
+                guard faceIDEnabled else {
+                    // Face ID off — always stay unlocked
+                    isUnlocked = true
+                    return
+                }
+
                 if let backgroundedAt {
                     let elapsed = Date().timeIntervalSince(backgroundedAt)
                     if elapsed > Double(lockGracePeriodSeconds) {
                         isUnlocked = false
                     }
                 }
-                if faceIDEnabled && !isUnlocked {
+
+                if !isUnlocked {
                     authenticator()
                 }
             }
         }
+//        .onChange(of: scenePhase) { _, newPhase in
+//            if newPhase == .background {
+//                backgroundedAt = Date()
+//            } else if newPhase == .active {
+//                if let backgroundedAt {
+//                    let elapsed = Date().timeIntervalSince(backgroundedAt)
+//                    if elapsed > Double(lockGracePeriodSeconds) {
+//                        isUnlocked = false
+//                    }
+//                }
+//                if faceIDEnabled && !isUnlocked {
+//                    authenticator()
+//                }
+//            }
+//        }
         .onOpenURL { url in  // ✅ add here
             if url.absoluteString == "workoutapp://calendar" {
                 router.activeScreen = .workoutDetail
@@ -201,6 +227,7 @@ struct ContentView: View {
                     if success {
                         isUnlocked = true
                         authFailed = false
+                        self.backgroundedAt = nil
                     } else {
                         authFailed = true
                     }
