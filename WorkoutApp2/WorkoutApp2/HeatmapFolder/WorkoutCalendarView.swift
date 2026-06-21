@@ -115,13 +115,15 @@ struct WorkoutCalendarView: View {
     }
 
     private var lastStoredBodyWeightEntry: WorkoutEntry? {
-
         entries
-            .filter { $0.workoutType == "Body Weight" }
+            .filter {
+                $0.workoutType == "Body Weight" &&
+                !$0.weight.isEmpty &&
+                calendar.startOfDay(for: $0.date) <= calendar.startOfDay(for: selectedDate)
+            }
             .sorted { $0.date > $1.date }
             .first
     }
-
     private func color(for count: Int) -> Color {
 
         switch count {
