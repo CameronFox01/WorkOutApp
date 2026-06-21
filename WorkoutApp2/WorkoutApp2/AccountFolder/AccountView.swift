@@ -282,6 +282,20 @@ extension AccountView {
                     textColor: gradientSettings.selectedPreset.textColor
                 )
             }
+            
+            NavigationLink {
+                     MilestonesView(
+                         milestones: workoutData.achievedMilestones,
+                         comingfromWidget: false
+                     )
+                 } label: {
+                     shortcutRow(
+                         icon: "star.fill",
+                         color: .orange,
+                         title: "Milestones",
+                         textColor: gradientSettings.selectedPreset.textColor
+                     )
+                 }
         }
     }
 
