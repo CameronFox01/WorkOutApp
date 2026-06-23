@@ -82,6 +82,7 @@ struct SavedPhotosView: View {
                                     .font(.title2.bold())
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal)
+                                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                                 
                                 LazyVGrid(
                                     columns: [
