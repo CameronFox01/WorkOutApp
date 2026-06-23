@@ -70,6 +70,9 @@ struct ContentView: View {
                     }
                     if let screen = router.activeScreen {
                         switch screen {
+                        case .photoReminder:
+                            PhotoView()
+                            
                         case .timer:
                             TimerView()
                             

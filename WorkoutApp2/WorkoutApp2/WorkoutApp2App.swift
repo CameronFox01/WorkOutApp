@@ -66,6 +66,14 @@ struct WorkoutApp2App: App {
             .onReceive(NotificationCenter.default.publisher(for: .openMileStones)) { _ in
                 router.activeScreen = .achievedMileStones
             }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: .openPhotoReminder
+                )
+            ) { _ in
+                router.selectedTab = .settings
+                router.activeScreen = nil
+            }
         }
     }
 }
@@ -306,7 +314,14 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                 NotificationCenter.default.post(name: .openGoals, object: nil)
             } else if id.hasPrefix("workout_"){
                 NotificationCenter.default.post(name: .openMileStones, object: nil)
-            }
+            } else if id == "weekly_photo_reminder" ||
+                        id == "monthly_photo_reminder" {
+
+                  NotificationCenter.default.post(
+                      name: .openPhotoReminder,
+                      object: nil
+                  )
+              }
 
             completionHandler()
         }
@@ -317,6 +332,7 @@ extension Notification.Name {
     static let openWeightView = Notification.Name("openWeightView")
     static let openGoals = Notification.Name("openGoals")
     static let openMileStones = Notification.Name("openMileStones")
+    static let openPhotoReminder = Notification.Name("openPhotoReminder")
 }
 
 //Section for widgets and Notification to take you to the correct spot
@@ -342,6 +358,7 @@ class AppRouter: ObservableObject {
         case workout
         case progress
         case settings
+        case photo
     }
 
     enum Screen: Identifiable {
@@ -351,6 +368,7 @@ class AppRouter: ObservableObject {
         case weight
         case achievedGoals
         case achievedMileStones
+        case photoReminder
 
         var id: String { "\(self)" }
     }
@@ -386,6 +404,11 @@ class AppRouter: ObservableObject {
 
         case "achievedMileStones":
             activeScreen = .achievedMileStones
+        
+        case "photoReminder":
+            selectedTab = .photo
+            
+            
         default:
             selectedTab = .home
         }
