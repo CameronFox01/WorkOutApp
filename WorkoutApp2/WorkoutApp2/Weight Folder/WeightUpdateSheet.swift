@@ -264,14 +264,14 @@ struct WeightUpdateSheet: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-
-                    Spacer()
-
-                    Button("Done") {
-                        isWeightFieldFocused = false
-                    }
-                }
+//                ToolbarItemGroup(placement: .keyboard) {
+//
+//                    Spacer()
+//
+//                    Button("Done") {
+//                        isWeightFieldFocused = false
+//                    }
+//                }
                 if comingFromWidget {
                     ToolbarItem(placement: .topBarLeading) {
                         Button{
