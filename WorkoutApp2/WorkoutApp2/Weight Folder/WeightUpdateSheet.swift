@@ -241,6 +241,45 @@ struct WeightUpdateSheet: View {
                                 onSave(trimmed)
 
                                 currentWeight = trimmed
+                                
+                                let targetWeight = UserDefaults.standard.string(forKey: "userTargetWeight") ?? ""
+
+                                if let current = Double(trimmed),
+                                   let goal = Double(targetWeight) {
+
+                                    let reachedGoal: Bool
+
+                                    // Most users are trying to lose weight
+                                    reachedGoal = current <= goal
+
+                                    if reachedGoal {
+
+                                        let alreadyNotified =
+                                            UserDefaults.standard.bool(
+                                                forKey: "bodyWeightGoalReached"
+                                            )
+
+                                        if !alreadyNotified {
+
+                                            NotificationHandler.shared.sendInstantNotification(
+                                                title: "Goal Achieved!",
+                                                body: "You reached your target weight of \(goal) \(weightUnit)."
+                                            )
+
+                                            UserDefaults.standard.set(
+                                                true,
+                                                forKey: "bodyWeightGoalReached"
+                                            )
+                                        }
+                                    } else {
+
+                                        // Reset if they move away from the goal
+                                        UserDefaults.standard.set(
+                                            false,
+                                            forKey: "bodyWeightGoalReached"
+                                        )
+                                    }
+                                }
 
                                 dismiss()
 
@@ -264,14 +303,6 @@ struct WeightUpdateSheet: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-//                ToolbarItemGroup(placement: .keyboard) {
-//
-//                    Spacer()
-//
-//                    Button("Done") {
-//                        isWeightFieldFocused = false
-//                    }
-//                }
                 if comingFromWidget {
                     ToolbarItem(placement: .topBarLeading) {
                         Button{
