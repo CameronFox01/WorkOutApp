@@ -24,7 +24,9 @@ struct HomeView: View {
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
     @AppStorage("userAccountFirstSaved") private var accountFirstSaved: Date = .distantPast
     @AppStorage("userOriginalWeight") private var originalWeight: String = ""
+    @AppStorage("userBaselineWeightForGoal") private var baselineWeightForGoal: String = ""
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
+    @AppStorage("gainWeight") private var gainWeight: Bool = false
     
     //Calories or kCal here
     @AppStorage("energyLabel")
@@ -66,8 +68,6 @@ struct HomeView: View {
             for entry in decoded {
                 print("\(entry.workoutType) - \(entry.reps) reps - \(entry.weight) weight - \(entry.date)")
             }
-        } else {
-            print("No workoutLog found in UserDefaults.")
         }
     }
     
@@ -120,13 +120,13 @@ struct HomeView: View {
                                     }
                                     
                                     // Progress percentage from original weight
-                                    if let pct = progressPercentText {
+                                    if let _ = Double(targetWeight), let pct = progressPercentText {
                                         HStack(spacing: 6) {
-                                            Image(systemName: "chart.line.uptrend.xyaxis")
-                                                .foregroundStyle(gradientSettings.selectedPreset.greenTextOnDarkBackground)
+                                            Image(systemName: progressIcon)
+                                                .foregroundStyle(progressColor ?? weightCardSecondary)
                                             Text(pct)
                                                 .font(.subheadline).bold()
-                                                .foregroundStyle(gradientSettings.selectedPreset.greenTextOnDarkBackground)
+                                                .foregroundStyle(progressColor ?? weightCardSecondary)
                                         }
                                     } else {
                                         Text("Set target weight to see progress")
@@ -444,8 +444,77 @@ struct HomeView: View {
                 if originalWeight.isEmpty, !weight.isEmpty, Double(weight) != nil {
                     originalWeight = weight
                 }
+                // Seed baseline for goal progress if missing and we have a current weight
+                if baselineWeightForGoal.isEmpty, let w = Double(weight), !weight.isEmpty {
+                    baselineWeightForGoal = String(w)
+                }
+            }
+            .onChange(of: targetWeight) { _, newValue in
+                UserDefaults.standard.set(false, forKey: "bodyWeightGoalReached")
+                // When the goal value changes, capture current weight as new baseline
+                if let _ = Double(newValue), let curr = Double(weight), !weight.isEmpty {
+                    baselineWeightForGoal = String(curr)
+                }
+                print("baseline:", baselineWeightForGoal)
+                print("current:", weight)
+                print("target:", targetWeight)
+            }
+            .onChange(of: gainWeight) { _, _ in
+                guard let curr = Double(weight),
+                      !weight.isEmpty else { return }
+
+                baselineWeightForGoal = String(curr)
+                print("🔄 baseline reset due to direction change:", baselineWeightForGoal)
+            }
+            .onChange(of: weight) { _, newValue in
+                print("🔥 weight changed:", newValue)
             }
         }
+    }
+    
+    private var progressIsGood: Bool {
+        guard let curr = currentWeightValue,
+              let target = targetWeightValue else {
+            return false
+        }
+
+        if gainWeight {
+            // gaining: closer to higher weight is good
+            return curr >= (Double(baselineWeightForGoal) ?? curr)
+        } else {
+            // losing: lower than baseline is good
+            return curr <= (Double(baselineWeightForGoal) ?? curr)
+        }
+    }
+    
+    private var progressIcon: String {
+        if gainWeight {
+            // gain mode flips behavior
+            return progressIsGood
+                ? "chart.line.uptrend.xyaxis"
+                : "chart.line.downtrend.xyaxis"
+        } else {
+            // lose mode normal behavior
+            return progressIsGood
+                ? "chart.line.downtrend.xyaxis"
+                : "chart.line.uptrend.xyaxis"
+        }
+    }
+    
+    private var progressPercent: Double? {
+        guard let curr = currentWeightValue,
+              let tgt = targetWeightValue else {
+            return nil
+        }
+
+        let base = Double(baselineWeightForGoal) ?? curr
+
+        let totalNeeded = tgt - base
+        let progress = curr - base
+
+        guard totalNeeded != 0 else { return 0 }
+
+        return (progress / totalNeeded) * 100
     }
     
     var groupedWorkouts: [WorkoutEntry] {
@@ -729,41 +798,34 @@ struct HomeView: View {
     private var targetWeightValue: Double? { Double(targetWeight) }
     private var originalWeightValue: Double? { Double(originalWeight) }
     
-    // Percentage progress from original toward target. Positive = closer, negative = farther.
-    private var progressPercent: Double? {
-        guard let orig = originalWeightValue,
-              let curr = currentWeightValue,
-              let tgt = targetWeightValue,
-              orig != tgt else { return nil }
-        
-        let total = abs(tgt - orig)
-        if total == 0 { return nil }
-        
-        let remaining = abs(tgt - curr)
-        // ✅ Don't clamp — allow negative progress (moved away from target)
-        let progressed = total - remaining
-        return (progressed / total) * 100.0
-    }
+
     
     private var progressPercentText: String? {
         guard let pct = progressPercent else { return nil }
-        // ✅ Use the actual sign from the number itself
-        if pct >= 0 {
-            return String(format: "Progress: +%.0f%%", pct)
-        } else {
-            return String(format: "Progress: %.0f%%", pct)  // already has minus sign
-        }
+        return String(format: "%.0f%%", pct)
     }
     
-    private var progressMovedDirectionPositive: Bool? {
-        guard let pct = progressPercent else { return nil }
-        return pct >= 0
-    }
+    // Removed progressMovedDirectionPositive as unused
     
     // Then your function works perfectly:
     private var progressColor: Color? {
-        guard let positive = progressMovedDirectionPositive else { return nil }
-        return positive ? Color("AdaptiveGreen") : .red
+        guard let curr = currentWeightValue,
+              let tgt = targetWeightValue,
+              let base = Double(baselineWeightForGoal) else {
+            return nil
+        }
+
+        // distance from goal (smaller is better)
+        let currentDistance = abs(curr - tgt)
+        let baselineDistance = abs(base - tgt)
+
+        let isImproving = currentDistance <= baselineDistance
+
+        if isImproving {
+            return Color.green
+        } else {
+            return Color.red
+        }
     }
 }
 struct FiveDayStepsBarChartWithValues: View {

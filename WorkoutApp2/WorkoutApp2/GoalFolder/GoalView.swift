@@ -14,6 +14,9 @@ struct GoalView: View {
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
+    @AppStorage("userBaselineWeightForGoal") private var baselineWeightForGoal: String = ""
+    @AppStorage("weightGoalDirection") private var weightGoalDirection: String = "lose"
+    
     @EnvironmentObject var workoutData: WorkoutData
     
     @State private var selectedBodyWeight: BodyweightWorkout = .airSquats
@@ -168,6 +171,14 @@ struct GoalView: View {
                     NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
                 }
             }
+            .onChange(of: targetWeight) { _, newValue in
+                // When the target weight changes to a valid number, seed baseline if needed
+                if Double(newValue) != nil {
+                    if baselineWeightForGoal.isEmpty, let curr = UserDefaults.standard.string(forKey: "userWeight"), !curr.isEmpty {
+                        baselineWeightForGoal = curr
+                    }
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -230,10 +241,24 @@ struct GoalView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
+                .onChange(of: weightGoalDirection){ _, newValue in
+                    // 1. Clear the UI input (your pill field)
+                       targetWeight = ""
+
+                       // 2. Reset baseline so progress recalculates fresh
+                       baselineWeightForGoal = ""
+
+                       // 3. Reset "already reached goal" flag
+                       UserDefaults.standard.set(false, forKey: "bodyWeightGoalReached")
+
+                       print("🔄 Goal direction changed to:", newValue)
+                       print("Reset target + baseline + goal flag")
+                }
                 .padding(14)
                 .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 3)
                 .shadow(color: Color.white.opacity(0.03), radius: 1, x: 0, y: 0)
+                
             }
         }
         
@@ -771,3 +796,4 @@ struct GoalView: View {
             .environmentObject(GradientSettings())
     }
 }
+

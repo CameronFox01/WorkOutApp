@@ -19,6 +19,9 @@ struct WeightUpdateSheet: View {
     @Binding var newWeightInput: String
     
     @FocusState private var isWeightFieldFocused: Bool
+    
+    @AppStorage("weightGoalDirection")
+    private var weightGoalDirection: String = "lose"
 
     var entries: [WorkoutEntry]
 
@@ -241,46 +244,9 @@ struct WeightUpdateSheet: View {
                                 onSave(trimmed)
 
                                 currentWeight = trimmed
+
+                                hitGoal()
                                 
-                                let targetWeight = UserDefaults.standard.string(forKey: "userTargetWeight") ?? ""
-
-                                if let current = Double(trimmed),
-                                   let goal = Double(targetWeight) {
-
-                                    let reachedGoal: Bool
-
-                                    // Most users are trying to lose weight
-                                    reachedGoal = current <= goal
-
-                                    if reachedGoal {
-
-                                        let alreadyNotified =
-                                            UserDefaults.standard.bool(
-                                                forKey: "bodyWeightGoalReached"
-                                            )
-
-                                        if !alreadyNotified {
-
-                                            NotificationHandler.shared.sendInstantNotification(
-                                                title: "Goal Achieved!",
-                                                body: "You reached your target weight of \(goal) \(weightUnit)."
-                                            )
-
-                                            UserDefaults.standard.set(
-                                                true,
-                                                forKey: "bodyWeightGoalReached"
-                                            )
-                                        }
-                                    } else {
-
-                                        // Reset if they move away from the goal
-                                        UserDefaults.standard.set(
-                                            false,
-                                            forKey: "bodyWeightGoalReached"
-                                        )
-                                    }
-                                }
-
                                 dismiss()
 
                             } label: {
@@ -335,6 +301,54 @@ struct WeightUpdateSheet: View {
                         .foregroundStyle(.white)
                 }
             }
+        }
+    }
+    
+    func hitGoal() {
+        print("hitGoal Called")
+
+        guard let goal = Double(UserDefaults.standard.string(forKey: "userTargetWeight") ?? ""),
+              let current = Double(currentWeight)
+        else {
+            print("Invalid weights")
+            return
+        }
+
+        let goalDirection = UserDefaults.standard.string(forKey: "weightGoalDirection") ?? "lose"
+
+        let reachedGoal: Bool
+
+        if goalDirection == "gain" {
+            reachedGoal = current >= goal
+        } else {
+            reachedGoal = current <= goal
+        }
+
+        print("goal:", goal, "current:", current, "direction:", goalDirection)
+
+        if reachedGoal {
+            print("Reached Goal")
+
+            let alreadyNotified =
+                UserDefaults.standard.bool(forKey: "bodyWeightGoalReached")
+
+            if !alreadyNotified {
+                print("Being Scheduled")
+
+                NotificationHandler.shared.sendInstantNotification(
+                    title: "Goal Achieved!",
+                    body: "You reached your target weight of \(goal) \(weightUnit)."
+                )
+
+                UserDefaults.standard.set(true, forKey: "bodyWeightGoalReached")
+            } else {
+                print("Already notified")
+            }
+
+        } else {
+            print("Not at goal")
+
+            UserDefaults.standard.set(false, forKey: "bodyWeightGoalReached")
         }
     }
 

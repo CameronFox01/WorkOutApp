@@ -20,6 +20,8 @@ struct SettingsView: View {
     @AppStorage("showStopWatch") private var showStopWatch: Bool = true
     @AppStorage("numberOfWorkoutsToShow") private var numberOfWorkoutsToShow: Int = 12
     @AppStorage("workoutChallengeReminder") private var workoutChallengeReminder: Bool = true
+    @AppStorage("weightGoalDirection")
+    private var weightGoalDirection: String = "lose"
     
     //Boolean for kcal vs Calories
     @AppStorage("energyLabel")
@@ -192,6 +194,19 @@ struct SettingsView: View {
                                 ) {
                                     Toggle("", isOn: $saveToPhoto)
                                         .labelsHidden()
+                                }
+                            }
+                            
+                            SettingsCard(title: "Weight Goal") {
+                                SettingsRow(
+                                    icon: "scalemass",
+                                    title: "Goal Direction"
+                                ) {
+                                    Picker("", selection: $weightGoalDirection) {
+                                        Text("Lose Weight").tag("lose")
+                                        Text("Gain Weight").tag("gain")
+                                    }
+                                    .pickerStyle(.menu)
                                 }
                             }
                             
