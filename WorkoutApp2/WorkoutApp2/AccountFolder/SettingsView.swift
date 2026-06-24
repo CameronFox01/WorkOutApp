@@ -22,6 +22,7 @@ struct SettingsView: View {
     @AppStorage("workoutChallengeReminder") private var workoutChallengeReminder: Bool = true
     @AppStorage("weightGoalDirection") private var weightGoalDirection: String = "lose"
     @AppStorage("showBMI") private var showBMI: Bool = false
+    @AppStorage("showMeasurement") private var showMeasurement: Bool = false
     
     //Boolean for kcal vs Calories
     @AppStorage("energyLabel")
@@ -180,6 +181,15 @@ struct SettingsView: View {
                                     title: "Show BMI"
                                 ) {
                                     Toggle("", isOn: $showBMI)
+                                        .labelsHidden()
+                                }
+                                
+                                // Section for the Measurements to be Shown
+                                SettingsRow(
+                                    icon: "scalemass",
+                                    title: "Show Measurements"
+                                ) {
+                                    Toggle("", isOn: $showMeasurement)
                                         .labelsHidden()
                                 }
                             }

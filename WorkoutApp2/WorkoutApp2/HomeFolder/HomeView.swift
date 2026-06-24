@@ -28,6 +28,7 @@ struct HomeView: View {
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     @AppStorage("gainWeight") private var gainWeight: Bool = false
     @AppStorage("showBMI") private var showBMI: Bool = false
+    @AppStorage("showMeasurement") private var showMeasurement: Bool = false
     
     //Calories or kCal here
     @AppStorage("energyLabel")
@@ -190,9 +191,6 @@ struct HomeView: View {
                                 .padding(.vertical)
                         }
                         
-                        //.cardStyle()
-                        
-                        
                         //Section to get steps and distance
                         LazyVGrid(
                             columns: [
@@ -286,6 +284,10 @@ struct HomeView: View {
                                 .padding(.horizontal)
                         }
                         
+                        if showMeasurement {
+                            MeasurementRecapView()
+                                .padding(.horizontal)
+                        }
                         //Section for Pasted Worked Outs
                         HStack {
                             

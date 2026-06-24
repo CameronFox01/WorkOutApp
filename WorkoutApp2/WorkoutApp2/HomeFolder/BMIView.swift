@@ -57,11 +57,11 @@ struct BMIView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Your BMI")
                     .font(.title3)
-                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                    .foregroundStyle(.black)
 
                 Text(String(format: "%.1f", calculateBMI()))
                     .font(.title.bold())
-                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                    .foregroundStyle(.black)
 
                 categoryBadge
             }
@@ -71,15 +71,15 @@ struct BMIView: View {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(healthyRangeTitle)
                     .font(.title3)
-                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                    .foregroundStyle(.black)
 
                 Text(poundsToHealthyRangeText)
                     .font(.title.bold())
-                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                    .foregroundStyle(.black)
 
                 Text(healthyRangeSubtitle)
                     .font(.headline)
-                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                    .foregroundStyle(.black)
             }        }
     }
 
@@ -89,7 +89,7 @@ struct BMIView: View {
         Text(bmiCategory.label)
             .font(.subheadline)
             .fontWeight(.medium)
-            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+            .foregroundStyle(.black)
             .padding(.horizontal, 14)
             .padding(.vertical, 6)
             .background(.white.opacity(0.22))
@@ -171,7 +171,7 @@ struct BMIView: View {
                     .multilineTextAlignment(.trailing)
             }
             .font(.subheadline)
-            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+            .foregroundStyle(.black)
         }
     }
 
