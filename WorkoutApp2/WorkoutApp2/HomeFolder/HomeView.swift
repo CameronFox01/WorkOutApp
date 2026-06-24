@@ -27,7 +27,7 @@ struct HomeView: View {
     @AppStorage("userBaselineWeightForGoal") private var baselineWeightForGoal: String = ""
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     @AppStorage("gainWeight") private var gainWeight: Bool = false
-    @AppStorage("showBMI") private var showBMI: Bool = true
+    @AppStorage("showBMI") private var showBMI: Bool = false
     
     //Calories or kCal here
     @AppStorage("energyLabel")

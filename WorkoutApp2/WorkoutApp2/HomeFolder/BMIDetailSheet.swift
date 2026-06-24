@@ -64,7 +64,7 @@ struct BMIDetailSheet: View {
         VStack(alignment: .leading, spacing: 14) {
             Label("Your current BMI", systemImage: "person.fill")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(String(format: "%.1f", bmi))
@@ -82,20 +82,27 @@ struct BMIDetailSheet: View {
             if poundsToHealthy > 0 {
                 Text("You are \(String(format: "%.0f", abs(poundsToHealthy))) \(unit) above the healthy range.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
             } else if poundsToHealthy < 0 {
                 Text("You are \(String(format: "%.0f", abs(poundsToHealthy))) \(unit) below the healthy range.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
             } else {
                 Text("You are within the healthy BMI range.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
-        .background(Color(.secondarySystemBackground))
+        .background(
+            RoundedRectangle(
+                cornerRadius: 28
+            )
+            .fill(
+                .white.opacity(0.30)
+            )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
@@ -107,7 +114,7 @@ struct BMIDetailSheet: View {
             VStack(alignment: .leading, spacing: 14) {
                 Label("Your weight loss goal", systemImage: "target")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
 
                 HStack(spacing: 16) {
                     statBox(
@@ -122,12 +129,19 @@ struct BMIDetailSheet: View {
 
                 Text("Estimated at a 500  calorie per day deficit, which is roughly 1 \(weightUnit == "imperial" ? "lb" : "0.5 kg") per week. Your actual results will vary based on your activity level.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
-            .background(Color(.secondarySystemBackground))
+            .background(
+                RoundedRectangle(
+                    cornerRadius: 28
+                )
+                .fill(
+                    .white.opacity(0.30)
+                )
+            )
             .clipShape(RoundedRectangle(cornerRadius: 16))
         } else {
             VStack(alignment: .leading, spacing: 8) {
@@ -142,7 +156,14 @@ struct BMIDetailSheet: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
-            .background(Color(.secondarySystemBackground))
+            .background(
+                RoundedRectangle(
+                    cornerRadius: 28
+                )
+                .fill(
+                    .white.opacity(0.30)
+                )
+            )
             .clipShape(RoundedRectangle(cornerRadius: 16))
         }
     }
@@ -153,7 +174,7 @@ struct BMIDetailSheet: View {
         VStack(alignment: .leading, spacing: 4) {
             Label("What the ranges mean", systemImage: "info.circle")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                 .padding(.bottom, 8)
 
             rangeRow(
@@ -188,7 +209,14 @@ struct BMIDetailSheet: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
-        .background(Color(.secondarySystemBackground))
+        .background(
+            RoundedRectangle(
+                cornerRadius: 28
+            )
+            .fill(
+                .white.opacity(0.30)
+            )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
@@ -225,11 +253,18 @@ struct BMIDetailSheet: View {
                 .font(.system(size: 24, weight: .medium))
             Text(label)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(Color(.tertiarySystemBackground))
+        .background(
+            RoundedRectangle(
+                cornerRadius: 28
+            )
+            .fill(
+                .white.opacity(0.30)
+            )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -245,7 +280,7 @@ struct BMIDetailSheet: View {
                     .fontWeight(.medium)
                 Text(description)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

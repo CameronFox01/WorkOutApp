@@ -21,7 +21,7 @@ struct SettingsView: View {
     @AppStorage("numberOfWorkoutsToShow") private var numberOfWorkoutsToShow: Int = 12
     @AppStorage("workoutChallengeReminder") private var workoutChallengeReminder: Bool = true
     @AppStorage("weightGoalDirection") private var weightGoalDirection: String = "lose"
-    @AppStorage("showBMI") private var showBMI: Bool = true
+    @AppStorage("showBMI") private var showBMI: Bool = false
     
     //Boolean for kcal vs Calories
     @AppStorage("energyLabel")
