@@ -20,8 +20,8 @@ struct SettingsView: View {
     @AppStorage("showStopWatch") private var showStopWatch: Bool = true
     @AppStorage("numberOfWorkoutsToShow") private var numberOfWorkoutsToShow: Int = 12
     @AppStorage("workoutChallengeReminder") private var workoutChallengeReminder: Bool = true
-    @AppStorage("weightGoalDirection")
-    private var weightGoalDirection: String = "lose"
+    @AppStorage("weightGoalDirection") private var weightGoalDirection: String = "lose"
+    @AppStorage("showBMI") private var showBMI: Bool = true
     
     //Boolean for kcal vs Calories
     @AppStorage("energyLabel")
@@ -162,7 +162,7 @@ struct SettingsView: View {
                                 }
                                 
                                 Divider()
-                                // Section for th calories settings
+                                // Section for the calories settings
                                 SettingsRow(
                                     icon: "flame.fill",
                                     title: "Energy Units"
@@ -172,6 +172,15 @@ struct SettingsView: View {
                                         Text("kcal").tag("kcal")
                                     }
                                     .pickerStyle(.menu)
+                                }
+                                
+                                // Section for the BMI to be Shown
+                                SettingsRow(
+                                    icon: "scalemass",
+                                    title: "Show BMI"
+                                ) {
+                                    Toggle("", isOn: $showBMI)
+                                        .labelsHidden()
                                 }
                             }
 

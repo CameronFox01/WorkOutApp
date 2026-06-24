@@ -88,8 +88,6 @@ struct WeeklyRecapCard: View {
 
                     Text("\(consistency)%")
                         .font(.headline.bold())
-                     //   .foregroundStyle(.white)
-
                 }
                 .frame(
                     width: 60,

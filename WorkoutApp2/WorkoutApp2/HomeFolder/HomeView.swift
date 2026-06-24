@@ -27,6 +27,7 @@ struct HomeView: View {
     @AppStorage("userBaselineWeightForGoal") private var baselineWeightForGoal: String = ""
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
     @AppStorage("gainWeight") private var gainWeight: Bool = false
+    @AppStorage("showBMI") private var showBMI: Bool = true
     
     //Calories or kCal here
     @AppStorage("energyLabel")
@@ -279,6 +280,11 @@ struct HomeView: View {
                         .padding(.horizontal)
                         .buttonStyle(.plain)
                         
+                        //Can be Hiden Section before Recent Workouts
+                        if showBMI {
+                            BMIView()
+                                .padding(.horizontal)
+                        }
                         
                         //Section for Pasted Worked Outs
                         HStack {
@@ -822,7 +828,7 @@ struct HomeView: View {
         let isImproving = currentDistance <= baselineDistance
 
         if isImproving {
-            return Color.green
+            return gradientSettings.selectedPreset.greenTextOnDarkBackground
         } else {
             return Color.red
         }

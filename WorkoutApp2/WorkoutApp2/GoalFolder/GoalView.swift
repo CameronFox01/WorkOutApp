@@ -242,17 +242,7 @@ struct GoalView: View {
                     }
                 }
                 .onChange(of: weightGoalDirection){ _, newValue in
-                    // 1. Clear the UI input (your pill field)
-                       targetWeight = ""
-
-                       // 2. Reset baseline so progress recalculates fresh
-                       baselineWeightForGoal = ""
-
-                       // 3. Reset "already reached goal" flag
-                       UserDefaults.standard.set(false, forKey: "bodyWeightGoalReached")
-
-                       print("🔄 Goal direction changed to:", newValue)
-                       print("Reset target + baseline + goal flag")
+                    
                 }
                 .padding(14)
                 .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
