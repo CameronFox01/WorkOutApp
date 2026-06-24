@@ -56,12 +56,12 @@ struct BMIView: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Your BMI")
-                    .font(.caption)
-                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                    .font(.title3)
+                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
 
                 Text(String(format: "%.1f", calculateBMI()))
-                    .font(.system(size: 52, weight: .medium))
-                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                    .font(.title.bold())
+                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
 
                 categoryBadge
             }
@@ -69,19 +69,18 @@ struct BMIView: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 4) {
-                Text("To leave healthy range")
-                    .font(.caption)
-                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                Text(healthyRangeTitle)
+                    .font(.title3)
+                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
 
                 Text(poundsToHealthyRangeText)
-                    .font(.system(size: 28, weight: .medium))
-                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                    .font(.title.bold())
+                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
 
-                Text(poundsToHealthy >= 0 ? "Upper healthy limit" : "Lower healthy limit")
-                    .font(.caption2)
-                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
-            }
-        }
+                Text(healthyRangeSubtitle)
+                    .font(.headline)
+                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+            }        }
     }
 
     // MARK: - Category Badge
@@ -90,11 +89,32 @@ struct BMIView: View {
         Text(bmiCategory.label)
             .font(.subheadline)
             .fontWeight(.medium)
-            .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
             .padding(.horizontal, 14)
             .padding(.vertical, 6)
             .background(.white.opacity(0.22))
             .clipShape(Capsule())
+    }
+    
+    // MARK: - Area for sentences for healthy range.
+    var healthyRangeTitle: String {
+        let bmi = calculateBMI()
+        switch bmi {
+        case ..<18.5: return "To reach healthy range"
+        case 18.5..<25: return ""
+        case 25..<30: return "To reach healthy range"
+        default: return "To reach healthy range"
+        }
+    }
+
+    var healthyRangeSubtitle: String {
+        let bmi = calculateBMI()
+        switch bmi {
+        case ..<18.5: return "Need to gain weight"
+        case 18.5..<25: return "Currently in healthy range"
+        case 25..<30: return "Need to lose weight"
+        default: return "Need to lose weight"
+        }
     }
 
     // MARK: - Scale Bar
@@ -150,8 +170,8 @@ struct BMIView: View {
                 Text("Obese\n30+")
                     .multilineTextAlignment(.trailing)
             }
-            .font(.system(size: 11))
-            .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+            .font(.subheadline)
+            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
         }
     }
 
@@ -211,6 +231,11 @@ struct BMIView: View {
     var poundsToHealthyRangeText: String {
         let val = abs(poundsToHealthy)
         let unit = weightUnit == "imperial" ? "lbs" : "kg"
+        
+        if val == 0 {
+            return "You're there!"
+        }
+        
         let sign = poundsToHealthy > 0 ? "-" : "+"
         return String(format: "\(sign)%.0f \(unit)", val)
     }

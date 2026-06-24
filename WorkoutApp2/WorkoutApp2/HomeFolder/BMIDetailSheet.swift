@@ -69,6 +69,7 @@ struct BMIDetailSheet: View {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(String(format: "%.1f", bmi))
                     .font(.system(size: 48, weight: .medium))
+                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
 
                 Text(category.label)
                     .font(.headline)
@@ -251,6 +252,7 @@ struct BMIDetailSheet: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(value)
                 .font(.system(size: 24, weight: .medium))
+                .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
             Text(label)
                 .font(.caption)
                 .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
@@ -278,6 +280,7 @@ struct BMIDetailSheet: View {
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.medium)
+                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                 Text(description)
                     .font(.caption)
                     .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
