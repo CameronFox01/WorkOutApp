@@ -21,17 +21,20 @@ struct MeasurementRecapView: View {
     @AppStorage("measureNeck")      private var neck: String = ""
     @AppStorage("measureCalves")    private var calves: String = ""
     @AppStorage("measureShoulders") private var shoulders: String = ""
-    @AppStorage("measurementUnit")  private var unit: String = "in"
+    @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
+    
+    private var unitSystem: UnitSystem { UnitSystem(rawValue: unitSystemRaw) ?? .metric }
+    private var unit: String { unitSystem == .imperial ? "in" : "cm" }
 
     private var measurements: [(label: String, value: String)] {
         [
             ("Chest",     chest),
             ("Shoulders", shoulders),
+            ("Neck",      neck),
+            ("Biceps",    biceps),
             ("Waist",     waist),
             ("Hips",      hips),
-            ("Biceps",    biceps),
             ("Thighs",    thighs),
-            ("Neck",      neck),
             ("Calves",    calves),
         ]
     }
@@ -71,9 +74,19 @@ struct MeasurementRecapView: View {
                     .foregroundStyle(.black)
             }
             Spacer()
-            Image(systemName: "ruler")
-                .font(.title2)
-                .foregroundStyle(.black)
+            ZStack {
+                Circle()
+                    .fill(
+                        gradientSettings.selectedPreset.textColor
+                    )
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: "figure.stand")
+                    .font(.largeTitle)
+                    .foregroundStyle(
+                        gradientSettings.selectedPreset.caloriesAccentColor
+                    )
+            }
         }
     }
 
@@ -93,7 +106,14 @@ struct MeasurementRecapView: View {
     // MARK: - Cell
 
     private func measurementCell(label: String, value: String) -> some View {
-        HStack {
+        let color = MeasurementAppearance.color(for: label)
+
+        return HStack(spacing: 10) {
+            // Colored left border stripe
+            RoundedRectangle(cornerRadius: 3)
+                .fill(color)
+                .frame(width: 4)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.caption)
@@ -102,19 +122,20 @@ struct MeasurementRecapView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text(value.isEmpty ? "--" : value)
                         .font(.title3.bold())
-                        .foregroundStyle(.black)
+                        .foregroundStyle(value.isEmpty ? .black.opacity(0.4) : color)
 
                     if !value.isEmpty {
                         Text(unit)
                             .font(.caption)
-                            .foregroundStyle(.black)
+                            .foregroundStyle(color.opacity(0.7))
                     }
                 }
             }
+
             Spacer()
         }
         .padding(12)
-        .background(.white.opacity(0.12))
+        .background(color.opacity(0.25))
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }

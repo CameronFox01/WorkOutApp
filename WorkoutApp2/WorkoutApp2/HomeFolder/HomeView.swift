@@ -482,7 +482,7 @@ struct HomeView: View {
     
     private var progressIsGood: Bool {
         guard let curr = currentWeightValue,
-              let target = targetWeightValue else {
+              let _ = targetWeightValue else {
             return false
         }
 

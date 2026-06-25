@@ -146,13 +146,13 @@ struct MeasurementInputSheet: View {
     private var changesSinceLastCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Label("Changes since last entry", systemImage: "arrow.up.arrow.down")
-                .font(.subheadline)
+                .font(.title2)
                 .foregroundStyle(.black)
 
             if let last = store.latest {
                 let date = last.date.formatted(date: .abbreviated, time: .omitted)
                 Text("Last logged \(date)")
-                    .font(.caption)
+                    .font(.headline)
                     .foregroundStyle(.black)
 
                 LazyVGrid(
@@ -180,7 +180,7 @@ struct MeasurementInputSheet: View {
     }
 
     private func changeBadge(label: String, current: Double?) -> some View {
-        // Match the typed input field to its last saved value
+        let color = MeasurementAppearance.color(for: label)
         let inputValue: Double? = {
             switch label {
             case "Chest":     return Double(chest)
@@ -200,38 +200,40 @@ struct MeasurementInputSheet: View {
             return i - c
         }()
 
-        return HStack {
+        return HStack(spacing: 10) {
+//            RoundedRectangle(cornerRadius: 3)
+//                .fill(color.opacity(0.5))
+//                .frame(width: 4)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
-                    .font(.caption)
-                    .foregroundStyle(.black)
+                    .font(.title3)
+                    .foregroundStyle(.white)
 
                 if let d = diff {
                     HStack(spacing: 3) {
                         Image(systemName: d > 0 ? "arrow.up" : d < 0 ? "arrow.down" : "minus")
-                            .font(.caption2)
+                            .font(.headline)
                         Text(String(format: "%.1f \(unitLabel)", abs(d)))
-                            .font(.subheadline.bold())
-                            .foregroundStyle(.black)
+                            .font(.headline.bold())
+                            .foregroundStyle(.white)
                     }
-                    .foregroundStyle(d == 0 ? .black : d < 0 ? .green : Color.orange)
+                    .foregroundStyle(d == 0 ? .secondary : d < 0 ? .green : Color.orange)
                 } else if let c = current {
                     Text(String(format: "%.1f \(unitLabel)", c))
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.black)
+                        .font(.headline.bold())
+                        .foregroundStyle(.white)
                 } else {
                     Text("--")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.black)
+                        .font(.headline.bold())
+                        .foregroundStyle(.white)
                 }
             }
+
             Spacer()
         }
         .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 28)
-                .fill(.white.opacity(0.30))
-        )
+        .background(color)
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
@@ -240,13 +242,16 @@ struct MeasurementInputSheet: View {
     private var inputCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Label("Enter measurements", systemImage: "pencil")
-                .font(.subheadline)
+                .font(.title2)
                 .foregroundStyle(.black)
 
             ForEach(measurements, id: \.label) { item in
+                let color = MeasurementAppearance.color(for: item.label)
+
                 HStack {
                     Label(item.label, systemImage: item.icon)
                         .font(.subheadline)
+                        .foregroundStyle(.white)
                         .frame(width: 130, alignment: .leading)
 
                     Spacer()
@@ -254,25 +259,25 @@ struct MeasurementInputSheet: View {
                     HStack(spacing: 4) {
                         TextField("",
                                   text: item.binding,
-                                  prompt: Text("0.0")
-                                    .foregroundStyle(.black)
+                                  prompt: Text("0.0").foregroundStyle(.white.opacity(0.6))
                         )
-                            .keyboardType(.decimalPad)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 60)
-                            .foregroundStyle(.black)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 60)
+                        .foregroundStyle(.white)
+                        .font(.title3)
 
                         Text(unitLabel)
                             .font(.subheadline)
                             .frame(width: 24, alignment: .leading)
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.white.opacity(0.8))
+                            .font(.title3)
                     }
                 }
-                .padding(.vertical, 4)
-
-                if item.label != "Calves" {
-                    Divider()
-                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(color.opacity(0.75))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
         .padding(20)
@@ -288,13 +293,13 @@ struct MeasurementInputSheet: View {
     private var historyCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Label("Previous entries", systemImage: "clock")
-                .font(.subheadline)
+                .font(.title)
                 .foregroundStyle(.black)
 
             ForEach(store.entries.reversed()) { entry in
                 VStack(alignment: .leading, spacing: 6) {
                     Text(entry.date.formatted(date: .abbreviated, time: .shortened))
-                        .font(.caption)
+                        .font(.headline)
                         .foregroundStyle(.black)
 
                     LazyVGrid(
@@ -330,11 +335,12 @@ struct MeasurementInputSheet: View {
     private func historyCell(label: String, value: Double?) -> some View {
         HStack {
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.title2)
+                .foregroundStyle(MeasurementAppearance.color(for: label))
             Spacer()
             Text(value.map { String(format: "%.1f \(unitLabel)", $0) } ?? "--")
-                .font(.caption.bold())
+                .font(.title2.bold())
+                .foregroundStyle(MeasurementAppearance.color(for: label))
         }
     }
 
@@ -404,14 +410,30 @@ struct MeasurementInputSheet: View {
 // MARK: - Preview
 
 #Preview {
-    ZStack{
+    ZStack {
         LinearGradient(
             colors: [.blue, .black],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
         .ignoresSafeArea()
-        
+
         MeasurementInputSheet()
+            .onAppear {
+                // Seed a previous entry so all three cards show
+                let store = MeasurementStore()
+                let previous = MeasurementEntry(
+                    date: Calendar.current.date(byAdding: .day, value: -7, to: Date())!,
+                    chest: 38.5,
+                    shoulders: 44.0,
+                    waist: 32.0,
+                    hips: 38.0,
+                    biceps: 13.5,
+                    thighs: 22.0,
+                    neck: 15.0,
+                    calves: 14.5
+                )
+                store.save(previous)
+            }
     }
 }
