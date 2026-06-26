@@ -51,7 +51,7 @@ struct BMIDetailSheet: View {
             .navigationTitle("BMI Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("Done") { dismiss() }
                 }
             }
