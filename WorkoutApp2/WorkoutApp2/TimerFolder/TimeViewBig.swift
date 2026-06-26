@@ -23,6 +23,8 @@ struct TimeViewBig: View {
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
+    
+    @State private var laps: [String] = []
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let stopWatch = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
@@ -109,30 +111,68 @@ struct TimeViewBig: View {
                             .padding(.bottom, 20)
                             
                             // MARK: - Timer Controls
-                            HStack(spacing: 40) {
+                            VStack(spacing: 24) {
 
-                                controlButton(
-                                    icon: "minus",
-                                    color: .orange
-                                ) {
-                                    totalSeconds = max(0, totalSeconds - 30)
-                                    remainingSeconds = max(0, remainingSeconds - 30)
+                                // Slider for quick time setting
+                                VStack(spacing: 8) {
+                                    HStack {
+                                        Text("Set Time")
+                                            .font(.caption)
+                                            .foregroundStyle(.white.opacity(0.7))
+                                        Spacer()
+                                        Text("\(totalSeconds / 60) min")
+                                            .font(.caption.bold())
+                                            .foregroundStyle(.white.opacity(0.7))
+                                    }
+
+                                    Slider(
+                                        value: Binding(
+                                            get: { Double(totalSeconds) },
+                                            set: { newValue in
+                                                guard !isTimerRunning else { return }
+                                                let snapped = Int(newValue / 60) * 60
+                                                totalSeconds = max(60, snapped)
+                                                remainingSeconds = totalSeconds
+                                            }
+                                        ),
+                                        in: 60...3600,
+                                        step: 60
+                                    )
+                                    .tint(.white)
+                                    .disabled(isTimerRunning)
+                                    .opacity(isTimerRunning ? 0.4 : 1)
+
+                                    HStack {
+                                        Text("1 min")
+                                            .font(.caption2)
+                                            .foregroundStyle(.white.opacity(0.5))
+                                        Spacer()
+                                        Text("60 min")
+                                            .font(.caption2)
+                                            .foregroundStyle(.white.opacity(0.5))
+                                    }
                                 }
+                                .padding(.horizontal, 4)
 
-                                controlButton(
-                                    icon: isTimerRunning ? "pause.fill" : "play.fill",
-                                    color: .green
-                                ) {
-                                    isTimerRunning.toggle()
-                                }
-                                .scaleEffect(1.2)
+                                // Play/pause + fine tune buttons
+                                HStack(spacing: 40) {
+                                    controlButton(icon: "minus", color: .orange) {
+                                        totalSeconds = max(60, totalSeconds - 30)
+                                        if !isTimerRunning { remainingSeconds = totalSeconds }
+                                    }
 
-                                controlButton(
-                                    icon: "plus",
-                                    color: .blue
-                                ) {
-                                    totalSeconds += 30
-                                    remainingSeconds += 30
+                                    controlButton(
+                                        icon: isTimerRunning ? "pause.fill" : "play.fill",
+                                        color: .green
+                                    ) {
+                                        isTimerRunning.toggle()
+                                    }
+                                    .scaleEffect(1.2)
+
+                                    controlButton(icon: "plus", color: .blue) {
+                                        totalSeconds += 30
+                                        if !isTimerRunning { remainingSeconds = totalSeconds }
+                                    }
                                 }
                             }
                         }
@@ -174,21 +214,33 @@ struct TimeViewBig: View {
                                 .foregroundStyle(.white)
 
                             HStack(spacing: 16) {
-
-                                Button {
-
-                                    if !isStopWatchRunning {
-                                        startTime = Date()
-                                        isStopWatchRunning = true
+                                
+                                if !isStopWatchRunning {
+                                    // Button for starting stop watch
+                                    Button {
+                                        
+                                        if !isStopWatchRunning {
+                                            startTime = Date()
+                                            isStopWatchRunning = true
+                                        }
+                                        
+                                    } label: {
+                                        
+                                        Label("Start", systemImage: "play.fill")
+                                            .frame(maxWidth: .infinity)
                                     }
-
-                                } label: {
-
-                                    Label("Start", systemImage: "play.fill")
-                                        .frame(maxWidth: .infinity)
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.green)
+                                } else {
+                                    Button {
+                                        laps.append(stopWatchString)
+                                    } label: {
+                                        Label("Lap", systemImage: "stopwatch.1.fill")
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.orange)
                                 }
-                                .buttonStyle(.borderedProminent)
-                                .tint(.green)
 
                                 Button {
 
@@ -196,8 +248,8 @@ struct TimeViewBig: View {
                                         isStopWatchRunning = false
                                     } else {
                                         stopWatchString = "00:00.00"
+                                        laps = []
                                     }
-
                                 } label: {
 
                                     Label("Stop", systemImage: "stop.fill")
@@ -205,6 +257,31 @@ struct TimeViewBig: View {
                                 }
                                 .buttonStyle(.borderedProminent)
                                 .tint(.red)
+                            }
+                            
+                            if !laps.isEmpty {
+                                Divider()
+                                    .overlay(.white.opacity(0.2))
+
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Laps")
+                                        .font(.caption)
+                                        .foregroundStyle(.white.opacity(0.7))
+
+                                    ForEach(Array(laps.enumerated().reversed()), id: \.offset) { index, lap in
+                                        HStack {
+                                            Text("Lap \(index + 1)")
+                                                .font(.subheadline)
+                                                .foregroundStyle(.white.opacity(0.7))
+                                            Spacer()
+                                            Text(lap)
+                                                .font(.system(.subheadline, design: .rounded).bold())
+                                                .monospacedDigit()
+                                                .foregroundStyle(.white)
+                                        }
+                                        .padding(.vertical, 2)
+                                    }
+                                }
                             }
                         }
                         .padding(24)
