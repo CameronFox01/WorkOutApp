@@ -441,54 +441,61 @@ struct WorkoutCalendarView: View {
                         )
 
                         // MARK: - Planned Workouts
-                        VStack(alignment: .leading, spacing: 18) {
-
-                            Label(
-                                "Planned Workouts",
-                                systemImage: "calendar.badge.plus"
-                            )
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            
-                            let currentWeekday = weekday(from: selectedDate)
-                            
-                            let sharedDefaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
-                            let dayTitle = sharedDefaults?.string(forKey: keyTitle(for: currentWeekday)) ?? ""
-                            let workouts = sharedDefaults?.stringArray(forKey: keyItems(for: weekday(from: selectedDate))) ?? []
-
-                            if workouts.isEmpty {
-
-                                Text("No planned workouts")
-                                    .foregroundStyle(
-                                        .white.opacity(0.7)
-                                    )
-
-                            } else {
-                                //Add a text here with the title  of the day
-                                Text(dayTitle.isEmpty ? selectedDate.formatted(date: .complete, time: .omitted) : dayTitle)
-                                            .font(.headline.bold())
-                                            .foregroundStyle(.white.opacity(0.8))
+                        let currentWeekday = weekday(from: selectedDate)
+                        
+                        let sharedDefaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
+                        let dayTitle = sharedDefaults?.string(forKey: keyTitle(for: currentWeekday)) ?? ""
+                        let workouts = sharedDefaults?.stringArray(forKey: keyItems(for: weekday(from: selectedDate))) ?? []
+                        if !workouts.isEmpty { // Made it so this is hidden to look cleaner
+                            VStack(alignment: .leading, spacing: 18) {
                                 
-                                ForEach(
-                                    workouts,
-                                    id: \.self
-                                ) { workout in
-
-                                    PlannedWorkoutDetailLink(
-                                        workout: workout,
-                                        category:
-                                            categoryForWorkout(
-                                                workout
-                                            )
-                                    )
+                                Label(
+                                    "Planned Workouts",
+                                    systemImage: "calendar.badge.plus"
+                                )
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                
+//                                let currentWeekday = weekday(from: selectedDate)
+//                                
+//                                let sharedDefaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
+//                                let dayTitle = sharedDefaults?.string(forKey: keyTitle(for: currentWeekday)) ?? ""
+//                                let workouts = sharedDefaults?.stringArray(forKey: keyItems(for: weekday(from: selectedDate))) ?? []
+                                
+                                if workouts.isEmpty {
+                                    
+                                    Text("No planned workouts")
+                                        .foregroundStyle(
+                                            .white.opacity(0.7)
+                                        )
+                                    
+                                } else {
+                                    //Add a text here with the title  of the day
+                                    Text(dayTitle.isEmpty ? selectedDate.formatted(date: .complete, time: .omitted) : dayTitle)
+                                        .font(.headline.bold())
+                                        .foregroundStyle(.white.opacity(0.8))
+                                    
+                                    ForEach(
+                                        workouts,
+                                        id: \.self
+                                    ) { workout in
+                                        
+                                        PlannedWorkoutDetailLink(
+                                            workout: workout,
+                                            category:
+                                                categoryForWorkout(
+                                                    workout
+                                                )
+                                        )
+                                    }
                                 }
                             }
+                            .padding(24)
+                            .background(
+                                RoundedRectangle(cornerRadius: 28)
+                                    .fill(.white.opacity(0.12))
+                            )
                         }
-                        .padding(24)
-                        .background(
-                            RoundedRectangle(cornerRadius: 28)
-                                .fill(.white.opacity(0.12))
-                        )
 
                         Spacer(minLength: 40)
                     }
