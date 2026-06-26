@@ -25,7 +25,7 @@ struct TimeViewBig: View {
     @EnvironmentObject var gradientSettings: GradientSettings
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    let stopWatch = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+    let stopWatch = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
 
     init(
         totalSeconds: Binding<Int>,
@@ -195,7 +195,7 @@ struct TimeViewBig: View {
                                     if isStopWatchRunning {
                                         isStopWatchRunning = false
                                     } else {
-                                        stopWatchString = "00:00"
+                                        stopWatchString = "00:00.00"
                                     }
 
                                 } label: {
@@ -247,19 +247,15 @@ struct TimeViewBig: View {
                 }
             }
             .onReceive(stopWatch) { _ in
-
                 guard isStopWatchRunning else { return }
 
                 let elapsed = Date().timeIntervalSince(startTime)
 
                 let minutes = Int(elapsed) / 60
                 let seconds = Int(elapsed) % 60
+                let milliseconds = Int((elapsed * 100).truncatingRemainder(dividingBy: 100))
 
-                stopWatchString = String(
-                    format: "%02d:%02d",
-                    minutes,
-                    seconds
-                )
+                stopWatchString = String(format: "%02d:%02d.%02d", minutes, seconds, milliseconds)
             }
         }
     }
@@ -309,7 +305,7 @@ struct TimeViewBig: View {
         isTimerRunning: .constant(false),
         isStopWatchRunning: .constant(false),
         startTime: .constant(Date()),
-        timerString: .constant("00:00")
+        timerString: .constant("00:00.00")
     )
     .environmentObject(GradientSettings())
 }

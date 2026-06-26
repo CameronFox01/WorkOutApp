@@ -20,7 +20,7 @@ struct TimerView: View {
     private var startStopWatch: Double = 0
 
     @AppStorage("stopWatchString")
-    private var stopWatchString: String = "00:00"
+    private var stopWatchString: String = "00:00.00"
 
     
     // Countdown state
@@ -32,7 +32,7 @@ struct TimerView: View {
         Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     let timer =
-        Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+        Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
 
     @State private var showBigTimer = false
 
@@ -50,7 +50,7 @@ struct TimerView: View {
                     if isStopWatchRunning {
                         isStopWatchRunning = false
                     } else {
-                        stopWatchString = "00:00"
+                        stopWatchString = "00:00.00"
                     }
                 } label: {
                     Image(systemName: "stop.fill")
@@ -86,7 +86,7 @@ struct TimerView: View {
 
                     if !isStopWatchRunning {
 
-                        stopWatchString = "00:00"
+                        stopWatchString = "00:00.00"
 
                         // FIXED
                         startStopWatch = Date().timeIntervalSince1970
@@ -131,20 +131,17 @@ struct TimerView: View {
 
             // FIXED
             .onReceive(timer) { _ in
-
                 guard isStopWatchRunning else { return }
 
                 let start = Date(timeIntervalSince1970: startStopWatch)
-
                 let elapsed = Date().timeIntervalSince(start)
 
                 let minutes = Int(elapsed) / 60
                 let seconds = Int(elapsed) % 60
+                let milliseconds = Int((elapsed * 100).truncatingRemainder(dividingBy: 100))
 
-                stopWatchString =
-                    String(format: "%02d:%02d", minutes, seconds)
+                stopWatchString = String(format: "%02d:%02d.%02d", minutes, seconds, milliseconds)
             }
-
             .sheet(isPresented: $showBigTimer) {
                 TimeViewBig(
                     totalSeconds: $totalSeconds,
