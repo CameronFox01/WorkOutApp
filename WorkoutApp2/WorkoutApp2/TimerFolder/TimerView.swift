@@ -21,6 +21,8 @@ struct TimerView: View {
 
     @AppStorage("stopWatchString")
     private var stopWatchString: String = "00:00.00"
+    
+    @AppStorage("stopWatchLaps") private var lapsData: String = "[]"
 
     
     // Countdown state
@@ -44,13 +46,14 @@ struct TimerView: View {
         if showStopWatch {
 
             HStack(spacing: 16) {
-
+                
                 // Stop
                 Button {
                     if isStopWatchRunning {
                         isStopWatchRunning = false
                     } else {
                         stopWatchString = "00:00.00"
+                        clearLaps()
                     }
                 } label: {
                     Image(systemName: "stop.fill")
@@ -59,12 +62,12 @@ struct TimerView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.red)
-
+                
                 Spacer()
-
+                
                 // Timer Display
                 VStack(spacing: 2) {
-
+                    
                     Text(stopWatchString)
                         .font(.system(size: 25,
                                       weight: .bold,
@@ -73,27 +76,28 @@ struct TimerView: View {
                         .onTapGesture {
                             showBigTimer = true
                         }
-
+                    
                     Text("Tap to expand")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
-
+                
                 Spacer()
-
+                
+                if !isStopWatchRunning {
                 // Start
                 Button {
-
+                    
                     if !isStopWatchRunning {
-
+                        
                         stopWatchString = "00:00.00"
-
+                        
                         // FIXED
                         startStopWatch = Date().timeIntervalSince1970
-
+                        
                         isStopWatchRunning = true
                     }
-
+                    
                 } label: {
                     Image(systemName: "play.fill")
                         .font(.system(size: 18, weight: .bold))
@@ -101,6 +105,18 @@ struct TimerView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.green)
+                
+            } else {
+                    Button {
+                        addLap()
+                    } label: {
+                        Image(systemName: "stopwatch.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.orange)
+                }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
@@ -149,7 +165,8 @@ struct TimerView: View {
                     isTimerRunning: $isCountdownRunning,
                     isStopWatchRunning: $isStopWatchRunning,
                     startTime: startTimeBinding,
-                    timerString: $stopWatchString
+                    timerString: $stopWatchString,
+                    lapsData: $lapsData
                 )
             }
             .onAppear(){
@@ -268,7 +285,9 @@ struct TimerView: View {
                              isTimerRunning: $isCountdownRunning,
                              isStopWatchRunning: $isStopWatchRunning,
                              startTime: startTimeBinding,
-                             timerString: $stopWatchString )
+                             timerString: $stopWatchString,
+                             lapsData: $lapsData
+                )
             }
             .onAppear(){
                 UIApplication.shared.isIdleTimerDisabled = false
@@ -280,6 +299,23 @@ struct TimerView: View {
     }
 
     // MARK: - Helpers
+    
+    private var laps: [String] {
+        get { (try? JSONDecoder().decode([String].self, from: Data(lapsData.utf8))) ?? [] }
+    }
+
+    private func addLap() {
+        var current = laps
+        current.append(stopWatchString)
+        if let data = try? JSONEncoder().encode(current),
+           let str = String(data: data, encoding: .utf8) {
+            lapsData = str
+        }
+    }
+
+    private func clearLaps() {
+        lapsData = "[]"
+    }
 
     private func adjustTime(by delta: Int) {
         totalSeconds = max(0, totalSeconds + delta)

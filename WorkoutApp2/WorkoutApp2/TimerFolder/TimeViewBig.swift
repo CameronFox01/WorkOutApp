@@ -24,7 +24,7 @@ struct TimeViewBig: View {
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
     
-    @State private var laps: [String] = []
+    @Binding var lapsData: String
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let stopWatch = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
@@ -35,7 +35,8 @@ struct TimeViewBig: View {
         isTimerRunning: Binding<Bool>,
         isStopWatchRunning: Binding<Bool>,
         startTime: Binding<Date>,
-        timerString: Binding<String>
+        timerString: Binding<String>,
+        lapsData: Binding<String>
     ) {
         self._totalSeconds = totalSeconds
         self._remainingSeconds = remainingSeconds
@@ -43,6 +44,7 @@ struct TimeViewBig: View {
         self._isStopWatchRunning = isStopWatchRunning
         self._startTime = startTime
         self._stopWatchString = timerString
+        self._lapsData = lapsData
     }
 
     var body: some View {
@@ -233,7 +235,7 @@ struct TimeViewBig: View {
                                     .tint(.green)
                                 } else {
                                     Button {
-                                        laps.append(stopWatchString)
+                                        addLap()
                                     } label: {
                                         Label("Lap", systemImage: "stopwatch.1.fill")
                                             .frame(maxWidth: .infinity)
@@ -248,7 +250,7 @@ struct TimeViewBig: View {
                                         isStopWatchRunning = false
                                     } else {
                                         stopWatchString = "00:00.00"
-                                        laps = []
+                                        clearLaps()
                                     }
                                 } label: {
 
@@ -336,6 +338,23 @@ struct TimeViewBig: View {
             }
         }
     }
+    
+    private var laps: [String] {
+        (try? JSONDecoder().decode([String].self, from: Data(lapsData.utf8))) ?? []
+    }
+
+    private func addLap() {
+        var current = laps
+        current.append(stopWatchString)
+        if let data = try? JSONEncoder().encode(current),
+           let str = String(data: data, encoding: .utf8) {
+            lapsData = str
+        }
+    }
+
+    private func clearLaps() {
+        lapsData = "[]"
+    }
 
     // MARK: - Progress Ring
     var progress: CGFloat {
@@ -382,7 +401,8 @@ struct TimeViewBig: View {
         isTimerRunning: .constant(false),
         isStopWatchRunning: .constant(false),
         startTime: .constant(Date()),
-        timerString: .constant("00:00.00")
+        timerString: .constant("00:00.00"),
+        lapsData: .constant("[]")
     )
     .environmentObject(GradientSettings())
 }
