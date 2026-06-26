@@ -50,50 +50,47 @@ struct AccountView: View {
 
     var body: some View {
 
-        NavigationStack {
+        ZStack {
 
-            ZStack {
+            LinearGradient(
+                colors: gradientSettings.selectedPreset.swiftUIColors,
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
-                LinearGradient(
-                    colors: gradientSettings.selectedPreset.swiftUIColors,
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+            ScrollView {
 
-                ScrollView {
-
-                    VStack(
-                        spacing:24
-                    ){
-
-                        profileHeader
-
-                        progressSection
-
-                        statsSection
-
-                        shortcutsSection
-
-                        settingsButton
-
-                    }
-                    .padding()
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
-            .toolbar {
-
-                ToolbarItem(
-                    placement:.principal
+                VStack(
+                    spacing:24
                 ){
 
-                    Text("Profile")
-                        .font(.largeTitle.bold())
-                        .foregroundStyle(.white)
+                    profileHeader
+
+                    progressSection
+
+                    statsSection
+
+                    shortcutsSection
+
+                    settingsButton
 
                 }
+                .padding()
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
+        .toolbar {
+
+            ToolbarItem(
+                placement:.principal
+            ){
+
+                Text("Profile")
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(.white)
+
             }
         }
     }

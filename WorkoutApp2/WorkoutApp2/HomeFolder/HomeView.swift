@@ -74,7 +74,7 @@ struct HomeView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack{
                 LinearGradient(
                     colors: gradientSettings.selectedPreset.swiftUIColors,

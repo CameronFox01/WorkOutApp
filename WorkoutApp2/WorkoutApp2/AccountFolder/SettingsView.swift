@@ -120,7 +120,6 @@ struct SettingsView: View {
     @EnvironmentObject var gradientSettings: GradientSettings
     
     var body: some View {
-        NavigationView {
             ZStack{
                 LinearGradient(
                     colors: gradientSettings.selectedPreset.swiftUIColors,
@@ -765,13 +764,11 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
-                    .toolbarBackground(.visible, for: .navigationBar)
                 }
             }
-        }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
         .environmentObject(gradientSettings)
         .onChange(of: widgetUsesGradientBackground) { _, _ in
             WidgetCenter.shared.reloadAllTimelines()
@@ -795,9 +792,6 @@ struct SettingsView: View {
             updateWeeklyWeighInReminder()
         }
         .onChange(of: weighInReminderTime) { _, _ in
-            updateWeighInReminder()
-        }
-        .onChange(of: notificationsEnabled) { _, _ in
             updateWeighInReminder()
         }
         .onChange(of: workoutData.entries.count) { _, _ in
