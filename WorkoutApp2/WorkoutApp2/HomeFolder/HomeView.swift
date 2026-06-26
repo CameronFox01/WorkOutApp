@@ -26,7 +26,8 @@ struct HomeView: View {
     @AppStorage("userOriginalWeight") private var originalWeight: String = ""
     @AppStorage("userBaselineWeightForGoal") private var baselineWeightForGoal: String = ""
     @AppStorage("userTargetDaysOfWorkout") private var targetDaysOfWorkout: String = ""
-    @AppStorage("gainWeight") private var gainWeight: Bool = false
+    @AppStorage("weightGoalDirection") private var weightGoalDirection: String = "lose"
+    private var gainWeight: Bool { weightGoalDirection == "gain" }
     @AppStorage("showBMI") private var showBMI: Bool = false
     @AppStorage("showMeasurement") private var showMeasurement: Bool = false
     
@@ -467,10 +468,9 @@ struct HomeView: View {
                 print("current:", weight)
                 print("target:", targetWeight)
             }
-            .onChange(of: gainWeight) { _, _ in
+            .onChange(of: weightGoalDirection) { _, _ in
                 guard let curr = Double(weight),
                       !weight.isEmpty else { return }
-
                 baselineWeightForGoal = String(curr)
                 print("🔄 baseline reset due to direction change:", baselineWeightForGoal)
             }

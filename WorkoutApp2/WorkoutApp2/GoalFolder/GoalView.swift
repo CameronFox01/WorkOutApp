@@ -16,6 +16,7 @@ struct GoalView: View {
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @AppStorage("userBaselineWeightForGoal") private var baselineWeightForGoal: String = ""
     @AppStorage("weightGoalDirection") private var weightGoalDirection: String = "lose"
+    private var gainWeight: Bool { weightGoalDirection == "gain" }
     
     @EnvironmentObject var workoutData: WorkoutData
     
@@ -172,10 +173,10 @@ struct GoalView: View {
                 }
             }
             .onChange(of: targetWeight) { _, newValue in
-                // When the target weight changes to a valid number, seed baseline if needed
                 if Double(newValue) != nil {
-                    if baselineWeightForGoal.isEmpty, let curr = UserDefaults.standard.string(forKey: "userWeight"), !curr.isEmpty {
-                        baselineWeightForGoal = curr
+                    // Reset baseline to current weight so progress starts at 0
+                    if let curr = UserDefaults.standard.string(forKey: "userWeight"), !curr.isEmpty {
+                        UserDefaults.standard.set(curr, forKey: "userBaselineWeightForGoal")
                     }
                 }
             }
@@ -200,6 +201,26 @@ struct GoalView: View {
                     .padding(.bottom, 4)
                 
                 VStack(spacing: 12) {
+                    // Goal Direction picker
+                    HStack(spacing: 12) {
+                        Image(systemName: gainWeight ? "arrow.up.circle" : "arrow.down.circle")
+                            .foregroundStyle(gradientSettings.selectedPreset.textColor)
+                            .font(.system(size: 20))
+
+                        Text("Goal Direction")
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+
+                        Spacer()
+
+                        Picker("", selection: $weightGoalDirection) {
+                            Text("Lose Weight").tag("lose")
+                            Text("Gain Weight").tag("gain")
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 200)
+                    }
+                    
                     // Target Body Weight row
                     HStack(spacing: 12) {
                         Image(systemName: "scalemass")
@@ -241,8 +262,14 @@ struct GoalView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                .onChange(of: weightGoalDirection){ _, newValue in
+                .onChange(of: weightGoalDirection) { _, _ in
+                    // Clear the target weight and reset baseline when direction flips
+                    targetWeight = ""
+                    UserDefaults.standard.set("", forKey: "userTargetWeight")
                     
+                    if let curr = UserDefaults.standard.string(forKey: "userWeight"), !curr.isEmpty {
+                        UserDefaults.standard.set(curr, forKey: "userBaselineWeightForGoal")
+                    }
                 }
                 .padding(14)
                 .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
