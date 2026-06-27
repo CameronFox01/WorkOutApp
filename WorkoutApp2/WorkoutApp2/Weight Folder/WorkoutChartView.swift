@@ -5,10 +5,30 @@ struct WorkoutChartView: View {
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
+    
+    @EnvironmentObject var workoutData: WorkoutData
 
     let workoutName: String
     let entries: [WorkoutEntry]
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
+    
+    
+    // copied over
+    let category: WorkoutCategory
+    var saveAction: (WorkoutCategory) -> Void = { _ in }
+    @State private var selections: [WorkoutCategory: String] = [:]
+    @State private var weights: [WorkoutCategory: String] = [:]
+    @State private var reps: [WorkoutCategory: String] = [:]
+    @State private var sets: [WorkoutCategory: String] = [:]
+    @State private var distances: [WorkoutCategory: String] = [:]
+    @State private var times: [WorkoutCategory: String] = [:]
+    @State private var notes: [WorkoutCategory: String] = [:]
+    @State private var entriesLocal: [WorkoutEntry] = []
+    @State private var showSavedToastLocal: Bool = false
+    @State private var unitSystemRawLocal: String = UnitSystem.metric.rawValue
+    @State private var showSavedToast: Bool = false
+    private var GoToHomeScreenWhenSaved: Bool { false }
+    let workout: String
 
     var body: some View {
         ZStack {
@@ -44,18 +64,48 @@ struct WorkoutChartView: View {
                     .foregroundStyle(.white)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                if let entry = mostRecentEntry {
-                    NavigationLink(destination: EditWorkoutView(entry: entry)) {
-                        Label("Edit", systemImage: "pencil")
-                            .foregroundStyle(.white)
+                NavigationLink(
+                    destination: ImportView.CategoryDetailView(
+                    category: category,
+                    unitSystemRaw: $unitSystemRawLocal,
+                    selections: $selections,
+                    weights: $weights,
+                    reps: $reps,
+                    sets: $sets,
+                    distances: $distances,
+                    times: $times,
+                    entries: $entriesLocal,
+                    notes: $notes,
+                    save: { saveEntry()},
+                    increment: { dict, step in self.increment(&dict, for: category, by: Int(step)) },
+                    decrement: { dict, step in self.decrement(&dict, for: category, by: Int(step)) },
+                    weightUnitProvider: { self.weightUnit },
+                    goHomeAfterSave: GoToHomeScreenWhenSaved,
+                    showSavedToast: $showSavedToast,
+                    resetParent: { resetImportView() }
+                )
+                .onAppear{
+                    if selections[category] == nil {
+                        selections[category] = workout
                     }
-                } else {
-                    Label("Edit", systemImage: "pencil")
-                        .foregroundStyle(.white.opacity(0.4))
-                        .accessibilityHidden(true)
+                })
+                {
+                    Label("Import", systemImage: "plus")
+                        .foregroundStyle(.white)
                 }
             }
         }
+    }
+    
+    // Reset behavior used after save when GoToHomeScreenWhenSaved is true
+    private func resetImportView() {
+        selections.removeAll()
+        weights.removeAll()
+        reps.removeAll()
+        sets.removeAll()
+        distances.removeAll()
+        times.removeAll()
+        notes.removeAll()
     }
 
     private var entriesForWorkout: [WorkoutEntry] {
@@ -114,7 +164,7 @@ struct WorkoutChartView: View {
                             Text(detailLine(for: latestEntry))
                                 .font(.subheadline.bold())
                                 .foregroundStyle(.white)
-                            Image(systemName: "pencil")
+                            Image(systemName: "plus")
                                 .font(.caption)
                                 .foregroundStyle(.white.opacity(0.6))
                         }
@@ -219,6 +269,40 @@ struct WorkoutChartView: View {
                 )
             }
         }
+    }
+    
+    // MARK: - Helpers for ImportView navigation
+
+    private func saveEntry() {
+        WorkoutApp2.saveEntry(
+            for: category,
+            selections: selections,
+            weights: weights,
+            reps: reps,
+            sets: sets,
+            distances: distances,
+            times: times,
+            notes: notes,
+            workoutData: workoutData,
+            onSuccess: {
+                showSavedToast = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    showSavedToast = false
+                }
+            },
+            onError: { }
+        )
+    }
+
+    private func increment(_ dict: inout [WorkoutCategory: String], for category: WorkoutCategory, by step: Int) {
+        let current = Int(dict[category] ?? "0") ?? 0
+        dict[category] = String(current + step)
+    }
+
+    private func decrement(_ dict: inout [WorkoutCategory: String], for category: WorkoutCategory, by step: Int) {
+        let current = Int(dict[category] ?? "0") ?? 0
+        let next = max(0, current - step)
+        dict[category] = String(next)
     }
     
     private var graphMetricName: String {
@@ -363,36 +447,33 @@ struct WorkoutChartView: View {
         WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now, note: ""),
         WorkoutEntry(workoutType: "Bench Press", weight: "165", reps: "5", sets: "4", date: .now.addingTimeInterval(-86400), note: "")
     ]
-    
-    let distanceEntries: [WorkoutEntry] = [
-        WorkoutEntry(
-            workoutType: "Brisk Walking",
-            weight: "2.5",      // distance
-            reps: "",           // unused
-            sets: "32",         // time in minutes
-            date: .now,
-            note: "Latest Walk"
-        ),
 
-        WorkoutEntry(
-            workoutType: "Brisk Walking",
-            weight: "0.8",
-            reps: "",
-            sets: "14",
-            date: .now.addingTimeInterval(-86400 * 2),
-            note: "First Walk"
-        )
+    let distanceEntries: [WorkoutEntry] = [
+        WorkoutEntry(workoutType: "Brisk Walking", weight: "2.5", reps: "", sets: "32", date: .now, note: "Latest Walk"),
+        WorkoutEntry(workoutType: "Brisk Walking", weight: "0.8", reps: "", sets: "14", date: .now.addingTimeInterval(-86400 * 2), note: "First Walk")
     ]
+
     if isWeighted {
         NavigationView {
-            WorkoutChartView(workoutName: "Bench Press", entries: weightedEntries)
-                .environmentObject(GradientSettings())
+            WorkoutChartView(
+                workoutName: "Bench Press",
+                entries: weightedEntries,
+                category: .push,
+                workout: "Bench Press"
+            )
+            .environmentObject(GradientSettings())
+            .environmentObject(WorkoutData())
         }
-    }
-    else {
-        NavigationView{
-            WorkoutChartView(workoutName: "Brisk Walking", entries: distanceEntries)
-                .environmentObject(GradientSettings())
+    } else {
+        NavigationView {
+            WorkoutChartView(
+                workoutName: "Brisk Walking",
+                entries: distanceEntries,
+                category: .distanceCardio,
+                workout: "Brisk Walking"
+            )
+            .environmentObject(GradientSettings())
+            .environmentObject(WorkoutData())
         }
     }
 }

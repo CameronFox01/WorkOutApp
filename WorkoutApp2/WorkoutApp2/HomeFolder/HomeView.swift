@@ -321,10 +321,15 @@ struct HomeView: View {
                             spacing: 16
                         ) {
                             ForEach(lastEntryPerWorkoutType(from: workoutData.entries)) { entry in
+                                let workoutName = entry.workoutType
+                                let category = categoryForWorkout(workoutName)
+                                
                                 NavigationLink(
                                     destination: WorkoutChartView(
-                                        workoutName: entry.workoutType,
-                                        entries: workoutData.entries
+                                        workoutName: workoutName,
+                                        entries: workoutData.entries,
+                                        category: category,
+                                        workout: workoutName
                                     )
                                 ) {
                                     WorkoutTypeCardView(entry: entry, weightUnit: weightUnit)
@@ -478,6 +483,19 @@ struct HomeView: View {
                 print("🔥 weight changed:", newValue)
             }
         }
+    }
+    private func categoryForWorkout(
+        _ workout: String
+    ) -> WorkoutCategory {
+
+        for category in WorkoutCategory.allCases {
+
+            if category.workouts().contains(workout) {
+                return category
+            }
+        }
+
+        return .bodyweight
     }
     
     private var progressIsGood: Bool {

@@ -456,12 +456,6 @@ struct WorkoutCalendarView: View {
                                 .font(.headline)
                                 .foregroundStyle(.white)
                                 
-//                                let currentWeekday = weekday(from: selectedDate)
-//                                
-//                                let sharedDefaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
-//                                let dayTitle = sharedDefaults?.string(forKey: keyTitle(for: currentWeekday)) ?? ""
-//                                let workouts = sharedDefaults?.stringArray(forKey: keyItems(for: weekday(from: selectedDate))) ?? []
-                                
                                 if workouts.isEmpty {
                                     
                                     Text("No planned workouts")
