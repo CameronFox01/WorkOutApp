@@ -62,6 +62,46 @@ func saveEntry(
             UserDefaults.standard.set(encoded, forKey: "workout_entries")
         }
     }
+    
+    // ← Save last used values for this specific workout
+       saveLastWorkoutValues(
+           workoutName: workout,
+           weight: weightString,
+           reps: rep,
+           sets: setsVal,
+           distance: distances[category] ?? "",
+           time: times[category] ?? ""
+       )
 
     onSuccess()
+}
+
+// Save last used values for a specific workout name
+func saveLastWorkoutValues(
+    workoutName: String,
+    weight: String,
+    reps: String,
+    sets: String,
+    distance: String,
+    time: String
+) {
+    let key = "lastWorkout_\(workoutName)"
+    let data: [String: String] = [
+        "weight": weight,
+        "reps": reps,
+        "sets": sets,
+        "distance": distance,
+        "time": time
+    ]
+    if let encoded = try? JSONEncoder().encode(data) {
+        UserDefaults.standard.set(encoded, forKey: key)
+    }
+}
+
+func loadLastWorkoutValues(for workoutName: String) -> [String: String]? {
+    let key = "lastWorkout_\(workoutName)"
+    guard let data = UserDefaults.standard.data(forKey: key),
+          let decoded = try? JSONDecoder().decode([String: String].self, from: data)
+    else { return nil }
+    return decoded
 }

@@ -252,8 +252,6 @@ struct ImportView: View {
                 .background(Color.clear)
             }
             .onAppear {
-                resetImportView()
-
                   for category in WorkoutCategory.allCases {
                       if selections[category] == nil {
                           selections[category] = category.workouts().first ?? ""
@@ -267,9 +265,6 @@ struct ImportView: View {
                   }
 
                   loadEntries()
-            }
-            .onDisappear {
-                resetImportView()
             }
             .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -453,7 +448,31 @@ struct ImportView: View {
                 if showSavedToast { savedToast }
             }
             .onAppear {
-                resetParent()
+                //resetParent()
+                let currentWorkout = selections[category] ?? category.workouts().first ?? ""
+                if let saved = loadLastWorkoutValues(for: currentWorkout) {
+                    if !saved["weight", default: ""].isEmpty { weights[category] = saved["weight"] }
+                    if !saved["reps", default: ""].isEmpty { reps[category] = saved["reps"] }
+                    if !saved["sets", default: ""].isEmpty { sets[category] = saved["sets"] }
+                    if !saved["distance", default: ""].isEmpty { distances[category] = saved["distance"] }
+                    if !saved["time", default: ""].isEmpty { times[category] = saved["time"] }
+                }
+            }
+            .onChange(of: selectionBinding.wrappedValue) { _, newWorkout in
+                if let saved = loadLastWorkoutValues(for: newWorkout) {
+                    if !saved["weight", default: ""].isEmpty { weights[category] = saved["weight"] }
+                    if !saved["reps", default: ""].isEmpty { reps[category] = saved["reps"] }
+                    if !saved["sets", default: ""].isEmpty { sets[category] = saved["sets"] }
+                    if !saved["distance", default: ""].isEmpty { distances[category] = saved["distance"] }
+                    if !saved["time", default: ""].isEmpty { times[category] = saved["time"] }
+                } else {
+                    // First time — clear fields so they start fresh
+                    weights[category] = ""
+                    reps[category] = ""
+                    sets[category] = ""
+                    distances[category] = ""
+                    times[category] = ""
+                }
             }
         }
 

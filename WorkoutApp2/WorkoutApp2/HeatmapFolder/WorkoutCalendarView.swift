@@ -678,15 +678,24 @@ struct WorkoutCalendarView: View {
 
         // Reset behavior used after save when GoToHomeScreenWhenSaved is true
         private func resetImportView() {
-            selections.removeAll()
+            // Keep the selection but clear the input fields
+            let currentSelection = selections[category]
+            
             weights.removeAll()
             reps.removeAll()
             sets.removeAll()
             distances.removeAll()
             times.removeAll()
             notes.removeAll()
+            
+            // Restore the selection so the picker doesn't reset
+            if let current = currentSelection {
+                selections[category] = current
+            } else {
+                selections[category] = workout
+            }
         }
-
+        
         var body: some View {
 
             NavigationLink {
@@ -729,6 +738,21 @@ struct WorkoutCalendarView: View {
 
                     Image(systemName: "chevron.right")
                         .font(.caption.bold())
+                }
+                .onAppear {
+                    if selections[category] == nil {
+                        selections[category] = workout
+                    }
+                    
+                    // Load last saved values for this workout
+                    let currentWorkout = selections[category] ?? workout
+                    if let saved = loadLastWorkoutValues(for: currentWorkout) {
+                        if !saved["weight", default: ""].isEmpty { weights[category] = saved["weight"] }
+                        if !saved["reps", default: ""].isEmpty { reps[category] = saved["reps"] }
+                        if !saved["sets", default: ""].isEmpty { sets[category] = saved["sets"] }
+                        if !saved["distance", default: ""].isEmpty { distances[category] = saved["distance"] }
+                        if !saved["time", default: ""].isEmpty { times[category] = saved["time"] }
+                    }
                 }
                 .foregroundStyle(.white)
                 .padding(16)
