@@ -13,6 +13,8 @@ struct PlannedWorkoutsView: View {
 
     // MARK: - Environment
     @Environment(\.dismiss) private var dismiss
+    
+    @State
 
     // MARK: - Toolbar Button Sizes
     @State private var buttonHeight: CGFloat = 10
@@ -127,12 +129,23 @@ struct PlannedWorkoutsView: View {
                             .foregroundStyle(.white)
                     }
                 }
+                if comingFromCard {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .foregroundStyle(.white)
+                        }
+                    }
+                }
             }
             .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
             loadForDay(selectedDay)
         }
+        
     }
 
     // MARK: - Day Selector
@@ -161,6 +174,8 @@ struct PlannedWorkoutsView: View {
             }
         }
     }
+    
+    var comingFromCard: Bool = false
 
     // MARK: - Title Card
 

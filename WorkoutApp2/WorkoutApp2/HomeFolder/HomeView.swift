@@ -30,6 +30,7 @@ struct HomeView: View {
     private var gainWeight: Bool { weightGoalDirection == "gain" }
     @AppStorage("showBMI") private var showBMI: Bool = false
     @AppStorage("showMeasurement") private var showMeasurement: Bool = false
+    @AppStorage("showDailyPlanner") private var showDailyPlanner: Bool = true
     
     //Calories or kCal here
     @AppStorage("energyLabel")
@@ -278,6 +279,12 @@ struct HomeView: View {
                         }
                         .padding(.horizontal)
                         .buttonStyle(.plain)
+                        
+                        // Daily Planned Workouts
+                        if showDailyPlanner{
+                            DailyPlannedWorkoutsCard()
+                                .padding(.horizontal)
+                        }
                         
                         //Can be Hiden Section before Recent Workouts
                         if showBMI {

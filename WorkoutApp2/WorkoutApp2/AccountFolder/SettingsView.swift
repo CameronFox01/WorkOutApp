@@ -23,6 +23,7 @@ struct SettingsView: View {
     @AppStorage("weightGoalDirection") private var weightGoalDirection: String = "lose"
     @AppStorage("showBMI") private var showBMI: Bool = false
     @AppStorage("showMeasurement") private var showMeasurement: Bool = false
+    @AppStorage("showDailyPlanner") private var showDailyPlanner: Bool = true
     
     //Boolean for kcal vs Calories
     @AppStorage("energyLabel")
@@ -127,279 +128,180 @@ struct SettingsView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                VStack {
-                    ScrollView {
-                        VStack(spacing: 20) {
-
-                            // DISPLAY SECTION
-                            SettingsCard(title: "Home Screen") {
-
-                                SettingsRow(
-                                    icon: "rectangle.grid.2x2.fill",
-                                    title: "Recent Workouts"
-                                ) {
-                                    TextField(
-                                        "12",
-                                        value: $numberOfWorkoutsToShow,
-                                        format: .number
-                                    )
+                ScrollView {
+                    VStack(spacing: 12) {
+                        
+                        CollapsibleSettingsSection(
+                            title: "Home Screen",
+                            icon: "house.fill",
+                            iconColor: .blue
+                        ) {
+                            // paste your existing Home Screen SettingsCard content here
+                            SettingsRow(icon: "rectangle.grid.2x2.fill", title: "Recent Workouts") {
+                                TextField("12", value: $numberOfWorkoutsToShow, format: .number)
                                     .keyboardType(.numberPad)
                                     .multilineTextAlignment(.trailing)
                                     .frame(width: 50)
                                     .focused($workoutsFieldFocused)
+                            }
+                            Divider()
+                            SettingsRow(icon: "timer", title: "Workout Timer") {
+                                Picker("", selection: $showStopWatch) {
+                                    Text("Stopwatch").tag(true)
+                                    Text("Timer").tag(false)
                                 }
-
-                                Divider()
-                                // Section for the Stop watch to be shown
+                            }
+                            Divider()
+                            SettingsRow(icon: "flame.fill", title: "Energy Units") {
+                                Picker("", selection: $energyLabel) {
+                                    Text("Calories").tag("Calories")
+                                    Text("kcal").tag("kcal")
+                                }
+                                .pickerStyle(.menu)
+                            }
+                            Divider()
+                            SettingsRow(icon: "scalemass", title: "Show BMI") {
+                                Toggle("", isOn: $showBMI).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "ruler", title: "Show Measurements") {
+                                Toggle("", isOn: $showMeasurement).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "calendar.badge.checkmark", title: "Show Daily Planner") {
+                                Toggle("", isOn: $showDailyPlanner).labelsHidden()
+                            }
+                        }
+                        
+                        CollapsibleSettingsSection(
+                            title: "Import Settings",
+                            icon: "square.and.arrow.down",
+                            iconColor: .green
+                        ) {
+                            SettingsRow(icon: "square.and.arrow.down", title: "Return Home After Import") {
+                                Toggle("", isOn: $GoToHomeScreenWhenSaved).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "photo.on.rectangle", title: "Save to Photos App") {
+                                Toggle("", isOn: $saveToPhoto).labelsHidden()
+                            }
+                        }
+                        
+                        CollapsibleSettingsSection(
+                            title: "Weight Goal",
+                            icon: "target",
+                            iconColor: .orange
+                        ) {
+                            SettingsRow(icon: "scalemass", title: "Goal Direction") {
+                                Picker("", selection: $weightGoalDirection) {
+                                    Text("Lose Weight").tag("lose")
+                                    Text("Gain Weight").tag("gain")
+                                }
+                                .pickerStyle(.menu)
+                            }
+                        }
+                        
+                        CollapsibleSettingsSection(
+                            title: "Notifications",
+                            icon: "bell.fill",
+                            iconColor: .red
+                        ) {
+                            SettingsCard(title: "") {
+                                
                                 SettingsRow(
-                                    icon: "timer",
-                                    title: "Workout Timer"
+                                    icon: notificationsEnabled
+                                    ? "bell.badge.fill"
+                                    : "bell.slash.fill",
+                                    title: "Enable Notifications"
+                                ) {
+                                    
+                                    Toggle("", isOn: $notificationsEnabled)
+                                        .labelsHidden()
+                                    
+                                }
+                                
+                                Divider()
+                                
+                                //Notification for Milestones achieved
+                                SettingsRow(
+                                    icon: notificationsEnabled
+                                    ? "bell.fill"
+                                    : "bell.slash.fill",
+                                    title: "Enable Milestone Notifications"
                                 ){
-                                    Picker("", selection: $showStopWatch){
-                                        Text("Stopwatch").tag(true)
-                                        Text("Timer").tag(false)
-                                    }
+                                    Toggle("", isOn: $milesstoneReminder)
+                                        .labelsHidden()
                                 }
+                                .opacity(notificationsEnabled ? 1 : 0.4)
                                 
                                 Divider()
-                                // Section for the calories settings
-                                SettingsRow(
-                                    icon: "flame.fill",
-                                    title: "Energy Units"
-                                ) {
-                                    Picker("", selection: $energyLabel) {
-                                        Text("Calories").tag("Calories")
-                                        Text("kcal").tag("kcal")
-                                    }
-                                    .pickerStyle(.menu)
-                                }
                                 
-                                // Section for the BMI to be Shown
+                                //Notification for Goals Achieved
                                 SettingsRow(
-                                    icon: "scalemass",
-                                    title: "Show BMI"
-                                ) {
-                                    Toggle("", isOn: $showBMI)
+                                    icon: notificationsEnabled
+                                    ? "bell.fill"
+                                    : "bell.slash.fill",
+                                    title: "Enable Achieved Goal Notifications"
+                                ){
+                                    Toggle("", isOn: $goalReminder)
                                         .labelsHidden()
                                 }
+                                .opacity(notificationsEnabled ? 1 : 0.4)
                                 
-                                // Section for the Measurements to be Shown
-                                SettingsRow(
-                                    icon: "scalemass",
-                                    title: "Show Measurements"
-                                ) {
-                                    Toggle("", isOn: $showMeasurement)
-                                        .labelsHidden()
-                                }
-                            }
-
-                            // IMPORT SECTION
-                            SettingsCard(title: "Import Settings") {
-
-                                SettingsRow(
-                                    icon: "square.and.arrow.down",
-                                    title: "Return Home After Import"
-                                ) {
-                                    Toggle("", isOn: $GoToHomeScreenWhenSaved)
-                                        .labelsHidden()
-                                }
-
                                 Divider()
-
+                                
+                                // Notification for Weekly Workout Challenge
                                 SettingsRow(
-                                    icon: "photo.on.rectangle",
-                                    title: "Save to Photos App"
+                                    icon: notificationsEnabled
+                                    ? "flame.fill"
+                                    : "bell.slash.fill",
+                                    title: "Weekly Workout Challenge"
                                 ) {
-                                    Toggle("", isOn: $saveToPhoto)
+                                    Toggle("", isOn: $workoutChallengeReminder)
                                         .labelsHidden()
                                 }
-                            }
-                            
-                            SettingsCard(title: "Weight Goal") {
-                                SettingsRow(
-                                    icon: "scalemass",
-                                    title: "Goal Direction"
-                                ) {
-                                    Picker("", selection: $weightGoalDirection) {
-                                        Text("Lose Weight").tag("lose")
-                                        Text("Gain Weight").tag("gain")
-                                    }
-                                    .pickerStyle(.menu)
-                                }
-                            }
-                            
-                            //Notification
-                            SettingsCard(title: "Notifications") {
+                                .opacity(notificationsEnabled ? 1 : 0.4)
                                 
+                                if notificationsEnabled && workoutChallengeReminder {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "info.circle")
+                                                .foregroundStyle(.secondary)
+                                                .font(.caption)
+                                            Text("Sends a mid-week check-in (Wed) and end-of-week push (Sat) if you haven't hit your weekly goal.")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                    .padding(.leading, 42)
+                                }
+                                
+                                //Notification Section
+                                Divider()
+                                
+                                Text("Weight Settings")
+                                    .font(.title3).bold()
+                                    .padding(.top, 16)
+                                
+                                //Notification for Daily weigh ins
                                 SettingsCard(title: "") {
                                     
-                                    SettingsRow(
-                                        icon: notificationsEnabled
-                                        ? "bell.badge.fill"
-                                        : "bell.slash.fill",
-                                        title: "Enable Notifications"
-                                    ) {
+                                    VStack(spacing: 16) {
                                         
-                                        Toggle("", isOn: $notificationsEnabled)
-                                            .labelsHidden()
-                                        
-                                    }
-                                    
-                                    Divider()
-                                    
-                                    //Notification for Milestones achieved
-                                    SettingsRow(
-                                        icon: notificationsEnabled
-                                            ? "bell.fill"
-                                            : "bell.slash.fill",
-                                        title: "Enable Milestone Notifications"
-                                    ){
-                                        Toggle("", isOn: $milesstoneReminder)
-                                            .labelsHidden()
-                                    }
-                                    .opacity(notificationsEnabled ? 1 : 0.4)
-                                    
-                                    Divider()
-                                    
-                                    //Notification for Goals Achieved
-                                    SettingsRow(
-                                        icon: notificationsEnabled
-                                            ? "bell.fill"
-                                            : "bell.slash.fill",
-                                        title: "Enable Achieved Goal Notifications"
-                                    ){
-                                        Toggle("", isOn: $goalReminder)
-                                            .labelsHidden()
-                                    }
-                                    .opacity(notificationsEnabled ? 1 : 0.4)
-                                    
-                                    Divider()
-
-                                    // Notification for Weekly Workout Challenge
-                                    SettingsRow(
-                                        icon: notificationsEnabled
-                                            ? "flame.fill"
-                                            : "bell.slash.fill",
-                                        title: "Weekly Workout Challenge"
-                                    ) {
-                                        Toggle("", isOn: $workoutChallengeReminder)
-                                            .labelsHidden()
-                                    }
-                                    .opacity(notificationsEnabled ? 1 : 0.4)
-
-                                    if notificationsEnabled && workoutChallengeReminder {
-                                        VStack(alignment: .leading, spacing: 6) {
-                                            HStack(spacing: 6) {
-                                                Image(systemName: "info.circle")
-                                                    .foregroundStyle(.secondary)
-                                                    .font(.caption)
-                                                Text("Sends a mid-week check-in (Wed) and end-of-week push (Sat) if you haven't hit your weekly goal.")
-                                                    .font(.caption)
-                                                    .foregroundStyle(.secondary)
-                                            }
-                                        }
-                                        .padding(.leading, 42)
-                                    }
-                                    
-                                    //Notification Section
-                                    Divider()
-                                    
-                                    Text("Weight Settings")
-                                        .font(.title3).bold()
-                                        .padding(.top, 16)
-                                    
-                                    //Notification for Daily weigh ins
-                                    SettingsCard(title: "") {
-                                        
-                                        VStack(spacing: 16) {
-                                            
-                                            // WEIGH IN REMINDER CARD
-                                            VStack(spacing: 12) {
-                                                
-                                                SettingsRow(
-                                                    icon: weighInReminder ? "bell.fill" : "bell.slash.fill",
-                                                    title: "Daily Weigh-In Reminder"
-                                                ) {
-                                                    Toggle("", isOn: $weighInReminder)
-                                                        .labelsHidden()
-                                                        .disabled(!notificationsEnabled)
-                                                }
-                                                .opacity(notificationsEnabled ? 1 : 0.4)
-                                                
-                                                if notificationsEnabled && weighInReminder {
-                                                    
-                                                    Divider()
-                                                    
-                                                    SettingsRow(
-                                                        icon: "clock.fill",
-                                                        title: "Time"
-                                                    ) {
-                                                        
-                                                        DatePicker(
-                                                            "",
-                                                            selection: Binding(
-                                                                get: {
-                                                                    Date(
-                                                                        timeIntervalSince1970:
-                                                                            weighInReminderTime
-                                                                    )
-                                                                },
-                                                                set: {
-                                                                    weighInReminderTime =
-                                                                    $0.timeIntervalSince1970
-                                                                }
-                                                            ),
-                                                            displayedComponents: .hourAndMinute
-                                                        )
-                                                        .labelsHidden()
-                                                    }
-                                                    
-                                                } else {
-                                                    
-                                                    HStack {
-                                                        
-                                                        Image(systemName: "moon.zzz.fill")
-                                                            .foregroundStyle(.secondary)
-                                                        
-                                                        Text("Reminder disabled")
-                                                            .foregroundStyle(.secondary)
-                                                        
-                                                        Spacer()
-                                                    }
-                                                    .font(.subheadline)
-                                                    
-                                                }
-                                                
-                                            }
-                                            .padding()
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 18)
-                                                    .fill(
-                                                        notificationsEnabled && weighInReminder
-                                                        ? Color.blue.opacity(0.12)
-                                                        : Color.gray.opacity(0.08)
-                                                    )
-                                            )
-                                            
-                                        }
-                                        
-                                    }
-                                    
-                                    //Notification for Weekly weigh ins
-                                    SettingsCard(title: ""){
-                                        VStack(spacing: 16) {
+                                        // WEIGH IN REMINDER CARD
+                                        VStack(spacing: 12) {
                                             
                                             SettingsRow(
-                                                icon: weighInWeeklyReminder ? "bell.fill" : "bell.slash.fill",
-                                                title: "Weekly Weigh-In Reminder"
+                                                icon: weighInReminder ? "bell.fill" : "bell.slash.fill",
+                                                title: "Daily Weigh-In Reminder"
                                             ) {
-                                                Toggle("", isOn: $weighInWeeklyReminder)
+                                                Toggle("", isOn: $weighInReminder)
                                                     .labelsHidden()
                                                     .disabled(!notificationsEnabled)
                                             }
                                             .opacity(notificationsEnabled ? 1 : 0.4)
                                             
-                                            if notificationsEnabled && weighInWeeklyReminder {
+                                            if notificationsEnabled && weighInReminder {
                                                 
                                                 Divider()
                                                 
@@ -407,17 +309,18 @@ struct SettingsView: View {
                                                     icon: "clock.fill",
                                                     title: "Time"
                                                 ) {
+                                                    
                                                     DatePicker(
                                                         "",
                                                         selection: Binding(
                                                             get: {
                                                                 Date(
                                                                     timeIntervalSince1970:
-                                                                        weighInWeeklyReminderTime
+                                                                        weighInReminderTime
                                                                 )
                                                             },
                                                             set: {
-                                                                weighInWeeklyReminderTime =
+                                                                weighInReminderTime =
                                                                 $0.timeIntervalSince1970
                                                             }
                                                         ),
@@ -425,7 +328,152 @@ struct SettingsView: View {
                                                     )
                                                     .labelsHidden()
                                                 }
-                                                Picker("Day", selection: $weeklyWeighInDay) {
+                                                
+                                            } else {
+                                                
+                                                HStack {
+                                                    
+                                                    Image(systemName: "moon.zzz.fill")
+                                                        .foregroundStyle(.secondary)
+                                                    
+                                                    Text("Reminder disabled")
+                                                        .foregroundStyle(.secondary)
+                                                    
+                                                    Spacer()
+                                                }
+                                                .font(.subheadline)
+                                                
+                                            }
+                                            
+                                        }
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 18)
+                                                .fill(
+                                                    notificationsEnabled && weighInReminder
+                                                    ? Color.blue.opacity(0.12)
+                                                    : Color.gray.opacity(0.08)
+                                                )
+                                        )
+                                        
+                                    }
+                                    
+                                }
+                                
+                                //Notification for Weekly weigh ins
+                                SettingsCard(title: ""){
+                                    VStack(spacing: 16) {
+                                        
+                                        SettingsRow(
+                                            icon: weighInWeeklyReminder ? "bell.fill" : "bell.slash.fill",
+                                            title: "Weekly Weigh-In Reminder"
+                                        ) {
+                                            Toggle("", isOn: $weighInWeeklyReminder)
+                                                .labelsHidden()
+                                                .disabled(!notificationsEnabled)
+                                        }
+                                        .opacity(notificationsEnabled ? 1 : 0.4)
+                                        
+                                        if notificationsEnabled && weighInWeeklyReminder {
+                                            
+                                            Divider()
+                                            
+                                            SettingsRow(
+                                                icon: "clock.fill",
+                                                title: "Time"
+                                            ) {
+                                                DatePicker(
+                                                    "",
+                                                    selection: Binding(
+                                                        get: {
+                                                            Date(
+                                                                timeIntervalSince1970:
+                                                                    weighInWeeklyReminderTime
+                                                            )
+                                                        },
+                                                        set: {
+                                                            weighInWeeklyReminderTime =
+                                                            $0.timeIntervalSince1970
+                                                        }
+                                                    ),
+                                                    displayedComponents: .hourAndMinute
+                                                )
+                                                .labelsHidden()
+                                            }
+                                            Picker("Day", selection: $weeklyWeighInDay) {
+                                                Text("Sunday").tag(1)
+                                                Text("Monday").tag(2)
+                                                Text("Tuesday").tag(3)
+                                                Text("Wednesday").tag(4)
+                                                Text("Thursday").tag(5)
+                                                Text("Friday").tag(6)
+                                                Text("Saturday").tag(7)
+                                            }
+                                            
+                                        } else {
+                                            
+                                            HStack {
+                                                
+                                                Image(systemName: "moon.zzz.fill")
+                                                    .foregroundStyle(.secondary)
+                                                
+                                                Text("Reminder disabled")
+                                                    .foregroundStyle(.secondary)
+                                                
+                                                Spacer()
+                                            }
+                                            .font(.subheadline)
+                                            
+                                        }
+                                    }
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 18)
+                                            .fill(
+                                                notificationsEnabled && weighInWeeklyReminder
+                                                ? Color.blue.opacity(0.12)
+                                                : Color.gray.opacity(0.08)
+                                            )
+                                    )
+                                    
+                                }
+                                
+                                Text("Photo Settings")
+                                    .font(.title3).bold()
+                                    .padding(.top, 10)
+                                // Notification for Weekly Photos
+                                SettingsCard(title: "") {
+                                    VStack(spacing: 16) {
+                                        
+                                        // WEIGH IN REMINDER CARD
+                                        VStack(spacing: 12) {
+                                            
+                                            SettingsRow(
+                                                icon: weeklyProgressPhotoReminder ? "bell.fill" : "bell.slash.fill",
+                                                title: "Weekly Photo Reminder"
+                                            ) {
+                                                Toggle("", isOn: $weeklyProgressPhotoReminder)
+                                                    .labelsHidden()
+                                                    .disabled(!notificationsEnabled)
+                                            }
+                                            .opacity(notificationsEnabled ? 1 : 0.4)
+                                            
+                                            if notificationsEnabled && weeklyProgressPhotoReminder {
+                                                Divider()
+                                                
+                                                SettingsRow(icon: "clock.fill", title: "Time") {
+                                                    DatePicker(
+                                                        "",
+                                                        selection: Binding(
+                                                            get: { Date(timeIntervalSince1970: weeklyPhotoReminderTime) },
+                                                            set: { weeklyPhotoReminderTime = $0.timeIntervalSince1970 }
+                                                        ),
+                                                        displayedComponents: .hourAndMinute
+                                                    )
+                                                    .labelsHidden()
+                                                }
+                                                
+                                                Picker("Day", selection: $weeklyPhotoReminderDay) {
                                                     Text("Sunday").tag(1)
                                                     Text("Monday").tag(2)
                                                     Text("Tuesday").tag(3)
@@ -434,7 +482,6 @@ struct SettingsView: View {
                                                     Text("Friday").tag(6)
                                                     Text("Saturday").tag(7)
                                                 }
-                                                
                                             } else {
                                                 
                                                 HStack {
@@ -450,12 +497,13 @@ struct SettingsView: View {
                                                 .font(.subheadline)
                                                 
                                             }
+                                            
                                         }
                                         .padding()
                                         .background(
                                             RoundedRectangle(cornerRadius: 18)
                                                 .fill(
-                                                    notificationsEnabled && weighInWeeklyReminder
+                                                    notificationsEnabled && weeklyProgressPhotoReminder
                                                     ? Color.blue.opacity(0.12)
                                                     : Color.gray.opacity(0.08)
                                                 )
@@ -463,310 +511,210 @@ struct SettingsView: View {
                                         
                                     }
                                     
-                                Text("Photo Settings")
-                                        .font(.title3).bold()
-                                        .padding(.top, 10)
-                                    // Notification for Weekly Photos
-                                    SettingsCard(title: "") {
-                                        VStack(spacing: 16) {
-                                            
-                                            // WEIGH IN REMINDER CARD
-                                            VStack(spacing: 12) {
-                                                
-                                                SettingsRow(
-                                                    icon: weeklyProgressPhotoReminder ? "bell.fill" : "bell.slash.fill",
-                                                    title: "Weekly Photo Reminder"
-                                                ) {
-                                                    Toggle("", isOn: $weeklyProgressPhotoReminder)
-                                                        .labelsHidden()
-                                                        .disabled(!notificationsEnabled)
-                                                }
-                                                .opacity(notificationsEnabled ? 1 : 0.4)
-                                                
-                                                if notificationsEnabled && weeklyProgressPhotoReminder {
-                                                    Divider()
-
-                                                    SettingsRow(icon: "clock.fill", title: "Time") {
-                                                        DatePicker(
-                                                            "",
-                                                            selection: Binding(
-                                                                get: { Date(timeIntervalSince1970: weeklyPhotoReminderTime) },
-                                                                set: { weeklyPhotoReminderTime = $0.timeIntervalSince1970 }
-                                                            ),
-                                                            displayedComponents: .hourAndMinute
-                                                        )
-                                                        .labelsHidden()
-                                                    }
-
-                                                    Picker("Day", selection: $weeklyPhotoReminderDay) {
-                                                        Text("Sunday").tag(1)
-                                                        Text("Monday").tag(2)
-                                                        Text("Tuesday").tag(3)
-                                                        Text("Wednesday").tag(4)
-                                                        Text("Thursday").tag(5)
-                                                        Text("Friday").tag(6)
-                                                        Text("Saturday").tag(7)
-                                                    }
-                                                } else {
-                                                    
-                                                    HStack {
-                                                        
-                                                        Image(systemName: "moon.zzz.fill")
-                                                            .foregroundStyle(.secondary)
-                                                        
-                                                        Text("Reminder disabled")
-                                                            .foregroundStyle(.secondary)
-                                                        
-                                                        Spacer()
-                                                    }
-                                                    .font(.subheadline)
-                                                    
-                                                }
-                                                
-                                            }
-                                            .padding()
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 18)
-                                                    .fill(
-                                                        notificationsEnabled && weeklyProgressPhotoReminder
-                                                        ? Color.blue.opacity(0.12)
-                                                        : Color.gray.opacity(0.08)
-                                                    )
-                                            )
-                                            
-                                        }
+                                }
+                                
+                                //Notification for Monthly Photos
+                                SettingsCard(title: "") {
+                                    VStack(spacing: 16) {
                                         
-                                    }
-                                    
-                                    //Notification for Monthly Photos
-                                    SettingsCard(title: "") {
-                                        VStack(spacing: 16) {
-
+                                        SettingsRow(
+                                            icon: monthlyProgressPhotoReminder ? "bell.fill" : "bell.slash.fill",
+                                            title: "Monthly Photo Reminder"
+                                        ) {
+                                            Toggle("", isOn: $monthlyProgressPhotoReminder)
+                                                .labelsHidden()
+                                                .disabled(!notificationsEnabled)
+                                        }
+                                        .opacity(notificationsEnabled ? 1 : 0.4)
+                                        
+                                        if notificationsEnabled && monthlyProgressPhotoReminder {
+                                            
+                                            Divider()
+                                            
                                             SettingsRow(
-                                                icon: monthlyProgressPhotoReminder ? "bell.fill" : "bell.slash.fill",
-                                                title: "Monthly Photo Reminder"
+                                                icon: "clock.fill",
+                                                title: "Time"
                                             ) {
-                                                Toggle("", isOn: $monthlyProgressPhotoReminder)
-                                                    .labelsHidden()
-                                                    .disabled(!notificationsEnabled)
-                                            }
-                                            .opacity(notificationsEnabled ? 1 : 0.4)
-
-                                            if notificationsEnabled && monthlyProgressPhotoReminder {
-
-                                                Divider()
-
-                                                SettingsRow(
-                                                    icon: "clock.fill",
-                                                    title: "Time"
-                                                ) {
-                                                    DatePicker(
-                                                        "",
-                                                        selection: Binding(
-                                                            get: {
-                                                                Date(timeIntervalSince1970: monthlyPhotoReminderTime)
-                                                            },
-                                                            set: {
-                                                                monthlyPhotoReminderTime = $0.timeIntervalSince1970 
-                                                            }
-                                                        ),
-                                                        displayedComponents: .hourAndMinute
-                                                    )
-                                                    .labelsHidden()
-                                                }
-                                                
-                                                // Monthly photo day picker — day of month, not day of week
-                                                Picker("Day of Month", selection: $monthlyPhotoReminderDay) {
-                                                    ForEach(1...28, id: \.self) { day in
-                                                        Text(dayOfMonthLabel(day)).tag(day)
-                                                    }
-                                                }
-
-                                            } else {
-
-                                                HStack {
-                                                    Image(systemName: "moon.zzz.fill")
-                                                        .foregroundStyle(.secondary)
-                                                    Text("Reminder disabled")
-                                                        .foregroundStyle(.secondary)
-                                                    Spacer()
-                                                }
-                                                .font(.subheadline)
-                                            }
-                                        }
-                                        .padding()
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 18)
-                                                .fill(
-                                                    notificationsEnabled && monthlyProgressPhotoReminder
-                                                    ? Color.blue.opacity(0.12)
-                                                    : Color.gray.opacity(0.08)
+                                                DatePicker(
+                                                    "",
+                                                    selection: Binding(
+                                                        get: {
+                                                            Date(timeIntervalSince1970: monthlyPhotoReminderTime)
+                                                        },
+                                                        set: {
+                                                            monthlyPhotoReminderTime = $0.timeIntervalSince1970
+                                                        }
+                                                    ),
+                                                    displayedComponents: .hourAndMinute
                                                 )
-                                        )
-                                    }
-                                    
-                                }
-                            }
-                            
-                            // APPEARANCE SECTION
-                            SettingsCard(title: "Background") {
-                                GradientPickerSection()
-                            }
-                            
-                            // Face ID SECTION
-                            SettingsCard(title: "Security") {
-                                SettingsRow(
-                                    icon: "faceid",
-                                    title: "Require Face ID"
-                                ) {
-                                    Toggle("", isOn: $faceIDEnabled)
-                                        .labelsHidden()
-                                }
-
-                                if faceIDEnabled {
-                                    Divider()
-
-                                    SettingsRow(
-                                        icon: "clock",
-                                        title: "Lock After"
-                                    ) {
-                                        Picker("", selection: $lockGracePeriodSeconds) {
-                                            ForEach(LockGracePeriod.allCases) { option in
-                                                Text(option.label).tag(option.rawValue)
+                                                .labelsHidden()
                                             }
+                                            
+                                            // Monthly photo day picker — day of month, not day of week
+                                            Picker("Day of Month", selection: $monthlyPhotoReminderDay) {
+                                                ForEach(1...28, id: \.self) { day in
+                                                    Text(dayOfMonthLabel(day)).tag(day)
+                                                }
+                                            }
+                                            
+                                        } else {
+                                            
+                                            HStack {
+                                                Image(systemName: "moon.zzz.fill")
+                                                    .foregroundStyle(.secondary)
+                                                Text("Reminder disabled")
+                                                    .foregroundStyle(.secondary)
+                                                Spacer()
+                                            }
+                                            .font(.subheadline)
                                         }
-                                        .labelsHidden()
-                                        .lineLimit(1)
-                                        .fixedSize(horizontal: true, vertical: false)
                                     }
-                                }
-                            }
-                            
-                            // DATA SECTION
-                            SettingsCard(title: "Data") {
-                                DataExportSection()
-                            }
-
-                            // RESET SECTION
-                            SettingsCard(title: "Danger Zone") {
-                                Button {
-                                    showDeletePhotosConfirmation = true
-                                } label: {
-                                    HStack {
-                                        Image(systemName: "photo.on.rectangle")
-                                        Text("Delete all Photos")
-                                        Spacer()
-                                    }
-                                    .foregroundStyle(.orange)
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 18)
+                                            .fill(
+                                                notificationsEnabled && monthlyProgressPhotoReminder
+                                                ? Color.blue.opacity(0.12)
+                                                : Color.gray.opacity(0.08)
+                                            )
+                                    )
                                 }
                                 
-                                Divider()
-                                
-                                Button {
-                                    showResetAccountConfirmation = true
-                                } label: {
-                                    HStack {
-                                        Image(systemName: "person.crop.circle.badge.xmark")
-
-                                        Text("Reset App Setup")
-
-                                        Spacer()
-                                    }
-                                    .foregroundStyle(.orange)
-                                }
-
-                                Divider()
-
-                                Button(role: .destructive) {
-                                    showResetConfirmation = true
-                                } label: {
-                                    HStack {
-                                        Image(systemName: "trash")
-
-                                        Text("Reset Entire App")
-
-                                        Spacer()
-                                    }
-                                }
                             }
-                            .confirmationDialog(
-                                "Delete All Photos?",
-                                isPresented: $showDeletePhotosConfirmation,
-                                titleVisibility: .visible
-                            ) {
-                                Button("Delete All", role: .destructive) {
-                                    deleteAllPhotos()
-                                }
-                                Button("Cancel", role: .cancel) { }
-                            } message: {
-                                Text("This will permanently delete all photos saved in the app.")
-                            }
-                            .confirmationDialog(
-                                "Reset Entire App?",
-                                isPresented: $showResetConfirmation,
-                                titleVisibility: .visible
-                            ) {
-                                Button("Reset Everything", role: .destructive) {
-                                    resetEntireApp()
-                                }
-                                Button("Cancel", role: .cancel) { }
-                            } message: {
-                                Text("This will delete all your workout data and settings. This cannot be undone.")
-                            }
-                            .confirmationDialog(
-                                "Reset App Setup?",
-                                isPresented: $showResetAccountConfirmation,
-                                titleVisibility: .visible
-                            ) {
-                                Button("Reset Setup", role: .destructive) {
-                                    hasCompletedSetup = false
-                                }
-                                Button("Cancel", role: .cancel) { }
-                            } message: {
-                                Text("This will take you back through the initial setup screen.")
-                            }
-
-                            // APP INFO
-                            VStack(spacing: 6) {
-
-                                Text("IronFox")
-                                    .font(.headline)
-                                
-                                // Change this to the actual webpage once published.
-                                Link("Visit Webpage", destination: URL(string: "http://cameronfox.me/publishedapps/ironfox")!)
-
-                                Text("Version \(appVersion)")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(.top, 10)
-                            .padding(.bottom, 30)
-                        }
-                        .padding()
-                    }
-                    .scrollIndicators(.hidden)
-                    
-                    .toolbar {
-                        
-                        ToolbarItem(placement: .principal) {
-                            Text("Settings")
-                                .font(.largeTitle).bold()
-                                .foregroundStyle(.white)
                         }
                         
-                        // Keyboard toolbar
-                        ToolbarItemGroup(placement: .keyboard) {
-                            
-                            Spacer()
-                            
-                            Button("Done") {
-                                workoutsFieldFocused = false
+                        CollapsibleSettingsSection(
+                            title: "Background",
+                            icon: "paintpalette.fill",
+                            iconColor: .purple
+                        ) {
+                            GradientPickerSection()
+                        }
+                        
+                        CollapsibleSettingsSection(
+                            title: "Security",
+                            icon: "faceid",
+                            iconColor: .blue
+                        ) {
+                            SettingsRow(icon: "faceid", title: "Require Face ID") {
+                                Toggle("", isOn: $faceIDEnabled).labelsHidden()
+                            }
+                            if faceIDEnabled {
+                                Divider()
+                                SettingsRow(icon: "clock", title: "Lock After") {
+                                    Picker("", selection: $lockGracePeriodSeconds) {
+                                        ForEach(LockGracePeriod.allCases) { option in
+                                            Text(option.label).tag(option.rawValue)
+                                        }
+                                    }
+                                    .labelsHidden()
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
+                                }
                             }
                         }
+                        
+                        CollapsibleSettingsSection(
+                            title: "Data",
+                            icon: "externaldrive.fill",
+                            iconColor: .gray
+                        ) {
+                            DataExportSection()
+                        }
+                        
+                        CollapsibleSettingsSection(
+                            title: "Danger Zone",
+                            icon: "exclamationmark.triangle.fill",
+                            iconColor: .red
+                        ) {
+                            Button {
+                                showDeletePhotosConfirmation = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "photo.on.rectangle")
+                                    Text("Delete all Photos")
+                                    Spacer()
+                                }
+                                .foregroundStyle(.orange)
+                            }
+                            
+                            Divider()
+                            
+                            Button {
+                                showResetAccountConfirmation = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "person.crop.circle.badge.xmark")
+                                    
+                                    Text("Reset App Setup")
+                                    
+                                    Spacer()
+                                }
+                                .foregroundStyle(.orange)
+                            }
+                            
+                            Divider()
+                            
+                            Button(role: .destructive) {
+                                showResetConfirmation = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "trash")
+                                    
+                                    Text("Reset Entire App")
+                                    
+                                    Spacer()
+                                }
+                            }
+                        }// maube put it here
+                        .confirmationDialog(
+                            "Delete All Photos?",
+                            isPresented: $showDeletePhotosConfirmation,
+                            titleVisibility: .visible
+                        ) {
+                            Button("Delete All", role: .destructive) {
+                                deleteAllPhotos()
+                            }
+                            Button("Cancel", role: .cancel) { }
+                        } message: {
+                            Text("This will permanently delete all photos saved in the app.")
+                        }
+                        .confirmationDialog(
+                            "Reset Entire App?",
+                            isPresented: $showResetConfirmation,
+                            titleVisibility: .visible
+                        ) {
+                            Button("Reset Everything", role: .destructive) {
+                                resetEntireApp()
+                            }
+                            Button("Cancel", role: .cancel) { }
+                        } message: {
+                            Text("This will delete all your workout data and settings. This cannot be undone.")
+                        }
+                        .confirmationDialog(
+                            "Reset App Setup?",
+                            isPresented: $showResetAccountConfirmation,
+                            titleVisibility: .visible
+                        ) {
+                            Button("Reset Setup", role: .destructive) {
+                                hasCompletedSetup = false
+                            }
+                            Button("Cancel", role: .cancel) { }
+                        } message: {
+                            Text("This will take you back through the initial setup screen.")
+                        }
                     }
+                    .padding()
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar{
+                ToolbarItem(placement: .principal) {
+                    Text("Settings")
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
+                }
+            }
             .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
         .environmentObject(gradientSettings)
@@ -1035,6 +983,54 @@ struct SettingsView: View {
         workoutData.entries.removeAll()
         UserDefaults.standard.set(false, forKey: "hasCompletedSetup")
         hasCompletedSetup = false
+    }
+}
+
+struct CollapsibleSettingsSection<Content: View>: View {
+    let title: String
+    let icon: String
+    let iconColor: Color
+    @State private var isExpanded: Bool = false
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: icon)
+                        .font(.title3)
+                        .frame(width: 28)
+                        .foregroundStyle(iconColor)
+
+                    Text(title)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+
+                    Spacer()
+
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption.bold())
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                VStack(spacing: 16) {
+                    content
+                }
+                .padding([.horizontal, .bottom])
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 }
 
