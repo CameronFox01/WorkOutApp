@@ -31,6 +31,7 @@ struct HomeView: View {
     @AppStorage("showBMI") private var showBMI: Bool = false
     @AppStorage("showMeasurement") private var showMeasurement: Bool = false
     @AppStorage("showDailyPlanner") private var showDailyPlanner: Bool = true
+    @AppStorage("showWeeklyRecap") private var showWeeklyRecap: Bool = true
     
     //Calories or kCal here
     @AppStorage("energyLabel")
@@ -96,95 +97,20 @@ struct HomeView: View {
                             
                         ){
                             // Weight Section
-                            Button {
-                                isPresentingWeightSheet = true; newWeightInput = weight
-                            } label: {
-                                VStack(alignment: .center, spacing: 8) {
-                                    Text("Weight")
-                                        .font(.title2.bold())
-                                        .frame(maxWidth: .infinity, alignment: .center)
-                                        .foregroundStyle(weightCardColor)
-                                    // Current weight prominent
-                                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                        Text(weight.isEmpty ? "—" : weight)
-                                            .font(.system(size: 34, weight: .bold))
-                                            .foregroundStyle(weightCardColor)
-                                        Text(weightUnit)
-                                            .font(.headline)
-                                            .foregroundStyle(weightCardColor)
-                                    }
-                                    
-                                    // Target
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "target")
-                                            .foregroundStyle(weightCardColor)
-                                        Text("Target: \(targetWeight.isEmpty ? "—" : targetWeight) \(weightUnit)")
-                                            .font(.subheadline)
-                                            .foregroundStyle(weightCardColor)
-                                    }
-                                    
-                                    // Progress percentage from original weight
-                                    if let _ = Double(targetWeight), let pct = progressPercentText {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: progressIcon)
-                                                .foregroundStyle(progressColor ?? weightCardSecondary)
-                                            Text(pct)
-                                                .font(.subheadline).bold()
-                                                .foregroundStyle(progressColor ?? weightCardSecondary)
-                                        }
-                                    } else {
-                                        Text("Set target weight to see progress")
-                                            .font(.footnote)
-                                            .foregroundStyle(weightCardSecondary)
-                                    }
+                            WeightCard(
+                                weightUnit: weightUnit,
+                                progressPercentText: progressPercentText,
+                                progressIcon: progressIcon,
+                                progressColor: progressColor,
+                                onTap: {
+                                    isPresentingWeightSheet = true
+                                    newWeightInput = weight
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 4)
-                            }
-                            .cardStyle()
-                            
+                            )
+                            .environmentObject(gradientSettings)
+                    
                             // Calorie Section
-                            NavigationLink(destination: CaloriesDetailView(unitSystem: Hmanager.unitSystem)
-                                .environmentObject(Hmanager)) {
-                                    VStack(alignment: .center, spacing: 8) {
-                                        Text("Calories Today")
-                                            .font(.title2.bold())
-                                            .frame(maxWidth: .infinity, alignment: .center)
-                                        
-                                        if Hmanager.activeCalories == 0 {
-                                            Text("\(Int(Int(Double(Hmanager.steps) * 0.04))) \(energyLabel)")
-                                                .font(.title2).bold()
-                                        } else {
-                                            Text("\(Int(Hmanager.activeCalories)) \(energyLabel)")
-                                                .font(.title2).bold()
-                                        }
-                                        
-                                        if !Hmanager.lastFiveDaysCalories.isEmpty {
-                                            FiveDayCaloriesBarChart(
-                                                data: Hmanager.lastFiveDaysCalories,
-                                                comingFromDetail: false
-                                            )
-                                                .frame(height: 60)
-                                                .padding(.top, 4)
-                                            
-                                            HStack {
-                                                Text("5-day avg:")
-                                                    .font(.caption)
-                                                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
-                                                Text("\(Hmanager.fiveDayAverageCalories)")
-                                                    .font(.caption)
-                                                    .bold()
-                                                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
-                                            }
-                                        } else {
-                                            Text("5-day history unavailable")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-                                    }
-                                }
-                                .cardStyle()
-                                .buttonStyle(.plain)
+                            CaloriesCard()
                         }
                         
                         // Timer Section
@@ -201,84 +127,36 @@ struct HomeView: View {
                             ],
                             spacing: 16
                         ) {
-                            NavigationLink(destination: DistanceDetailView(unitSystem: Hmanager.unitSystem)
-                                .environmentObject(Hmanager)) {
-                                    VStack(alignment: .center, spacing: 8) {
-                                        Text("Steps Today")
-                                            .font(.title2.bold())
-                                            .frame(maxWidth: .infinity, alignment: .center)
-                                        
-                                        
-                                        Text("\(Hmanager.steps)")
-                                            .font(.title2)
-                                            .bold()
-                                        
-                                        // 5-day mini bar chart
-                                        if !Hmanager.getLastFiveDaysSteps.isEmpty {
-                                            FiveDayStepsBarChart(data: Hmanager.getLastFiveDaysSteps)
-                                                .frame(height: 60)
-                                                .padding(.top, 4)
-                                            
-                                            HStack {
-                                                Text("5-day avg:")
-                                                    .font(.caption)
-                                                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
-                                                Text("\(Hmanager.fiveDayAverageSteps)")
-                                                    .font(.caption)
-                                                    .bold()
-                                                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
-                                            }
-                                        } else {
-                                            Text("5-day history unavailable")
-                                                .font(.caption)
-                                                .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
-                                        }
-                                    }
-                                }
-                                .buttonStyle(.plain)
-                                .cardStyle()
+                            StepsCard()
                             
-                            NavigationLink(destination: WorkoutCalendarView(entries: workoutData.entries, comingFromWidget: false)) {
-                                VStack(alignment: .leading) {
-                                    Text("Calendar")
-                                        .font(.title2.bold())
-                                        .frame(maxWidth: .infinity, alignment: .center)
-                                    
-                                    WorkoutHeatMapView(entries: workoutData.entries)
-                                        .frame(height: 80)
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
-                                //.background(Color(.systemGray6))
-                                .cornerRadius(10)
-                            }
-                            .buttonStyle(.plain)
-                            .cardStyle()
+                            CalendarCard()
                         }
                         .padding(.horizontal)
                         
                         //Section for Weekly Recap View
-                        NavigationLink(
-                            destination:
-                                WeeklyRecapView(
-                                    recap: weeklyRecap
+                        if showWeeklyRecap{
+                            NavigationLink(
+                                destination:
+                                    WeeklyRecapView(
+                                        recap: weeklyRecap
+                                    )
+                            ) {
+                                
+                                WeeklyRecapCard(
+                                    
+                                    workoutsCompleted:
+                                        weeklyRecap.workoutsCompleted,
+                                    
+                                    workoutsPlanned:
+                                        weeklyRecap.workoutsPlanned,
+                                    
+                                    streak:
+                                        weeklyRecap.streak
                                 )
-                        ) {
-
-                            WeeklyRecapCard(
-
-                                workoutsCompleted:
-                                    weeklyRecap.workoutsCompleted,
-
-                                workoutsPlanned:
-                                    weeklyRecap.workoutsPlanned,
-
-                                streak:
-                                    weeklyRecap.streak
-                            )
+                            }
+                            .padding(.horizontal)
+                            .buttonStyle(.plain)
                         }
-                        .padding(.horizontal)
-                        .buttonStyle(.plain)
                         
                         // Daily Planned Workouts
                         if showDailyPlanner{
@@ -922,7 +800,7 @@ struct FiveDayStepsBarChartWithValues: View {
     }
 }
 
-private struct WorkoutHeatMapView: View {
+struct WorkoutHeatMapView: View {
     let entries: [WorkoutEntry]
     
     //Color Gradiant

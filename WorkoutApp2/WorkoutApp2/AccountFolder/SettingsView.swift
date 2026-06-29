@@ -24,6 +24,7 @@ struct SettingsView: View {
     @AppStorage("showBMI") private var showBMI: Bool = false
     @AppStorage("showMeasurement") private var showMeasurement: Bool = false
     @AppStorage("showDailyPlanner") private var showDailyPlanner: Bool = true
+    @AppStorage("showWeeklyRecap") private var showWeeklyRecap: Bool = true
     
     //Boolean for kcal vs Calories
     @AppStorage("energyLabel")
@@ -170,6 +171,10 @@ struct SettingsView: View {
                             Divider()
                             SettingsRow(icon: "calendar.badge.checkmark", title: "Show Daily Planner") {
                                 Toggle("", isOn: $showDailyPlanner).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "calendar", title: "Show Weekly Recap") {
+                                Toggle("", isOn: $showWeeklyRecap).labelsHidden()
                             }
                         }
                         
