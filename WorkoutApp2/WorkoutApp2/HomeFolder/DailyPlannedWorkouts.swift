@@ -146,6 +146,29 @@ struct DailyPlannedWorkouts: View {
                         topTrailingRadius: 0
                     ))
                 }
+            } else {
+                VStack(spacing: 12) {
+                    Image(systemName: "leaf.fill")
+                        .font(.system(size: 34))
+                        .foregroundStyle(.green)
+
+                    Text("Rest Day")
+                        .font(.title3.bold())
+
+                    Text("Recovery is part of progress.\nTake today to recharge.")
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 30)
+                .background(.white.opacity(0.15))
+                .clipShape(UnevenRoundedRectangle(
+                    topLeadingRadius: 28,
+                    bottomLeadingRadius: 28,
+                    bottomTrailingRadius: 28,
+                    topTrailingRadius: 28
+                ))
             }
         }
         .onAppear {

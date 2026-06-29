@@ -671,7 +671,7 @@ struct SettingsView: View {
                                     Spacer()
                                 }
                             }
-                        }// maube put it here
+                        }
                         .confirmationDialog(
                             "Delete All Photos?",
                             isPresented: $showDeletePhotosConfirmation,
@@ -710,6 +710,22 @@ struct SettingsView: View {
                         }
                     }
                     .padding()
+                    // APP INFO
+                    VStack(spacing: 6) {
+
+                        Text("IronFox")
+                            .font(.headline)
+                        
+                        // Change this to the actual webpage once published.
+                        Link("Visit Webpage", destination: URL(string: "http://cameronfox.me/publishedapps/ironfox")!)
+
+                        Text("Version \(appVersion)")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 10)
+                    .padding(.bottom, 30)
+
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
