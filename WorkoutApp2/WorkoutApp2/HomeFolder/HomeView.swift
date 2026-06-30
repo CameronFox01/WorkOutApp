@@ -95,33 +95,30 @@ struct HomeView: View {
                 ScrollView {
                     Spacer()
                     VStack(alignment: .leading, spacing: 24) {
-                        LazyVGrid(
-                            columns: [
-                                GridItem(.flexible()),
-                                GridItem(.flexible())
-                            ],
-                            spacing: 16
-                            
-                        ){
-                            // Weight Section
-                            if showWeightCard {
+                        if showWeightCard && showCalorieCard {
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                                 WeightCard(
                                     weightUnit: weightUnit,
                                     progressPercentText: progressPercentText,
                                     progressIcon: progressIcon,
                                     progressColor: progressColor,
-                                    onTap: {
-                                        isPresentingWeightSheet = true
-                                        newWeightInput = weight
-                                    }
+                                    onTap: { isPresentingWeightSheet = true; newWeightInput = weight }
                                 )
                                 .environmentObject(gradientSettings)
-                            }
-                            
-                            // Calorie Section
-                            if showCalorieCard {
+
                                 CaloriesCard()
                             }
+                        } else if showWeightCard && !showCalorieCard {
+                            WeightCard(
+                                weightUnit: weightUnit,
+                                progressPercentText: progressPercentText,
+                                progressIcon: progressIcon,
+                                progressColor: progressColor,
+                                onTap: { isPresentingWeightSheet = true; newWeightInput = weight }
+                            )
+                            .environmentObject(gradientSettings)
+                        } else if !showWeightCard && showCalorieCard {
+                            CaloriesCard()
                         }
                         
                         // Timer Section
@@ -132,25 +129,20 @@ struct HomeView: View {
                             }
                         }
                         
-                        //Section to get steps and distance
-                        LazyVGrid(
-                            columns: [
-                                GridItem(.flexible()),
-                                GridItem(.flexible())
-                            ],
-                            spacing: 16
-                        ) {
-                            // Section for Steps Card
-                            if showStepsCard {
+                        // Section for Steps and Calendar
+                        if showStepsCard && showCalendarCard {
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                                 StepsCard()
-                            }
-                            
-                            // Section for Calendar Card
-                            if showCalendarCard {
                                 CalendarCard()
                             }
+                            .padding(.horizontal)
+                        } else if showStepsCard && !showCalendarCard {
+                            StepsCard()
+                                .padding(.horizontal)
+                        } else if !showStepsCard && showCalendarCard {
+                            CalendarCard()
+                                .padding(.horizontal)
                         }
-                        .padding(.horizontal)
                         
                         //Section for Weekly Recap View
                         if showWeeklyRecap{

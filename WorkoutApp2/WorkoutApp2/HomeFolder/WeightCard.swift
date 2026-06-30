@@ -13,8 +13,10 @@ struct WeightCard: View {
     private var weightCardColor: Color { colorScheme == .dark ? .white : .black }
     private var weightCardSecondary: Color { colorScheme == .dark ? Color.white.opacity(0.7) : Color.black.opacity(0.6) }
 
+    @AppStorage("showCalorieCard") private var showCalorieCard: Bool = true
     @AppStorage("userWeight") private var weight: String = ""
     @AppStorage("userTargetWeight") private var targetWeight: String = ""
+    @AppStorage("userOriginalWeight") private var originalWeight: String = ""
     @AppStorage("userBaselineWeightForGoal") private var baselineWeightForGoal: String = ""
     @AppStorage("weightGoalDirection") private var weightGoalDirection: String = "lose"
     private var gainWeight: Bool { weightGoalDirection == "gain" }
@@ -27,7 +29,27 @@ struct WeightCard: View {
     let progressColor: Color?
     let onTap: () -> Void
 
+    private var totalChange: Double? {
+        guard let curr = Double(weight), let start = Double(originalWeight) else { return nil }
+        return curr - start
+    }
+
+    private var amountToGoal: Double? {
+        guard let curr = Double(weight), let target = Double(targetWeight) else { return nil }
+        return abs(target - curr)
+    }
+
     var body: some View {
+        if showCalorieCard {
+            compactCard
+        } else {
+            expandedCard
+        }
+    }
+
+    // MARK: - Compact (half-width, calorie card showing)
+
+    private var compactCard: some View {
         Button { onTap() } label: {
             VStack(alignment: .center, spacing: 8) {
                 Text("Weight")
@@ -70,5 +92,150 @@ struct WeightCard: View {
             .padding(.vertical, 4)
         }
         .cardStyle()
+    }
+
+    // MARK: - Expanded (full-width, calorie card hidden)
+
+    private var expandedCard: some View {
+        Button { onTap() } label: {
+            VStack(alignment: .leading, spacing: 18) {
+
+                // Top row: title + current weight
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Weight")
+                            .font(.title2.bold())
+                            .foregroundStyle(weightCardColor)
+                        Text("Current")
+                            .font(.caption)
+                            .foregroundStyle(weightCardSecondary)
+                    }
+                    .padding(.leading, 20)
+
+                    Spacer()
+
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(weight.isEmpty ? "—" : weight)
+                            .font(.system(size: 44, weight: .bold))
+                            .foregroundStyle(weightCardColor)
+                        Text(weightUnit)
+                            .font(.title3)
+                            .foregroundStyle(weightCardColor)
+                    }
+                    .padding(.trailing, 10)
+                }
+
+                Divider()
+                    .overlay(weightCardSecondary.opacity(0.3))
+
+                // Stat row: target, change, to goal
+                HStack(spacing: 0) {
+                    statBlock(
+                        icon: "target",
+                        label: "Target",
+                        value: targetWeight.isEmpty ? "—" : "\(targetWeight) \(weightUnit)"
+                    )
+
+                    Divider()
+                        .frame(height: 36)
+                        .overlay(weightCardSecondary.opacity(0.3))
+
+                    statBlock(
+                        icon: gainWeight ? "arrow.up.right" : "arrow.down.right",
+                        label: "Total Change",
+                        value: totalChange.map { String(format: "%+.1f %@", $0, weightUnit) } ?? "—"
+                    )
+
+                    Divider()
+                        .frame(height: 36)
+                        .overlay(weightCardSecondary.opacity(0.3))
+
+                    statBlock(
+                        icon: "flag.checkered",
+                        label: "To Goal",
+                        value: amountToGoal.map { String(format: "%.1f %@", $0, weightUnit) } ?? "—"
+                    )
+                }
+
+                // Progress bar
+                if let pct = progressPercentText, Double(targetWeight) != nil {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: progressIcon)
+                                .foregroundStyle(progressColor ?? weightCardSecondary)
+                            Text("\(pct) toward goal")
+                                .font(.subheadline.bold())
+                                .foregroundStyle(progressColor ?? weightCardSecondary)
+                            Spacer()
+                        }
+                        .padding(.leading, 20)
+
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                Capsule()
+                                    .fill(weightCardSecondary.opacity(0.2))
+                                    .frame(height: 8)
+
+                                Capsule()
+                                    .fill(progressColor ?? weightCardColor)
+                                    .frame(
+                                        width: progressFraction.map { geo.size.width * $0 } ?? 0,
+                                        height: 8
+                                    )
+                                    .animation(.spring(response: 0.4), value: progressFraction)
+                            }
+                        }
+                        .frame(height: 8)
+                    }
+                } else {
+                    Text("Set a target weight to track your progress")
+                        .font(.footnote)
+                        .foregroundStyle(weightCardSecondary)
+                        .padding(.leading, 20)
+                }
+            }
+            .padding(.vertical, 4)
+        }
+        .cardStyle()
+    }
+
+    private func statBlock(icon: String, label: String, value: String) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundStyle(weightCardSecondary)
+            Text(value)
+                .font(.subheadline.bold())
+                .foregroundStyle(weightCardColor)
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(weightCardSecondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var progressFraction: Double? {
+        guard let pct = progressPercentText?.replacingOccurrences(of: "%", with: ""),
+              let value = Double(pct) else { return nil }
+        return min(max(value / 100, 0), 1)
+    }
+}
+
+// MARK: - WeightCard Preview
+
+#Preview("Weight Card") {
+    ZStack {
+        LinearGradient(colors: [.blue, .black], startPoint: .top, endPoint: .bottom)
+            .ignoresSafeArea()
+
+        WeightCard(
+            weightUnit: "lbs",
+            progressPercentText: "42%",
+            progressIcon: "chart.line.downtrend.xyaxis",
+            progressColor: .green,
+            onTap: {}
+        )
+        .environmentObject(GradientSettings())
+        .padding()
     }
 }
