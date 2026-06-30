@@ -25,6 +25,13 @@ struct SettingsView: View {
     @AppStorage("showMeasurement") private var showMeasurement: Bool = false
     @AppStorage("showDailyPlanner") private var showDailyPlanner: Bool = true
     @AppStorage("showWeeklyRecap") private var showWeeklyRecap: Bool = true
+    @AppStorage("showWeightCard") private var showWeightCard: Bool = true
+    @AppStorage("showCalorieCard") private var showCalorieCard: Bool = true
+    @AppStorage("showTimerCard") private var showTimerCard: Bool = true
+    @AppStorage("showStepsCard") private var showStepsCard: Bool = true
+    @AppStorage("showCalendarCard") private var showCalendarCard: Bool = true
+    @AppStorage("showRecentWorkouts") private var showRecentWorkouts: Bool = true
+    @AppStorage("showAllImported") private var showAllImported: Bool = true
     
     //Boolean for kcal vs Calories
     @AppStorage("energyLabel")
@@ -175,6 +182,34 @@ struct SettingsView: View {
                             Divider()
                             SettingsRow(icon: "calendar", title: "Show Weekly Recap") {
                                 Toggle("", isOn: $showWeeklyRecap).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "scalemass", title: "Show Weight Card"){
+                                Toggle("", isOn: $showWeightCard).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "flame.fill", title: "Show Calorie Card"){
+                                Toggle("", isOn: $showCalorieCard).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "stopwatch", title: "Show Timer"){
+                                Toggle("", isOn: $showTimerCard).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "figure.walk", title: "Show Steps"){
+                                Toggle("", isOn: $showStepsCard).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "calendar", title: "Show Calendar"){
+                                Toggle("", isOn: $showCalendarCard).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "dumbbell", title: "Show Recent Workouts"){
+                                Toggle("", isOn: $showRecentWorkouts).labelsHidden()
+                            }
+                            Divider()
+                            SettingsRow(icon: "list.bullet", title: "Show All Workouts"){
+                                Toggle("", isOn: $showAllImported).labelsHidden()
                             }
                         }
                         

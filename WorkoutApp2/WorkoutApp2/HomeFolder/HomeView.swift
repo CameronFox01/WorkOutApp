@@ -32,6 +32,13 @@ struct HomeView: View {
     @AppStorage("showMeasurement") private var showMeasurement: Bool = false
     @AppStorage("showDailyPlanner") private var showDailyPlanner: Bool = true
     @AppStorage("showWeeklyRecap") private var showWeeklyRecap: Bool = true
+    @AppStorage("showWeightCard") private var showWeightCard: Bool = true
+    @AppStorage("showCalorieCard") private var showCalorieCard: Bool = true
+    @AppStorage("showTimerCard") private var showTimerCard: Bool = true
+    @AppStorage("showStepsCard") private var showStepsCard: Bool = true
+    @AppStorage("showCalendarCard") private var showCalendarCard: Bool = true
+    @AppStorage("showRecentWorkouts") private var showRecentWorkouts: Bool = true
+    @AppStorage("showAllImported") private var showAllImported: Bool = true
     
     //Calories or kCal here
     @AppStorage("energyLabel")
@@ -97,26 +104,32 @@ struct HomeView: View {
                             
                         ){
                             // Weight Section
-                            WeightCard(
-                                weightUnit: weightUnit,
-                                progressPercentText: progressPercentText,
-                                progressIcon: progressIcon,
-                                progressColor: progressColor,
-                                onTap: {
-                                    isPresentingWeightSheet = true
-                                    newWeightInput = weight
-                                }
-                            )
-                            .environmentObject(gradientSettings)
-                    
+                            if showWeightCard {
+                                WeightCard(
+                                    weightUnit: weightUnit,
+                                    progressPercentText: progressPercentText,
+                                    progressIcon: progressIcon,
+                                    progressColor: progressColor,
+                                    onTap: {
+                                        isPresentingWeightSheet = true
+                                        newWeightInput = weight
+                                    }
+                                )
+                                .environmentObject(gradientSettings)
+                            }
+                            
                             // Calorie Section
-                            CaloriesCard()
+                            if showCalorieCard {
+                                CaloriesCard()
+                            }
                         }
                         
                         // Timer Section
-                        Group{
-                            TimerView()
-                                .padding(.vertical)
+                        if showTimerCard {
+                            Group{
+                                TimerView()
+                                    .padding(.vertical)
+                            }
                         }
                         
                         //Section to get steps and distance
@@ -127,9 +140,15 @@ struct HomeView: View {
                             ],
                             spacing: 16
                         ) {
-                            StepsCard()
+                            // Section for Steps Card
+                            if showStepsCard {
+                                StepsCard()
+                            }
                             
-                            CalendarCard()
+                            // Section for Calendar Card
+                            if showCalendarCard {
+                                CalendarCard()
+                            }
                         }
                         .padding(.horizontal)
                         
@@ -175,86 +194,90 @@ struct HomeView: View {
                                 .padding(.horizontal)
                         }
                         //Section for Pasted Worked Outs
-                        HStack {
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                
-                                Text("Recent Workouts")
-                                    .font(.system(size: 30, weight: .bold))
-                                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
-                                    .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
-                                
-                                Text("Your latest progress")
-                                    .font(.subheadline)
-                                    .foregroundStyle(gradientSettings.selectedPreset.subTextOnDarkBackground)
-                                    .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "flame.fill")
-                                .font(.title2)
-                                .foregroundStyle(.orange)
-                        }
-                        .padding(.horizontal)
-                        //Creating the boxs for the workouts to be clicked on and carry you to more info on that workout
-                        LazyVGrid(
-                            columns: [
-                                GridItem(.flexible()),
-                                GridItem(.flexible())
-                            ],
-                            spacing: 16
-                        ) {
-                            ForEach(lastEntryPerWorkoutType(from: workoutData.entries)) { entry in
-                                let workoutName = entry.workoutType
-                                let category = categoryForWorkout(workoutName)
-                                
-                                NavigationLink(
-                                    destination: WorkoutChartView(
-                                        workoutName: workoutName,
-                                        entries: workoutData.entries,
-                                        category: category,
-                                        workout: workoutName
-                                    )
-                                ) {
-                                    WorkoutTypeCardView(entry: entry, weightUnit: weightUnit)
+                        if showRecentWorkouts {
+                                HStack {
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        
+                                        Text("Recent Workouts")
+                                            .font(.system(size: 30, weight: .bold))
+                                            .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                                            .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
+                                        
+                                        Text("Your latest progress")
+                                            .font(.subheadline)
+                                            .foregroundStyle(gradientSettings.selectedPreset.subTextOnDarkBackground)
+                                            .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "flame.fill")
+                                        .font(.title2)
+                                        .foregroundStyle(.orange)
                                 }
-                                .buttonStyle(.plain)
+                                .padding(.horizontal)
+                                //Creating the boxs for the workouts to be clicked on and carry you to more info on that workout
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible()),
+                                        GridItem(.flexible())
+                                    ],
+                                    spacing: 16
+                                ) {
+                                    ForEach(lastEntryPerWorkoutType(from: workoutData.entries)) { entry in
+                                        let workoutName = entry.workoutType
+                                        let category = categoryForWorkout(workoutName)
+                                        
+                                        NavigationLink(
+                                            destination: WorkoutChartView(
+                                                workoutName: workoutName,
+                                                entries: workoutData.entries,
+                                                category: category,
+                                                workout: workoutName
+                                            )
+                                        ) {
+                                            WorkoutTypeCardView(entry: entry, weightUnit: weightUnit)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
                             }
                         }
-                    }
-                    .padding(.horizontal)
+                            .padding(.horizontal)
                     
                     // Seeing all workouts that have been entered
                     Spacer().frame(height: 50)
                     
-                    NavigationLink {
-                        
-                        AllImportedWorkoutsView()
-                        
-                    } label: {
-                        
-                        HStack(spacing: 12) {
+                    if showAllImported {
+                        NavigationLink {
                             
-                            Image(systemName: "list.bullet")
+                            AllImportedWorkoutsView()
                             
-                            Text("See all imported workouts")
-                                .fontWeight(.semibold)
+                        } label: {
                             
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 12) {
+                                
+                                Image(systemName: "list.bullet")
+                                
+                                Text("See all imported workouts")
+                                    .fontWeight(.semibold)
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .font(.title3)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 22)
+                                    .fill(.ultraThinMaterial)
+                            )
+                            .foregroundStyle(gradientSettings.selectedPreset.textColor)
                         }
-                        .font(.title3)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 22)
-                                .fill(.ultraThinMaterial)
-                        )
-                        .foregroundStyle(gradientSettings.selectedPreset.textColor)
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
