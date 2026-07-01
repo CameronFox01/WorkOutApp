@@ -56,7 +56,7 @@ struct WeightCard: View {
                     .font(.title2.bold())
                     .frame(maxWidth: .infinity, alignment: .center)
                     .foregroundStyle(weightCardColor)
-
+                
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(weight.isEmpty ? "—" : weight)
                         .font(.system(size: 34, weight: .bold))
@@ -65,7 +65,7 @@ struct WeightCard: View {
                         .font(.headline)
                         .foregroundStyle(weightCardColor)
                 }
-
+                
                 HStack(spacing: 6) {
                     Image(systemName: "target")
                         .foregroundStyle(weightCardColor)
@@ -73,8 +73,10 @@ struct WeightCard: View {
                         .font(.subheadline)
                         .foregroundStyle(weightCardColor)
                 }
-
-                if let pct = progressPercentText, Double(targetWeight) != nil {
+                
+                if let pct = progressPercentText,
+                   Double(targetWeight) != nil,
+                   (progressFraction ?? 0) > 0 {
                     HStack(spacing: 6) {
                         Image(systemName: progressIcon)
                             .foregroundStyle(progressColor ?? weightCardSecondary)
@@ -82,12 +84,19 @@ struct WeightCard: View {
                             .font(.subheadline).bold()
                             .foregroundStyle(progressColor ?? weightCardSecondary)
                     }
+                } else if let _ = progressPercentText, Double(targetWeight) != nil {
+                    HStack(spacing: 6) {
+                        Image(systemName: progressIcon)
+                            .foregroundStyle(progressColor ?? weightCardSecondary)
+                        Text("0%")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(progressColor ?? weightCardSecondary)
+                    }
                 } else {
                     Text("Set target weight to see progress")
                         .font(.footnote)
                         .foregroundStyle(weightCardSecondary)
-                }
-            }
+                }           }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 4)
         }
@@ -143,7 +152,11 @@ struct WeightCard: View {
                     statBlock(
                         icon: gainWeight ? "arrow.up.right" : "arrow.down.right",
                         label: "Total Change",
-                        value: totalChange.map { String(format: "%+.1f %@", $0, weightUnit) } ?? "—"
+                        value: totalChange.map {
+                            let rounded = (($0 * 10).rounded() / 10)
+                            guard rounded != 0, !rounded.isZero else { return "0 \(weightUnit)" }
+                            return String(format: "%+.1f %@", rounded, weightUnit)
+                        } ?? "—"
                     )
 
                     Divider()
@@ -158,7 +171,7 @@ struct WeightCard: View {
                 }
 
                 // Progress bar
-                if let pct = progressPercentText, Double(targetWeight) != nil {
+                if let pct = progressPercentText, Double(targetWeight) != nil, (progressFraction ?? 0) > 0 {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: progressIcon)
@@ -230,7 +243,7 @@ struct WeightCard: View {
 
         WeightCard(
             weightUnit: "lbs",
-            progressPercentText: "42%",
+            progressPercentText: "0%",
             progressIcon: "chart.line.downtrend.xyaxis",
             progressColor: .green,
             onTap: {}
