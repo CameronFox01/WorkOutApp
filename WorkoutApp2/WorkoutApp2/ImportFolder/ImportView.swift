@@ -540,7 +540,7 @@ struct ImportView: View {
                     }
                 }
 
-                if category == .timeCardio {
+                if category == .timeCardio || category == .sports {
                     statRow("timer", "Time (min)", timeBinding) {
                         increment(&times, 1)
                     } dec: {
@@ -548,17 +548,22 @@ struct ImportView: View {
                     }
                 }
 
-                statRow("number", "Reps", repsBinding) {
-                    increment(&reps, 1)
-                } dec: {
-                    decrement(&reps, 1)
-                }
+                // Only show reps and sets for non-sports, non-cardio categories
+                 if category != .distanceCardio && category != .timeCardio && category != .sports {
+                     statRow("number", "Reps", repsBinding) {
+                         increment(&reps, 1)
+                     } dec: {
+                         decrement(&reps, 1)
+                     }
 
-                statRow("square.grid.2x2", "Sets", setsBinding) {
-                    increment(&sets, 1)
-                } dec: {
-                    decrement(&sets, 1)
-                }
+                     statRow("square.grid.2x2", "Sets", setsBinding) {
+                         increment(&sets, 1)
+                     } dec: {
+                         decrement(&sets, 1)
+                     }
+                 } else {
+                     
+                 }
             }
             .padding(16)
             .background(cardColor, in: RoundedRectangle(cornerRadius: 18))

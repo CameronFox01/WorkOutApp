@@ -32,12 +32,24 @@ func saveEntry(
         guard let time = times[category], !time.isEmpty else { onError(); return }
     }
 
-    let rep = reps[category] ?? ""
+    let rep: String
+    if category == .timeCardio || category == .sports {
+        rep = times[category] ?? ""
+    } else {
+        rep = reps[category] ?? ""
+    }
     if category != .distanceCardio && rep.isEmpty { onError(); return }
 
     guard let workout = selections[category], !workout.isEmpty else { onError(); return }
 
-    let setsVal: String = category == .distanceCardio ? (times[category] ?? "") : (sets[category] ?? "")
+    let setsVal: String
+    if category == .distanceCardio {
+        setsVal = times[category] ?? ""
+    } else if category == .sports {
+        setsVal = ""
+    } else {
+        setsVal = sets[category] ?? ""
+    }
     let weightString: String = {
         if category == .distanceCardio { return distances[category] ?? "" }
         if category.usesWeight { return weights[category] ?? "" }
