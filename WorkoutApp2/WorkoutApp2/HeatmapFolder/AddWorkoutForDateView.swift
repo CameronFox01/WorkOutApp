@@ -29,6 +29,7 @@ struct AddWorkoutForDateView: View {
     private var isDistanceCardio: Bool { selectedCategory == .distanceCardio }
     private var isTimeCardio: Bool { selectedCategory == .timeCardio }
     private var usesWeight: Bool { selectedCategory.usesWeight && !isDistanceCardio && !isTimeCardio }
+    private var isSports: Bool { selectedCategory == .sports }
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
@@ -68,7 +69,6 @@ struct AddWorkoutForDateView: View {
                             .pickerStyle(.menu)
                             .onChange(of: selectedCategory) { _, _ in
                                 selectedWorkout = selectedCategory.workouts().first ?? ""
-                                // Reset fields when category changes
                                 weight = ""; reps = ""; sets = ""
                                 distance = ""; time = ""
                             }
@@ -87,53 +87,30 @@ struct AddWorkoutForDateView: View {
                         // MARK: - Context-aware stat fields
                         VStack(spacing: 12) {
 
-                            // Weight field — only for weight-based workouts
+                            // Distance — only for distance cardio
                             if usesWeight {
-                                statRow(
-                                    icon: "scalemass",
-                                    label: "Weight (\(weightUnit))",
-                                    text: $weight,
-                                    step: unitSystem == .imperial ? 5 : 2.5
-                                )
+                                statRow(icon: "scalemass", label: "Weight (\(weightUnit))", text: $weight, step: unitSystem == .imperial ? 5 : 2.5)
                             }
 
                             // Distance — only for distance cardio
                             if isDistanceCardio {
-                                statRow(
-                                    icon: "ruler",
-                                    label: "Distance (\(distanceUnit))",
-                                    text: $distance,
-                                    step: unitSystem == .imperial ? 0.5 : 1
-                                )
+                                statRow(icon: "ruler", label: "Distance (\(distanceUnit))", text: $distance, step: unitSystem == .imperial ? 0.5 : 1)
                             }
 
-                            // Time — distance cardio and time cardio
-                            if isDistanceCardio || isTimeCardio {
-                                statRow(
-                                    icon: "timer",
-                                    label: "Time (min)",
-                                    text: $time,
-                                    step: 1
-                                )
+                            // Time — distance cardio, time cardio, and sports
+                            if isDistanceCardio || isTimeCardio || isSports {
+                                statRow(icon: "timer", label: "Time (min)", text: $time, step: 1)
                             }
 
-                            // Reps — everything except time-only cardio
-                            if !isTimeCardio {
-                                statRow(
-                                    icon: "number",
-                                    label: "Reps",
-                                    text: $reps,
-                                    step: 1
-                                )
+                            // Reps — only for non-cardio, non-sports
+                            if !isTimeCardio && !isSports {
+                                statRow(icon: "number", label: "Reps", text: $reps, step: 1)
                             }
 
-                            // Sets — everything
-                            statRow(
-                                icon: "square.grid.2x2",
-                                label: "Sets",
-                                text: $sets,
-                                step: 1
-                            )
+                            // Sets — only for non-cardio, non-sports
+                            if !isTimeCardio && !isSports && !isDistanceCardio {
+                                statRow(icon: "square.grid.2x2", label: "Sets", text: $sets, step: 1)
+                            }
                         }
                         .padding(16)
                         .background(.white.opacity(0.10), in: RoundedRectangle(cornerRadius: 16))
@@ -245,26 +222,29 @@ struct AddWorkoutForDateView: View {
     private func saveEntry() {
         guard !selectedWorkout.isEmpty else { return }
 
-        // Map fields based on category type, matching how ImportView saves
         let weightValue: String
         let repsValue: String
+        let setsValue: String
 
         if isDistanceCardio {
-            weightValue = distance  // distance cardio stores distance in weight field
-            repsValue = time        // and time in reps
-        } else if isTimeCardio {
-            weightValue = ""
+            weightValue = distance
             repsValue = time
+            setsValue = sets
+        } else if isTimeCardio || isSports {
+            weightValue = ""
+            repsValue = "1"      // silent default
+            setsValue = time     // store time in sets
         } else {
             weightValue = weight
             repsValue = reps
+            setsValue = sets
         }
 
         let entry = WorkoutEntry(
             workoutType: selectedWorkout,
             weight: weightValue,
             reps: repsValue,
-            sets: sets,
+            sets: setsValue,
             date: date,
             note: note
         )
