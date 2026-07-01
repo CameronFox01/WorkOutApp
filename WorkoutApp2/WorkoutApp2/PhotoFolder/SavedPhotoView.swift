@@ -21,6 +21,9 @@ struct SavedPhotosView: View {
     let leftImage: UIImage?
     let rightImage: UIImage?
     
+    let leftPhotoFileName: String
+    let rightPhotoFileName: String
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -125,41 +128,16 @@ struct SavedPhotosView: View {
             }
         }
     }
+    
+    private func filteredPhotos() -> [SavedPhoto] {
+        let excluded = Set([leftPhotoFileName, rightPhotoFileName].filter { !$0.isEmpty })
+        return PhotoOrganizer.loadPhotos().filter { photo in
+            !excluded.contains(photo.url.lastPathComponent)
+        }
+    }
 
     private func loadSavedPhotos() {
-        do {
-
-            let directory = try documentsDirectory()
-
-            let files = try FileManager.default.contentsOfDirectory(
-                at: directory,
-                includingPropertiesForKeys: [.creationDateKey]
-            )
-
-            photos = files
-                .filter {
-                    $0.pathExtension.lowercased() == "jpg"
-                }
-                .compactMap { url in
-
-                    let date =
-                        (try? url.resourceValues(
-                            forKeys: [.creationDateKey]
-                        ).creationDate)
-                        ?? .distantPast
-
-                    return SavedPhoto(
-                        url: url,
-                        creationDate: date
-                    )
-                }
-                .sorted {
-                    $0.creationDate > $1.creationDate
-                }
-
-        } catch {
-            print("Failed to load photos: \(error)")
-        }
+        photos = filteredPhotos()
     }
 
     private func documentsDirectory() throws -> URL {

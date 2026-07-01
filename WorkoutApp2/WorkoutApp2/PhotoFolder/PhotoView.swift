@@ -56,12 +56,20 @@ struct PhotoView: View {
                                 VStack{
                                     Text("Before")
                                         .font(.headline).bold()
-                                    imagePane(title: "Left", image: leftImage, action: { showingLeftCamera = true })
+                                    imagePane(title: "Left", image: leftImage, action: { showingLeftCamera = true }) {
+                                            leftImage = nil
+                                            leftPhotoFileName = ""
+                                            UserDefaults.standard.removeObject(forKey: "leftPhotoFileName")
+                                        }
                                 }
                                 VStack{
                                     Text("After")
                                         .font(.headline).bold()
-                                    imagePane(title: "Right", image: rightImage, action: { showingRightCamera = true })
+                                    imagePane(title: "Right", image: rightImage, action: { showingRightCamera = true }) {
+                                        rightImage = nil
+                                        rightPhotoFileName = ""
+                                        UserDefaults.standard.removeObject(forKey: "rightPhotoFileName")
+                                    }
                                 }
                             }
                         }
@@ -128,7 +136,7 @@ struct PhotoView: View {
                         leftImage = newValue
                         if let img = newValue {
                             saveToAppStorage(image: img, side: "left")
-                            saveGalleryPhoto(image: img)
+                           // saveGalleryPhoto(image: img)
                         }
                     }
                 ))
@@ -140,7 +148,7 @@ struct PhotoView: View {
                         rightImage = newValue
                         if let img = newValue {
                             saveToAppStorage(image: img, side: "right")
-                            saveGalleryPhoto(image: img)
+                          //  saveGalleryPhoto(image: img)
                         }
                     }
                 ))
@@ -152,8 +160,10 @@ struct PhotoView: View {
                             showingSidePicker = true
                         },
                         leftImage: leftImage,
-                        rightImage: rightImage
-                ) 
+                        rightImage: rightImage,
+                    leftPhotoFileName: leftPhotoFileName,  
+                    rightPhotoFileName: rightPhotoFileName
+                )
             }
             .confirmationDialog(
                 "Use Photo",
@@ -255,18 +265,31 @@ struct PhotoView: View {
 
     // SINGLE SOURCE OF TRUTH for the display pane
     @ViewBuilder
-    private func imagePane(title: String, image: UIImage?, action: @escaping () -> Void) -> some View {
+    private func imagePane(title: String, image: UIImage?, action: @escaping () -> Void, onClear: @escaping () -> Void) -> some View {
         let minWidth: CGFloat = 150
         let maxWidth: CGFloat = 200
         let minHeight: CGFloat = 250
         let maxHeight: CGFloat = 250
         VStack(spacing: 8) {
             if let uiImage = image {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                ZStack(alignment: .topTrailing) {
+                     Image(uiImage: uiImage)
+                         .resizable()
+                         .scaledToFill()
+                         .frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight)
+                         .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                     // Clear button
+                     Button {
+                         onClear()
+                     } label: {
+                         Image(systemName: "xmark.circle.fill")
+                             .font(.title3)
+                             .foregroundStyle(.white)
+                             .shadow(radius: 3)
+                     }
+                     .padding(6)
+                 }
             } else {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color(.tertiarySystemFill))
