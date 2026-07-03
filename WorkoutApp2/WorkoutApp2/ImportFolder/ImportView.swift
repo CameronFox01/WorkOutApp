@@ -192,7 +192,7 @@ struct ImportView: View {
 
     // The view of the list of all workouts
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack{
                 LinearGradient(
                     colors: gradientSettings.selectedPreset.swiftUIColors,

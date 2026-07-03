@@ -218,7 +218,7 @@ struct GoalView: View {
                             Text("Gain Weight").tag("gain")
                         }
                         .pickerStyle(.segmented)
-                        .frame(width: 200)
+                        .frame(width: isIPad() ? 300 : 200)
                     }
                     
                     // Target Body Weight row

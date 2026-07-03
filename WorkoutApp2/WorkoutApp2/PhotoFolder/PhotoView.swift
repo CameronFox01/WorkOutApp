@@ -37,7 +37,7 @@ struct PhotoView: View {
     @EnvironmentObject var gradientSettings: GradientSettings
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 // Consistent Gradient Background
                 LinearGradient(
@@ -83,7 +83,6 @@ struct PhotoView: View {
                         }
                         .padding()
                         .cardStyle()
-                        //.background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
                         .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
 
                         // 2. Actions Card
