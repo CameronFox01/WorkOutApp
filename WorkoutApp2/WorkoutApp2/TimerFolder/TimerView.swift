@@ -158,7 +158,7 @@ struct TimerView: View {
 
                 stopWatchString = String(format: "%02d:%02d.%02d", minutes, seconds, milliseconds)
             }
-            .sheet(isPresented: $showBigTimer) {
+            .fullScreenCover(isPresented: $showBigTimer) {
                 TimeViewBig(
                     totalSeconds: $totalSeconds,
                     remainingSeconds: $remainingSeconds,
@@ -279,7 +279,7 @@ struct TimerView: View {
                     generator.notificationOccurred(.success)
                 }
             }
-            .sheet(isPresented: $showBigTimer) {
+            .fullScreenCover(isPresented: $showBigTimer) {
                 TimeViewBig( totalSeconds: $totalSeconds,
                              remainingSeconds: $remainingSeconds,
                              isTimerRunning: $isCountdownRunning,

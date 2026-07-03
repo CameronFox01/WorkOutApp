@@ -40,7 +40,7 @@ struct StartUpView: View {
     init() {
         UISegmentedControl.appearance().setTitleTextAttributes(
             [
-                .font: UIFont.preferredFont(forTextStyle: .largeTitle)
+                .font: UIFont.preferredFont(forTextStyle: .title3)
             ],
             for: .normal
         )

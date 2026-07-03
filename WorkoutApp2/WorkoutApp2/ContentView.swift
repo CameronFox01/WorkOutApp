@@ -191,21 +191,6 @@ struct ContentView: View {
                 }
             }
         }
-//        .onChange(of: scenePhase) { _, newPhase in
-//            if newPhase == .background {
-//                backgroundedAt = Date()
-//            } else if newPhase == .active {
-//                if let backgroundedAt {
-//                    let elapsed = Date().timeIntervalSince(backgroundedAt)
-//                    if elapsed > Double(lockGracePeriodSeconds) {
-//                        isUnlocked = false
-//                    }
-//                }
-//                if faceIDEnabled && !isUnlocked {
-//                    authenticator()
-//                }
-//            }
-//        }
         .onOpenURL { url in  // ✅ add here
             if url.absoluteString == "workoutapp://calendar" {
                 router.activeScreen = .workoutDetail

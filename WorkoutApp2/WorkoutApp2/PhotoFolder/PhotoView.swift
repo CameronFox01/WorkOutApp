@@ -273,16 +273,15 @@ struct PhotoView: View {
     @ViewBuilder
     private func imagePane(title: String, image: UIImage?, action: @escaping () -> Void, onClear: @escaping () -> Void) -> some View {
         let minWidth: CGFloat = 150
-        let maxWidth: CGFloat = 200
-        let minHeight: CGFloat = 250
-        let maxHeight: CGFloat = 250
+        let maxWidth: CGFloat = AdaptiveFont.isIPad ? 500 : 200
+        let imageHeight: CGFloat = AdaptiveFont.isIPad ? 550 : 250
         VStack(spacing: 8) {
             if let uiImage = image {
                 ZStack(alignment: .topTrailing) {
                      Image(uiImage: uiImage)
                          .resizable()
                          .scaledToFill()
-                         .frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight)
+                         .frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: imageHeight, maxHeight: imageHeight)
                          .clipShape(RoundedRectangle(cornerRadius: 12))
 
                      // Clear button
@@ -300,7 +299,7 @@ struct PhotoView: View {
             } else {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color(.tertiarySystemFill))
-                    .frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight)
+                    .frame(minWidth: minWidth, maxWidth: maxWidth, minHeight: imageHeight, maxHeight: imageHeight)
                     .overlay(Image(systemName: "plus").foregroundStyle(.secondary))
             }
             

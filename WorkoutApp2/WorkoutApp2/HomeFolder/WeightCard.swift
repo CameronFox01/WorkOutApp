@@ -12,6 +12,11 @@ struct WeightCard: View {
     @Environment(\.colorScheme) private var colorScheme
     private var weightCardColor: Color { colorScheme == .dark ? .white : .black }
     private var weightCardSecondary: Color { colorScheme == .dark ? Color.white.opacity(0.7) : Color.black.opacity(0.6) }
+    
+    @EnvironmentObject var workoutData: WorkoutData
+    @EnvironmentObject var router: AppRouter
+    @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
+    @State private var newWeightInput: String = ""
 
     @AppStorage("showCalorieCard") private var showCalorieCard: Bool = true
     @AppStorage("userWeight") private var weight: String = ""
@@ -46,11 +51,38 @@ struct WeightCard: View {
             expandedCard
         }
     }
+    
+    var unitSystem: UnitSystem {
+        UnitSystem(rawValue: unitSystemRaw) ?? .metric
+    }
 
     // MARK: - Compact (half-width, calorie card showing)
 
     private var compactCard: some View {
-        Button { onTap() } label: {
+        NavigationLink(destination: WeightUpdateSheet(
+            unitSystem: unitSystem,
+            weightUnit: weightUnit,
+            comingFromWidget: false,
+            currentWeight: $weight,
+            newWeightInput: $newWeightInput,
+            entries: workoutData.entries,
+            onSave: { valueString in
+                // Update AppStorage so Account and others reflect immediately
+                weight = valueString
+                // Append a new WorkoutEntry of type "Body Weight"
+                let entry = WorkoutEntry(
+                    workoutType: "Body Weight",
+                    weight: valueString,
+                    reps: "",
+                    sets: "",
+                    date: Date(),
+                    note: ""
+                )
+                workoutData.add(entry: entry)
+                router.activeScreen = nil
+            },
+            unitSystemRaw: unitSystemRaw))
+        {
             VStack(alignment: .center, spacing: 8) {
                 Text("Weight")
                     .font(.title2.bold())
@@ -99,11 +131,33 @@ struct WeightCard: View {
         }
         .cardStyle()
     }
-
+    
     // MARK: - Expanded (full-width, calorie card hidden)
 
     private var expandedCard: some View {
-        Button { onTap() } label: {
+        NavigationLink(destination: WeightUpdateSheet(
+            unitSystem: unitSystem,
+            weightUnit: weightUnit,
+            comingFromWidget: false,
+            currentWeight: $weight,
+            newWeightInput: $newWeightInput,
+            entries: workoutData.entries,
+            onSave: { valueString in
+                // Update AppStorage so Account and others reflect immediately
+                weight = valueString
+                // Append a new WorkoutEntry of type "Body Weight"
+                let entry = WorkoutEntry(
+                    workoutType: "Body Weight",
+                    weight: valueString,
+                    reps: "",
+                    sets: "",
+                    date: Date(),
+                    note: ""
+                )
+                workoutData.add(entry: entry)
+                router.activeScreen = nil
+            },
+            unitSystemRaw: unitSystemRaw)) {
             VStack(alignment: .leading, spacing: 18) {
 
                 // Top row: title + current weight

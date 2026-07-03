@@ -20,7 +20,7 @@ struct ViewPhotosInApp: View {
     @State private var selectedURL: URL?
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack{
                 // Consistent Gradient Background
                 LinearGradient(

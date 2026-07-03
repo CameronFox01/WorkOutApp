@@ -122,7 +122,7 @@ struct TimeViewBig: View {
                                             .font(.caption)
                                             .foregroundStyle(.white.opacity(0.7))
                                         Spacer()
-                                        Text("\(totalSeconds / 60) min")
+                                        Text(totalSeconds < 60 ? "\(totalSeconds) sec" : "\(totalSeconds / 60) min")
                                             .font(.caption.bold())
                                             .foregroundStyle(.white.opacity(0.7))
                                     }
@@ -137,15 +137,15 @@ struct TimeViewBig: View {
                                                 remainingSeconds = totalSeconds
                                             }
                                         ),
-                                        in: 60...3600,
-                                        step: 60
+                                        in: 30...3600,
+                                        step: 30
                                     )
                                     .tint(.white)
                                     .disabled(isTimerRunning)
                                     .opacity(isTimerRunning ? 0.4 : 1)
 
                                     HStack {
-                                        Text("1 min")
+                                        Text("30 sec")
                                             .font(.caption2)
                                             .foregroundStyle(.white.opacity(0.5))
                                         Spacer()
@@ -159,7 +159,7 @@ struct TimeViewBig: View {
                                 // Play/pause + fine tune buttons
                                 HStack(spacing: 40) {
                                     controlButton(icon: "minus", color: .orange) {
-                                        totalSeconds = max(60, totalSeconds - 30)
+                                        totalSeconds = max(30, totalSeconds - 30)
                                         if !isTimerRunning { remainingSeconds = totalSeconds }
                                     }
 
