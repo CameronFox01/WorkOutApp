@@ -38,7 +38,7 @@ struct BMIView: View {
             )
         }
         .buttonStyle(.plain)
-        .sheet(isPresented: $showSheet) {
+        .fullScreenCover(isPresented: $showSheet) {
             BMIDetailSheet(
                 bmi: calculateBMI(),
                 poundsToHealthy: poundsToHealthy,

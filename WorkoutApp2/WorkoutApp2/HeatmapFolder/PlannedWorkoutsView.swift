@@ -68,84 +68,130 @@ struct PlannedWorkoutsView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationView {
-            ZStack {
+        
+        ZStack {
 
-                // Same gradient as TimeViewBig
-                LinearGradient(
-                    colors: gradientSettings.darkGradientColors,
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+            // Same gradient as TimeViewBig
+            LinearGradient(
+                colors: gradientSettings.darkGradientColors,
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-                ScrollView {
-                    VStack(spacing: 24) {
-                        daySelector
-                        titleCard
-                        plannedCountCard
-                        plannedItemsCard
-                        dayReminderCard
+            ScrollView {
+                VStack(spacing: 24) {
+                    if comingFromCard{
+                        topButtons
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    .padding(.bottom, 24)
+                    daySelector
+                    titleCard
+                    plannedCountCard
+                    plannedItemsCard
+                    dayReminderCard
                 }
-                .scrollDismissesKeyboard(.interactively)
-                .onTapGesture {
-                    isEditing = false
-                }
-                .onChange(of: plannedReminderEnabled) { _, _ in
-                    sharedDefaults.set(plannedReminderEnabled, forKey: keyEnabled(for: selectedDay))
-                    scheduleReminderForDay(selectedDay)
-                }
-                .onChange(of: plannedTime) { _, _ in
-                    sharedDefaults.set(plannedTime.timeIntervalSince1970, forKey: keyTime(for: selectedDay))
-                    scheduleReminderForDay(selectedDay)
-                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
-            .overlay(alignment: .top) {
-                if showSavedToast {
-                    savedToast
-                }
+            .scrollDismissesKeyboard(.interactively)
+            .onTapGesture {
+                isEditing = false
             }
-            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Schedule")
-                        .font(.title.bold())
+            .onChange(of: plannedReminderEnabled) { _, _ in
+                sharedDefaults.set(plannedReminderEnabled, forKey: keyEnabled(for: selectedDay))
+                scheduleReminderForDay(selectedDay)
+            }
+            .onChange(of: plannedTime) { _, _ in
+                sharedDefaults.set(plannedTime.timeIntervalSince1970, forKey: keyTime(for: selectedDay))
+                scheduleReminderForDay(selectedDay)
+            }
+        }
+        .overlay(alignment: .top) {
+            if showSavedToast {
+                savedToast
+            }
+        }
+        .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Schedule")
+                    .font(.title.bold())
+                    .foregroundStyle(.white)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    saveForDay(selectedDay)
+                    withAnimation(.spring()) {
+                       showSavedToast = true
+                   }
+                } label: {
+                    Text("Save")
+                        .fontWeight(.semibold)
                         .foregroundStyle(.white)
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+            }
+            if comingFromCard {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        saveForDay(selectedDay)
-                        withAnimation(.spring()) {
-                           showSavedToast = true
-                       }
+                        dismiss()
                     } label: {
-                        Text("Save")
-                            .fontWeight(.semibold)
+                        Image(systemName: "xmark")
                             .foregroundStyle(.white)
                     }
                 }
-                if comingFromCard {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .foregroundStyle(.white)
-                        }
-                    }
-                }
             }
-            .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationBarTitleDisplayMode(.inline)
+        
         .onAppear {
             loadForDay(selectedDay)
         }
         
+    }
+    
+    // MARK: -  Top Section
+    private var topButtons: some View {
+        HStack(spacing: 6){
+            // Return Button
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 20)
+                    .frame(height: 60)
+                    .background(.white.opacity(0.15))
+                    .clipShape(Capsule())
+            }
+            
+            Spacer()
+            
+            // Main Text
+            Text("Schedule")
+                .font(.largeTitle)
+                .foregroundStyle(.white)
+            
+            Spacer()
+            
+            // Save Button
+            Button {
+                saveForDay(selectedDay)
+                withAnimation(.spring()) {
+                   showSavedToast = true
+               }
+            } label: {
+                Text("Save")
+                    .font(.title3.weight(.bold))
+                    .padding(.horizontal, 20)
+                    .foregroundStyle(.white)
+                    .frame(height: 60)
+                    .background(.white.opacity(0.15))
+                    .clipShape(Capsule())
+            }
+        }
     }
 
     // MARK: - Day Selector
@@ -537,6 +583,6 @@ struct PlannedWorkoutsView: View {
 }
 
 #Preview {
-    PlannedWorkoutsView()
+    PlannedWorkoutsView(comingFromCard: true)
         .environmentObject(GradientSettings())
 }

@@ -329,6 +329,7 @@ struct PlannedWorkoutRow: View {
 
 struct DailyPlannedWorkoutsCard: View {
     @State private var showSchedule = false
+    @EnvironmentObject var gradientSettings: GradientSettings
 
     var body: some View {
         Button {
@@ -337,9 +338,9 @@ struct DailyPlannedWorkoutsCard: View {
             DailyPlannedWorkouts()
         }
         .buttonStyle(.plain)
-        .sheet(isPresented: $showSchedule) {
+        .fullScreenCover(isPresented: $showSchedule) {
             PlannedWorkoutsView(comingFromCard: true)
-                   .environmentObject(GradientSettings())
+                .environmentObject(gradientSettings)
         }
     }
 }

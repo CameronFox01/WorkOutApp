@@ -56,7 +56,7 @@ struct MeasurementRecapView: View {
             )
         }
         .buttonStyle(.plain)
-        .sheet(isPresented: $showSheet) {
+        .fullScreenCover(isPresented: $showSheet) {
             MeasurementInputSheet()
         }
     }
