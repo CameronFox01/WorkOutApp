@@ -73,24 +73,21 @@ struct WeightCard: View {
                         .font(.subheadline)
                         .foregroundStyle(weightCardColor)
                 }
-                
+                // Take this is a life lesson that AI will make things more complicated than need to be.
                 if let pct = progressPercentText,
-                   Double(targetWeight) != nil,
-                   (progressFraction ?? 0) > 0 {
+                   Double(targetWeight) != nil{
                     HStack(spacing: 6) {
                         Image(systemName: progressIcon)
                             .foregroundStyle(progressColor ?? weightCardSecondary)
-                        Text(pct)
-                            .font(.subheadline).bold()
-                            .foregroundStyle(progressColor ?? weightCardSecondary)
-                    }
-                } else if let _ = progressPercentText, Double(targetWeight) != nil {
-                    HStack(spacing: 6) {
-                        Image(systemName: progressIcon)
-                            .foregroundStyle(progressColor ?? weightCardSecondary)
-                        Text("0%")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(progressColor ?? weightCardSecondary)
+                        if pct == "-0%" {
+                            Text("0%")
+                                .font(.subheadline).bold()
+                                .foregroundStyle(progressColor ?? weightCardSecondary)
+                        } else {
+                            Text(pct)
+                                .font(.subheadline).bold()
+                                .foregroundStyle(progressColor ?? weightCardSecondary)
+                        }
                     }
                 } else {
                     Text("Set target weight to see progress")
