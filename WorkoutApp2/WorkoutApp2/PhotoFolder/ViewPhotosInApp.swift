@@ -47,7 +47,8 @@ struct ViewPhotosInApp: View {
                                 Text(section.title)
                                     .font(.title2.bold())
                                     .padding(.horizontal)
-                                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                                    .foregroundStyle(.white)
+//                                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                                 LazyVGrid(
                                     columns: [
                                         GridItem(.flexible()),

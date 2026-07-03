@@ -57,19 +57,27 @@ struct PhotoView: View {
                                     Text("Before")
                                         .font(.headline).bold()
                                     imagePane(title: "Left", image: leftImage, action: { showingLeftCamera = true }) {
-                                            leftImage = nil
-                                            leftPhotoFileName = ""
-                                            UserDefaults.standard.removeObject(forKey: "leftPhotoFileName")
-                                        }
+                                           if !leftPhotoFileName.isEmpty {
+                                               let url = documentsDirectory().appendingPathComponent(leftPhotoFileName)
+                                               try? FileManager.default.removeItem(at: url)
+                                           }
+                                           leftImage = nil
+                                           leftPhotoFileName = ""
+                                           UserDefaults.standard.removeObject(forKey: "leftPhotoFileName")
+                                       }
                                 }
                                 VStack{
                                     Text("After")
                                         .font(.headline).bold()
                                     imagePane(title: "Right", image: rightImage, action: { showingRightCamera = true }) {
-                                        rightImage = nil
-                                        rightPhotoFileName = ""
-                                        UserDefaults.standard.removeObject(forKey: "rightPhotoFileName")
-                                    }
+                                          if !rightPhotoFileName.isEmpty {
+                                              let url = documentsDirectory().appendingPathComponent(rightPhotoFileName)
+                                              try? FileManager.default.removeItem(at: url)
+                                          }
+                                          rightImage = nil
+                                          rightPhotoFileName = ""
+                                          UserDefaults.standard.removeObject(forKey: "rightPhotoFileName")
+                                      }
                                 }
                             }
                         }
@@ -114,7 +122,6 @@ struct PhotoView: View {
                         }
                         .padding()
                         .cardStyle()
-                        //.background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
                         .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
                         
                         Spacer()
@@ -281,6 +288,7 @@ struct PhotoView: View {
 
                      // Clear button
                      Button {
+                         saveToAppStorage(image: uiImage, side: "")
                          onClear()
                      } label: {
                          Image(systemName: "xmark.circle.fill")
@@ -305,10 +313,11 @@ struct PhotoView: View {
 
     // Saves to App Storage and Photo's App on iPhone
     private func saveToAppStorage(image: UIImage, side: String) {
-
         guard let data = image.jpegData(compressionQuality: 0.9) else { return }
 
-        let filename = "\(side)_photo.jpg"
+        // Generate a unique timestamped filename for the new photo
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let filename = "\(side)_photo_\(timestamp).jpg"
         let url = documentsDirectory().appendingPathComponent(filename)
 
         do {
@@ -319,7 +328,6 @@ struct PhotoView: View {
             } else {
                 rightPhotoFileName = filename
             }
-
         } catch {
             print("Failed to save image: \(error)")
         }

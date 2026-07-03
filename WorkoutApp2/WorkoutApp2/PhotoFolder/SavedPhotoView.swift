@@ -54,7 +54,7 @@ struct SavedPhotosView: View {
                                 Text("Current Comparison")
                                     .font(.title2.bold())
                                     .padding(.horizontal)
-                                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                                    .foregroundStyle(.white)
                                 
                                 HStack {
                                     
@@ -85,7 +85,7 @@ struct SavedPhotosView: View {
                                     .font(.title2.bold())
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal)
-                                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                                    .foregroundStyle(.white)
                                 
                                 LazyVGrid(
                                     columns: [
