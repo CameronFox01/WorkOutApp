@@ -16,7 +16,6 @@ struct WeightCard: View {
     @EnvironmentObject var workoutData: WorkoutData
     @EnvironmentObject var router: AppRouter
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
-    @State private var newWeightInput: String = ""
 
     @AppStorage("showCalorieCard") private var showCalorieCard: Bool = true
     @AppStorage("userWeight") private var weight: String = ""
@@ -64,7 +63,7 @@ struct WeightCard: View {
             weightUnit: weightUnit,
             comingFromWidget: false,
             currentWeight: $weight,
-            newWeightInput: $newWeightInput,
+            newWeightInput: $weight,
             entries: workoutData.entries,
             onSave: { valueString in
                 // Update AppStorage so Account and others reflect immediately
@@ -140,7 +139,7 @@ struct WeightCard: View {
             weightUnit: weightUnit,
             comingFromWidget: false,
             currentWeight: $weight,
-            newWeightInput: $newWeightInput,
+            newWeightInput: $weight,
             entries: workoutData.entries,
             onSave: { valueString in
                 // Update AppStorage so Account and others reflect immediately

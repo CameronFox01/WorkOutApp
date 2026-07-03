@@ -68,6 +68,8 @@ struct ContentView: View {
                         }
                         .tag(AppRouter.Tab.progress)
                     }
+                    .tabViewStyle(.tabBarOnly)
+                    
                     if let screen = router.activeScreen {
                         switch screen {
                         case .photoReminder:
