@@ -46,79 +46,102 @@ struct TimerView: View {
     var body: some View {
 
         if showStopWatch {
-
-            HStack(spacing: 16) {
-                
-                // Stop
-                Button {
-                    if isStopWatchRunning {
-                        accumulatedElapsed = Date().timeIntervalSince1970 - startStopWatch
-                        isStopWatchRunning = false
-                    } else {
-                        stopWatchString = "00:00.00"
-                        accumulatedElapsed = 0
-                        clearLaps()
-                    }
-                } label: {
-                    Image(systemName: "stop.fill")
-                        .font(.system(size: 18, weight: .bold))
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
-                
-                Spacer()
-                
-                // Timer Display
-                VStack(spacing: 2) {
+            VStack {
+                HStack(spacing: 16) {
                     
-                    Text(stopWatchString)
-                        .font(.system(size: 25,
-                                      weight: .bold,
-                                      design: .rounded))
-                        .monospacedDigit()
-                        .onTapGesture {
-                            showBigTimer = true
-                        }
-                    
-                    Text("Tap to expand")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                
-                Spacer()
-                
-                if !isStopWatchRunning {
-                // Start
-                Button {
-                    
-                    if !isStopWatchRunning {
-                        
-                        startStopWatch = Date().timeIntervalSince1970 - accumulatedElapsed
-                        
-                        isStopWatchRunning = true
-                    }
-                    
-                } label: {
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 18, weight: .bold))
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.green)
-                
-            } else {
+                    // Stop
                     Button {
-                        addLap()
+                        if isStopWatchRunning {
+                            accumulatedElapsed = Date().timeIntervalSince1970 - startStopWatch
+                            isStopWatchRunning = false
+                        } else {
+                            stopWatchString = "00:00.00"
+                            accumulatedElapsed = 0
+                            clearLaps()
+                        }
                     } label: {
-                        Image(systemName: "stopwatch.fill")
+                        Image(systemName: "stop.fill")
                             .font(.system(size: 18, weight: .bold))
                             .frame(width: 44, height: 44)
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(.orange)
+                    .tint(.red)
+                    
+                    Spacer()
+                    
+                    // Timer Display
+                    VStack(spacing: 2) {
+                        
+                        Text(stopWatchString)
+                            .font(.system(size: 25,
+                                          weight: .bold,
+                                          design: .rounded))
+                            .monospacedDigit()
+                            .onTapGesture {
+                                showBigTimer = true
+                            }
+                        
+                        Text("Tap to expand")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    if !isStopWatchRunning {
+                        // Start
+                        Button {
+                            
+                            if !isStopWatchRunning {
+                                
+                                startStopWatch = Date().timeIntervalSince1970 - accumulatedElapsed
+                                
+                                isStopWatchRunning = true
+                            }
+                            
+                        } label: {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 18, weight: .bold))
+                                .frame(width: 44, height: 44)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
+                        
+                    } else {
+                        Button {
+                            addLap()
+                        } label: {
+                            Image(systemName: "stopwatch.fill")
+                                .font(.system(size: 18, weight: .bold))
+                                .frame(width: 44, height: 44)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.orange)
+                    }
+                } // End of HStack
+                if !laps.isEmpty {
+                    Divider()
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Laps")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        ForEach(Array(laps.enumerated().reversed()), id: \.offset) { index, lap in
+                            HStack {
+                                Text("Lap \(index + 1)")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Text(lap)
+                                    .font(.system(.subheadline, design: .rounded).bold())
+                                    .monospacedDigit()
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
                 }
-            }
+            } // End of VStack
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .frame(
@@ -177,7 +200,6 @@ struct TimerView: View {
             .onDisappear {
                 UIApplication.shared.isIdleTimerDisabled = false
             }
-
         } else {
             // section to show compact countdown
             HStack(spacing: 10) {
