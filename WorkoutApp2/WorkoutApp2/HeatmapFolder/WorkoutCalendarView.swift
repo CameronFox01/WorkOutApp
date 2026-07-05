@@ -496,7 +496,7 @@ struct WorkoutCalendarView: View {
                     .padding()
                 }
             }
-            .sheet(isPresented: $showingAddWorkout) {
+            .fullScreenCover(isPresented: $showingAddWorkout) {
                 AddWorkoutForDateView(date: selectedDate)
                     .environmentObject(workoutData)
             }

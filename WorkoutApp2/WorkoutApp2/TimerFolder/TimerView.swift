@@ -29,6 +29,8 @@ struct TimerView: View {
     @AppStorage("totalSeconds") private var totalSeconds: Int = 60
     @AppStorage("remainingSeconds") private var remainingSeconds: Int = 60
     @AppStorage("isCountdownRunning") private var isCountdownRunning: Bool = false
+    
+    @AppStorage("accumulatedElapsed") private var accumulatedElapsed: Double = 0
 
     private let countdownTimer =
         Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -50,9 +52,11 @@ struct TimerView: View {
                 // Stop
                 Button {
                     if isStopWatchRunning {
+                        accumulatedElapsed = Date().timeIntervalSince1970 - startStopWatch
                         isStopWatchRunning = false
                     } else {
                         stopWatchString = "00:00.00"
+                        accumulatedElapsed = 0
                         clearLaps()
                     }
                 } label: {
@@ -90,10 +94,7 @@ struct TimerView: View {
                     
                     if !isStopWatchRunning {
                         
-                        stopWatchString = "00:00.00"
-                        
-                        // FIXED
-                        startStopWatch = Date().timeIntervalSince1970
+                        startStopWatch = Date().timeIntervalSince1970 - accumulatedElapsed
                         
                         isStopWatchRunning = true
                     }
@@ -166,7 +167,8 @@ struct TimerView: View {
                     isStopWatchRunning: $isStopWatchRunning,
                     startTime: startTimeBinding,
                     timerString: $stopWatchString,
-                    lapsData: $lapsData
+                    lapsData: $lapsData,
+                    accumulatedElapsed: $accumulatedElapsed
                 )
             }
             .onAppear(){
@@ -286,7 +288,8 @@ struct TimerView: View {
                              isStopWatchRunning: $isStopWatchRunning,
                              startTime: startTimeBinding,
                              timerString: $stopWatchString,
-                             lapsData: $lapsData
+                             lapsData: $lapsData,
+                             accumulatedElapsed: $accumulatedElapsed
                 )
             }
             .onAppear(){

@@ -20,6 +20,7 @@ struct TimeViewBig: View {
     @Binding var isStopWatchRunning: Bool
     @Binding var startTime: Date
     @Binding var stopWatchString: String
+    @Binding var accumulatedElapsed: Double
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
@@ -36,7 +37,8 @@ struct TimeViewBig: View {
         isStopWatchRunning: Binding<Bool>,
         startTime: Binding<Date>,
         timerString: Binding<String>,
-        lapsData: Binding<String>
+        lapsData: Binding<String>,
+        accumulatedElapsed: Binding<Double>
     ) {
         self._totalSeconds = totalSeconds
         self._remainingSeconds = remainingSeconds
@@ -45,6 +47,7 @@ struct TimeViewBig: View {
         self._startTime = startTime
         self._stopWatchString = timerString
         self._lapsData = lapsData
+        self._accumulatedElapsed = accumulatedElapsed
     }
 
     var body: some View {
@@ -220,12 +223,8 @@ struct TimeViewBig: View {
                                 if !isStopWatchRunning {
                                     // Button for starting stop watch
                                     Button {
-                                        
-                                        if !isStopWatchRunning {
-                                            startTime = Date()
-                                            isStopWatchRunning = true
-                                        }
-                                        
+                                        startTime = Date().addingTimeInterval(-accumulatedElapsed)
+                                        isStopWatchRunning = true
                                     } label: {
                                         
                                         Label("Start", systemImage: "play.fill")
@@ -234,6 +233,7 @@ struct TimeViewBig: View {
                                     .buttonStyle(.borderedProminent)
                                     .tint(.green)
                                 } else {
+                                    // Button for Lap once stopwatch is going
                                     Button {
                                         addLap()
                                     } label: {
@@ -244,21 +244,31 @@ struct TimeViewBig: View {
                                     .tint(.orange)
                                 }
 
-                                Button {
-
-                                    if isStopWatchRunning {
+                                if isStopWatchRunning{
+                                    // Button for Stoping while running
+                                    Button {
+                                        accumulatedElapsed = Date().timeIntervalSince(startTime)
                                         isStopWatchRunning = false
-                                    } else {
-                                        stopWatchString = "00:00.00"
-                                        clearLaps()
+                                    } label: {
+                                        Label("Stop", systemImage: "stop.fill")
+                                            .frame(maxWidth: .infinity)
                                     }
-                                } label: {
-
-                                    Label("Stop", systemImage: "stop.fill")
-                                        .frame(maxWidth: .infinity)
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.red)
+                                    
+                                } else {
+                                    // Button for reseting the time.
+                                    Button {
+                                        stopWatchString = "00:00.00"
+                                        accumulatedElapsed = 0
+                                        clearLaps()
+                                    } label: {
+                                        Label("Reset", systemImage: "")
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.red)
                                 }
-                                .buttonStyle(.borderedProminent)
-                                .tint(.red)
                             }
                             
                             if !laps.isEmpty {
@@ -402,7 +412,8 @@ struct TimeViewBig: View {
         isStopWatchRunning: .constant(false),
         startTime: .constant(Date()),
         timerString: .constant("00:00.00"),
-        lapsData: .constant("[]")
+        lapsData: .constant("[]"),
+        accumulatedElapsed: .constant(0)
     )
     .environmentObject(GradientSettings())
 }
