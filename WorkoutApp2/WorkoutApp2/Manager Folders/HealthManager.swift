@@ -293,5 +293,65 @@ class HealthManager: ObservableObject {
 
         healthStore.execute(query)
     }
+    
+    func fetchSteps(for date: Date, completion: @escaping (Int) -> Void) {
+        let stepsType = HKQuantityType(.stepCount)
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let isToday = calendar.isDateInToday(date)
+        let endOfDay = isToday ? Date() : (calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? startOfDay)
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: startOfDay,
+            end: endOfDay,
+            options: .strictStartDate
+        )
+
+        let query = HKStatisticsQuery(
+            quantityType: stepsType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, result, _ in
+            let count = Int(result?.sumQuantity()?.doubleValue(for: .count()) ?? 0)
+            DispatchQueue.main.async {
+                completion(count)
+            }
+        }
+        healthStore.execute(query)
+    }
+
+    func fetchActiveCalories(for date: Date, completion: @escaping (Int) -> Void) {
+        let calorieType = HKQuantityType(.activeEnergyBurned)
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let isToday = calendar.isDateInToday(date)
+        let endOfDay = isToday ? Date() : (calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? startOfDay)
+
+        let predicate = HKQuery.predicateForSamples(
+            withStart: startOfDay,
+            end: endOfDay,
+            options: .strictStartDate
+        )
+
+        let query = HKStatisticsQuery(
+            quantityType: calorieType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, result, _ in
+            let kcal = Int(result?.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0)
+            DispatchQueue.main.async {
+                completion(kcal)
+            }
+        }
+        healthStore.execute(query)
+    }
+    
+    func caloriesForDay(steps: Int, healthKitCalories: Double?) -> Int {
+        if let hk = healthKitCalories, hk > 0 {
+            return Int(hk)
+        } else {
+            return Int(Double(steps) * 0.04)
+        }
+    }
 }
 

@@ -14,6 +14,14 @@ struct WorkoutCalendarView: View {
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
     
+    @EnvironmentObject var Hmanager: HealthManager
+
+    @State private var stepsForSelectedDate: Int = 0
+    @State private var healthKitCaloriesForSelectedDate: Int = 0
+    
+    //Boolean for kcal vs Calories
+    @AppStorage("energyLabel") private var energyLabel: String = "Calories"
+    
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var router: AppRouter
 
@@ -337,10 +345,30 @@ struct WorkoutCalendarView: View {
 
                                 if let w = displayedBodyWeight {
                                     VStack(alignment: .trailing) {
-                                        Text("\(w)")
-                                            .font(.title3.bold())
-                                        Text("Body Weight")
-                                            .font(.caption)
+                                        HStack {
+                                            Text("\(w)")
+                                                .font(.title3.bold())
+                                            Text("Body Weight")
+                                                .font(.caption)
+                                        }
+                                        HStack {
+                                            Text("\(stepsForSelectedDate)")
+                                                .font(.title3.bold())
+                                            Text("Steps Taken")
+                                                .font(.caption)
+                                        }
+                                        HStack {
+                                            Text("\(caloriesForSelectedDate)")
+                                                .font(.title3.bold())
+
+                                            if energyLabel == "Calories" {
+                                                Text("Calories")
+                                                    .font(.caption)
+                                            } else {
+                                                Text("kcal")
+                                                    .font(.caption)
+                                            }
+                                        }
                                     }
                                     .foregroundStyle(.white)
                                 }
@@ -500,6 +528,12 @@ struct WorkoutCalendarView: View {
                 AddWorkoutForDateView(date: selectedDate)
                     .environmentObject(workoutData)
             }
+            .onAppear {
+                loadHealthData(for: selectedDate)
+            }
+            .onChange(of: selectedDate) {
+                loadHealthData(for: selectedDate)
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if comingFromWidget {
@@ -534,6 +568,22 @@ struct WorkoutCalendarView: View {
                     }
                 }
             }
+        }
+    }
+    
+    private var caloriesForSelectedDate: Int {
+        Hmanager.caloriesForDay(
+            steps: stepsForSelectedDate,
+            healthKitCalories: Double(healthKitCaloriesForSelectedDate)
+        )
+    }
+    
+    private func loadHealthData(for date: Date) {
+        Hmanager.fetchSteps(for: date) { count in
+            stepsForSelectedDate = count
+        }
+        Hmanager.fetchActiveCalories(for: date) { kcal in
+            healthKitCaloriesForSelectedDate = kcal
         }
     }
     
@@ -1335,6 +1385,8 @@ struct WorkoutCalendarView: View {
         WorkoutCalendarView(entries: sampleEntries, comingFromWidget: false)
             .environmentObject(WorkoutData())
             .environmentObject(GradientSettings())
+            .environmentObject(HealthManager())
+            .environmentObject(AppRouter())
     }
 }
 
