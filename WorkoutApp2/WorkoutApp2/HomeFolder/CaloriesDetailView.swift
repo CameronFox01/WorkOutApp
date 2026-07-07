@@ -226,18 +226,18 @@ struct CaloriesDetailView: View {
                                     Spacer()
 
                                     Label(
-                                        estimatedCaloriesToday
+                                        Int(Hmanager.activeCalories)
                                         >= dailyCaloriesGoal
                                         ? "Met"
                                         : "In Progress",
                                         systemImage:
-                                            estimatedCaloriesToday
+                                            Int(Hmanager.activeCalories)
                                             >= dailyCaloriesGoal
                                             ? "checkmark.circle.fill"
                                             : "clock.fill"
                                     )
                                     .foregroundStyle(
-                                        estimatedCaloriesToday
+                                        Int(Hmanager.activeCalories)
                                         >= dailyCaloriesGoal
                                         ? .green
                                         : .orange

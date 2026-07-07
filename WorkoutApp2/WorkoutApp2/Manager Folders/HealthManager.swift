@@ -151,14 +151,6 @@ class HealthManager: ObservableObject {
         }
     }
     
-    func caloriesForDay(steps: Int, healthKitCalories: Double?) -> Int {
-        if let hk = healthKitCalories, hk > 0 {
-            return Int(hk)
-        } else {
-            return Int(Double(steps) * 0.04)
-        }
-    }
-    
     func fetchLastFiveDaysActiveCalories() {
         let calorieType = HKQuantityType(.activeEnergyBurned)
         let calendar = Calendar.current
