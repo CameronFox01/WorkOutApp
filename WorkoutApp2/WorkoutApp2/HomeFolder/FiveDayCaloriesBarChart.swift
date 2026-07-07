@@ -44,6 +44,11 @@ struct FiveDayCaloriesBarChart: View {
                     let item = data[i]
 
                     VStack(spacing: 4) {
+                        if  comingFromDetail {
+                            Text("\(item.calories)")
+                                .foregroundStyle(.white)
+                        }
+                        
                         ZStack(alignment: .bottom) {
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(Color.gray.opacity(0.15))

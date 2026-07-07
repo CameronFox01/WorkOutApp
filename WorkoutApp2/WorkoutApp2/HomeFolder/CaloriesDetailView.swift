@@ -250,7 +250,8 @@ struct CaloriesDetailView: View {
                                 .overlay(
                                     Color.white.opacity(0.15)
                                 )
-
+                            
+                            
                             // MARK: - Chart
                             if !Hmanager.lastFiveDaysCalories.isEmpty {
 
