@@ -338,14 +338,21 @@ class NotificationHandler {
     
     func scheduleWeeklyWorkoutChallengeNotifications(goalDays: Int) {
         let center = UNUserNotificationCenter.current()
-        
-        // Remove old ones first
-        center.removePendingNotificationRequests(withIdentifiers: [
-            "workout_challenge_midweek",
-            "workout_challenge_endweek"
-        ])
-        
-        guard goalDays > 0 else { return }
+
+        guard goalDays > 0 else {
+                // No valid goal — don't touch existing schedule silently.
+                // If you explicitly want to clear it when goal is 0, do it here intentionally:
+            center.removePendingNotificationRequests(withIdentifiers: [
+                "workout_challenge_midweek",
+                "workout_challenge_endweek"
+            ])
+                return
+        }
+
+          center.removePendingNotificationRequests(withIdentifiers: [
+              "workout_challenge_midweek",
+              "workout_challenge_endweek"
+          ])
         
         // Mid-week check-in — Wednesday at 6pm
         let midweekContent = UNMutableNotificationContent()

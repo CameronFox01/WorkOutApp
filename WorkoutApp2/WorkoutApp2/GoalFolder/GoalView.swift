@@ -150,25 +150,26 @@ struct GoalView: View {
             .onAppear {
                 loadWorkoutGoals()
                 loadAchievedMilestones()
-                let goal = Int(targetDaysOfWorkout) ?? 0
+                _ = Int(targetDaysOfWorkout) ?? 0
                 let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
                 let notifsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
 
-                if challengeEnabled && notifsEnabled {
-                    NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
-                }
+                if let goal = Int(targetDaysOfWorkout), goal > 0,
+                      challengeEnabled, notifsEnabled {
+                       NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
+                   }
                 
                 UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(targetDaysOfWorkout, forKey: "userTargetDaysOfWorkout")
             }
             .onChange(of: targetDaysOfWorkout) { _, newValue in
                 UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(newValue, forKey: "userTargetDaysOfWorkout")
-                WidgetCenter.shared.reloadAllTimelines() 
-                
-                let goal = Int(targetDaysOfWorkout) ?? 0
+                WidgetCenter.shared.reloadAllTimelines()
+
                 let challengeEnabled = UserDefaults.standard.bool(forKey: "workoutChallengeReminder")
                 let notifsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
 
-                if challengeEnabled && notifsEnabled {
+                if let goal = Int(newValue), goal > 0,
+                   challengeEnabled, notifsEnabled {
                     NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
                 }
             }
