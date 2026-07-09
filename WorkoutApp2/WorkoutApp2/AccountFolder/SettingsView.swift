@@ -33,6 +33,7 @@ struct SettingsView: View {
     @AppStorage("showRecentWorkouts") private var showRecentWorkouts: Bool = true
     @AppStorage("showAllImported") private var showAllImported: Bool = true
     
+    @AppStorage("showCalculatorImporting") private var showCalculatorImporting: Bool = true
     // Unit system Section
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @State private var showUnitChangeConfirmation = false
@@ -143,7 +144,7 @@ struct SettingsView: View {
                 .ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 12) {
-                        
+                        // MARK: Home Screen
                         CollapsibleSettingsSection(
                             title: "Home Screen",
                             icon: "house.fill",
@@ -218,6 +219,18 @@ struct SettingsView: View {
                             }
                         }
                         
+                        // MARK: Calculator Section
+                        CollapsibleSettingsSection(
+                            title: "Calculator",
+                            icon: "plus.circle",
+                            iconColor: .red
+                        ){
+                            SettingsRow(icon: "plus", title: "Show Calculator during import"){
+                                Toggle("", isOn: $showCalculatorImporting).labelsHidden()
+                            }
+                        }
+                        
+                        // MARK: Import Settings
                         CollapsibleSettingsSection(
                             title: "Import Settings",
                             icon: "square.and.arrow.down",
@@ -232,7 +245,7 @@ struct SettingsView: View {
                             }
                         }
                         
-                        // Units section
+                        // MARK: Units section
                         CollapsibleSettingsSection(
                             title: "Units",
                             icon: "ruler.fill",

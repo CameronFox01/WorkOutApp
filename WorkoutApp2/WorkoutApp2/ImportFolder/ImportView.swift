@@ -310,6 +310,9 @@ struct ImportView: View {
 
         @State private var showingAddWorkout = false
         @State private var newWorkoutName = ""
+        @State private var showingPlateCalculator = false
+        
+        @AppStorage("showCalculatorImporting") private var showCalculatorImporting: Bool = true
         
         //Color Gradiant
         @EnvironmentObject var gradientSettings: GradientSettings
@@ -447,6 +450,12 @@ struct ImportView: View {
             .overlay(alignment: .top) {
                 if showSavedToast { savedToast }
             }
+            .fullScreenCover(isPresented: $showingPlateCalculator) {
+                PlateCalculatorView(weightUnit: weightUnit) { total in
+                    weights[category] = formattedNumber(total)
+                }
+                .environmentObject(gradientSettings)
+            }
             .onAppear {
                 //resetParent()
                 let currentWorkout = selections[category] ?? category.workouts().first ?? ""
@@ -473,6 +482,14 @@ struct ImportView: View {
                     distances[category] = ""
                     times[category] = ""
                 }
+            }
+        }
+        
+        private func formattedNumber(_ value: Double) -> String {
+            if value.truncatingRemainder(dividingBy: 1) == 0 {
+                return String(Int(value))
+            } else {
+                return String(format: "%.1f", value)
             }
         }
 
@@ -516,12 +533,23 @@ struct ImportView: View {
 
         private var statsCard: some View {
             VStack(spacing: 12) {
-
-                if category.usesWeight && category != .distanceCardio && category != .timeCardio {
-                    statRow("scalemass", "Weight (\(weightUnit))", weightBinding) {
-                        increment(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
-                    } dec: {
-                        decrement(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
+                if showCalculatorImporting {
+                    if category.usesWeight && category != .distanceCardio && category != .timeCardio {
+                        statRow("scalemass", "Weight (\(weightUnit))", weightBinding, calculatorAction: {
+                            showingPlateCalculator = true
+                        }) {
+                            increment(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
+                        } dec: {
+                            decrement(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
+                        }
+                    }
+                } else {
+                    if category.usesWeight && category != .distanceCardio && category != .timeCardio {
+                        statRow("scalemass", "Weight (\(weightUnit))", weightBinding) {
+                            increment(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
+                        } dec: {
+                            decrement(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
+                        }
                     }
                 }
 
@@ -608,6 +636,7 @@ struct ImportView: View {
             _ icon: String,
             _ title: String,
             _ binding: Binding<String>,
+            calculatorAction: (() -> Void)? = nil,
             inc: @escaping () -> Void,
             dec: @escaping () -> Void
         ) -> some View {
@@ -619,6 +648,14 @@ struct ImportView: View {
                     .keyboardType(.decimalPad)
 
                 Spacer()
+
+                if let calculatorAction {
+                    Button(action: calculatorAction) {
+                        Image(systemName: "plusminus.circle")
+                            .font(.title3)
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 Stepper("", onIncrement: inc, onDecrement: dec)
                     .labelsHidden()
