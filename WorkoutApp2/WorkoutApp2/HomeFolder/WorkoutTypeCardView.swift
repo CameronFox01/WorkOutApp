@@ -91,6 +91,7 @@ struct WorkoutTypeCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .shadow(color: .blue.opacity(0.22), radius: 10, x: 0, y: 6)
     }
+    
     private var cardIcon: String {
         if isDistanceCardio {
             return "figure.run"
@@ -99,8 +100,92 @@ struct WorkoutTypeCardView: View {
         if isTimeCardio {
             return "timer"
         }
-
+        
+        if isSports {
+            return "sportscourt.fill"
+        }
+        
+        if isABs {
+            return "figure.core.training"
+        }
+        
+        if isLeg {
+            return "figure.strengthtraining.functional"
+        }
+        
+        if isPull {
+            return "arrow.down.backward.circle"
+        }
+        
+        if isPush {
+            return "arrow.up.forward.circle"
+        }
+        
+        if isGlute {
+            return "figure.strengthtraining.traditional"
+        }
+        
+        if isBicep {
+            return "dumbbell"
+        }
+        
+        if isTricep {
+            return "bolt.circle"
+        }
+        
+        if isStretch {
+            return "figure.yoga"
+        }
+        
         return "dumbbell.fill"
+    }
+    
+    private var isPush: Bool {
+        PushWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
+    }
+    
+    private var isPull: Bool {
+        PullWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
+    }
+    
+    private var isLeg: Bool {
+        LegWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
+    }
+    
+    private var isGlute: Bool {
+        GluteWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
+    }
+    
+    private var isBicep: Bool {
+        BicepWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
+    }
+    
+    private var isTricep: Bool {
+        TricepWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
+    }
+    
+    private var isStretch: Bool {
+        StretchRoutine.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
+    }
+    
+    private var isABs: Bool {
+        AbsWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
     }
     
     private var isDistanceCardio: Bool {

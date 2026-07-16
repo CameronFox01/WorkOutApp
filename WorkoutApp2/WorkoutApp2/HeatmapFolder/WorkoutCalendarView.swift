@@ -438,7 +438,11 @@ struct WorkoutCalendarView: View {
                                                 }
 
                                                 if !e.reps.isEmpty {
-                                                    statCapsule(text: "\(e.reps) reps")
+                                                    if categoryForWorkout(e.workoutType) == .sports {
+                                                        statCapsule(text: "\(e.reps) min")
+                                                    } else {
+                                                        statCapsule(text: "\(e.reps) reps")
+                                                    }
                                                 }
 
                                                 if !e.sets.isEmpty {
@@ -1365,12 +1369,20 @@ struct WorkoutCalendarView: View {
             reps: "",
             sets: "",
             date: Date(),
-            note: "Felt good, nice form"
+            note: "Felt good, nice form!!"
+        ),
+        WorkoutEntry(
+            workoutType: "Volleyball",
+            weight: "",
+            reps: "4",
+            sets: "",
+            date: Date(),
+            note: "Great pickup game, lots of digs and spikes"
         ),
         WorkoutEntry(
             workoutType: "Body Weight",
             weight: "190",
-            reps: "",
+            reps: "4",
             sets: "",
             date: Calendar.current.date(
                 byAdding: .day,

@@ -232,6 +232,13 @@ struct WorkoutChartView: View {
                                 )
                             }
 
+                        } else if isSports{
+                            if let bestSports = bestTime(){
+                                highlightPill(
+                                    icon: "timer",
+                                    label: "Longest Time",
+                                    value: bestSports)
+                            }
                         } else {
 
                             let (bestWeight, bestReps) = bests()
@@ -337,6 +344,12 @@ struct WorkoutChartView: View {
             .contains(workoutName)
     }
     
+    private var isSports: Bool {
+        SportsWorkout.allCases
+            .map(\.rawValue)
+            .contains(workoutName)
+    }
+    
     private func bestDistance() -> String? {
         entriesForWorkout
             .compactMap { Double($0.weight) }
@@ -399,6 +412,15 @@ struct WorkoutChartView: View {
                 ? entry.reps
                 : entry.sets
 
+            return "\(time) min"
+        }
+        
+        if isSports {
+            
+            let time = entry.reps.isEmpty
+            ? entry.sets
+            : entry.reps
+            
             return "\(time) min"
         }
 
