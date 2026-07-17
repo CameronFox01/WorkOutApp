@@ -12,10 +12,12 @@ struct HomeView: View {
     @EnvironmentObject var Hmanager: HealthManager
     @EnvironmentObject var workoutData: WorkoutData
     
-    
     @Environment(\.colorScheme) private var colorScheme
     private var weightCardColor: Color { colorScheme == .dark ? .white : .black }
     private var weightCardSecondary: Color { colorScheme == .dark ? Color.white.opacity(0.7) : Color.black.opacity(0.6) }
+    
+    @AppStorage("hasSeenHomeTutorial") private var hasSeenHomeTutorial: Bool = false
+    @State private var showHomeTutorial = false
     
     @AppStorage("userName") private var name: String = ""
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
@@ -105,6 +107,7 @@ struct HomeView: View {
                                     onTap: { isPresentingWeightSheet = true; newWeightInput = weight }
                                 )
                                 .environmentObject(gradientSettings)
+                                .tutorialHighlight("weightCalories")
 
                                 CaloriesCard()
                             }
@@ -127,6 +130,7 @@ struct HomeView: View {
                                 TimerView()
                                     .padding(.vertical)
                             }
+                            .tutorialHighlight("timer")
                         }
                         
                         // Section for Steps and Calendar
@@ -136,6 +140,7 @@ struct HomeView: View {
                                 CalendarCard()
                             }
                             .padding(.horizontal)
+                            .tutorialHighlight("stepsCalendar")
                         } else if showStepsCard && !showCalendarCard {
                             StepsCard()
                                 .padding(.horizontal)
@@ -208,6 +213,7 @@ struct HomeView: View {
                                         .font(.title2)
                                         .foregroundStyle(.orange)
                                 }
+                                .tutorialHighlight("recentWorkouts")
                                 .padding(.horizontal)
                                 //Creating the boxs for the workouts to be clicked on and carry you to more info on that workout
                                 LazyVGrid(
@@ -272,6 +278,13 @@ struct HomeView: View {
                     }
                 }
             }
+            .tutorialOverlay(
+                isPresented: $showHomeTutorial,
+                steps: homeTutorialSteps,
+                onFinish: {
+                    hasSeenHomeTutorial = true
+                }
+            )
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -336,6 +349,12 @@ struct HomeView: View {
                 Hmanager.fetchDistance()
                 Hmanager.fetchLastFiveDaysSteps()
                 Hmanager.fetchActiveCalories()
+                
+                if !hasSeenHomeTutorial {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        showHomeTutorial = true
+                    }
+                }
                 
                 // Seed initial Body Weight entry if none exists, using the first time account info was saved
                 let hasBodyWeight = workoutData.entries.contains { $0.workoutType == "Body Weight" }
@@ -729,6 +748,15 @@ struct HomeView: View {
     private var progressPercentText: String? {
         guard let pct = progressPercent else { return nil }
         return String(format: "%.0f%%", pct)
+    }
+    
+    private var homeTutorialSteps: [TutorialStep] {
+        [
+            TutorialStep(id: "weightCalories", title: "Weight & Calories", description: "Track today's weight progress and calories burned at a glance."),
+            TutorialStep(id: "timer", title: "Timer", description: "Built-in stopwatch and countdown timer for your workouts."),
+            TutorialStep(id: "stepsCalendar", title: "Steps & Calendar", description: "See today's steps and jump into your workout history."),
+            TutorialStep(id: "recentWorkouts", title: "Recent Workouts", description: "Quickly revisit exercises you've logged recently. You can personalize which cards show here anytime in Settings.")
+        ]
     }
     
     // Removed progressMovedDirectionPositive as unused
