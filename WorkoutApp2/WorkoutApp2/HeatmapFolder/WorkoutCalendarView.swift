@@ -15,6 +15,9 @@ struct WorkoutCalendarView: View {
     @EnvironmentObject var gradientSettings: GradientSettings
     
     @EnvironmentObject var Hmanager: HealthManager
+    
+    @AppStorage("hasSeenCalendarTutorial") private var hasSeenCalendarTutorial: Bool = false
+    @State private var showCalendarTutorial = false
 
     @State private var stepsForSelectedDate: Int = 0
     @State private var healthKitCaloriesForSelectedDate: Int = 0
@@ -330,6 +333,7 @@ struct WorkoutCalendarView: View {
                             RoundedRectangle(cornerRadius: 28)
                                 .fill(.white.opacity(0.12))
                         )
+                        .tutorialHighlight("heatmap")
 
                         // MARK: - Selected Day Card
                         VStack(alignment: .leading, spacing: 18) {
@@ -391,6 +395,7 @@ struct WorkoutCalendarView: View {
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 10)
                                         .background(.white.opacity(0.15), in: Capsule())
+                                        .tutorialHighlight("addWorkout")
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -532,8 +537,21 @@ struct WorkoutCalendarView: View {
                 AddWorkoutForDateView(date: selectedDate)
                     .environmentObject(workoutData)
             }
+            .tutorialOverlay(
+                isPresented: $showCalendarTutorial,
+                steps: calendarTutorialSteps,
+                onFinish: {
+                    hasSeenCalendarTutorial = true
+                }
+            )
             .onAppear {
                 loadHealthData(for: selectedDate)
+                
+                if !hasSeenCalendarTutorial {
+                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                         showCalendarTutorial = true
+                     }
+                 }
             }
             .onChange(of: selectedDate) {
                 loadHealthData(for: selectedDate)
@@ -570,9 +588,30 @@ struct WorkoutCalendarView: View {
                         )
                         .foregroundStyle(.white)
                     }
+                    .tutorialHighlight("plannedWorkoutsButton")
                 }
             }
         }
+    }
+    
+    private var calendarTutorialSteps: [TutorialStep] {
+        [
+            TutorialStep(
+                id: "heatmap",
+                title: "Activity Heatmap",
+                description: "Darker days mean more workouts logged. Tap any day to see what you did."
+            ),
+            TutorialStep(
+                id: "addWorkout",
+                title: "Add Workout",
+                description: "Log a workout for whichever day is selected above — great for catching up on previous days you forgot to log."
+            ),
+            TutorialStep(
+                id: "plannedWorkoutsButton",
+                title: "Planned Workouts",
+                description: "Set up a weekly workout schedule so you always know what's next."
+            )
+        ]
     }
     
     private var caloriesForSelectedDate: Int {

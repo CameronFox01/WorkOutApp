@@ -172,12 +172,14 @@ struct HomeView: View {
                             }
                             .padding(.horizontal)
                             .buttonStyle(.plain)
+                            .tutorialHighlight("WeeklyRecap")
                         }
                         
                         // Daily Planned Workouts
                         if showDailyPlanner{
                             DailyPlannedWorkoutsCard()
                                 .padding(.horizontal)
+                                .tutorialHighlight("Planner")
                         }
                         
                         //Can be Hiden Section before Recent Workouts
@@ -755,7 +757,9 @@ struct HomeView: View {
             TutorialStep(id: "weightCalories", title: "Weight & Calories", description: "Track today's weight progress and calories burned at a glance."),
             TutorialStep(id: "timer", title: "Timer", description: "Built-in stopwatch and countdown timer for your workouts."),
             TutorialStep(id: "stepsCalendar", title: "Steps & Calendar", description: "See today's steps and jump into your workout history."),
-            TutorialStep(id: "recentWorkouts", title: "Recent Workouts", description: "Quickly revisit exercises you've logged recently. You can personalize which cards show here anytime in Settings.")
+            TutorialStep(id: "recentWorkouts", title: "Recent Workouts", description: "Quickly revisit exercises you've logged recently. You can personalize which cards show here anytime in Settings."),
+            TutorialStep(id: "Planner", title: "Daily Planner", description: "Quickly see your plan for the day and insert your workouts for the day."),
+            TutorialStep(id: "WeeklyRecap", title: "Weekly Recap", description: "See how you are doing throughout the week.")
         ]
     }
     
