@@ -26,6 +26,8 @@ struct WeightCard: View {
     private var gainWeight: Bool { weightGoalDirection == "gain" }
 
     @EnvironmentObject var gradientSettings: GradientSettings
+    
+    @State private var newWeightInput: String = ""
 
     let weightUnit: String
     let progressPercentText: String?
@@ -63,12 +65,10 @@ struct WeightCard: View {
             weightUnit: weightUnit,
             comingFromWidget: false,
             currentWeight: $weight,
-            newWeightInput: $weight,
+            newWeightInput: $newWeightInput,
             entries: workoutData.entries,
             onSave: { valueString in
-                // Update AppStorage so Account and others reflect immediately
                 weight = valueString
-                // Append a new WorkoutEntry of type "Body Weight"
                 let entry = WorkoutEntry(
                     workoutType: "Body Weight",
                     weight: valueString,
@@ -299,6 +299,7 @@ struct WeightCard: View {
             onTap: {}
         )
         .environmentObject(GradientSettings())
+        .environmentObject(WorkoutData())
         .padding()
     }
 }

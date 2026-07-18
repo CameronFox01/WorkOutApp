@@ -34,6 +34,7 @@ struct SettingsView: View {
     @AppStorage("showAllImported") private var showAllImported: Bool = true
     
     @AppStorage("showCalculatorImporting") private var showCalculatorImporting: Bool = true
+    @AppStorage("showWeightUpdateToast") private var weightUpdateToastEnabled: Bool = true
     
     //Section for tutorials stuff
     
@@ -321,6 +322,10 @@ struct SettingsView: View {
                                 }
                                 .pickerStyle(.menu)
                             }
+                            Divider()
+                                SettingsRow(icon: "bubble.left.and.bubble.right.fill", title: "Weight Update Toast") {
+                                    Toggle("", isOn: $weightUpdateToastEnabled).labelsHidden()
+                                }
                         }
                         
                         CollapsibleSettingsSection(

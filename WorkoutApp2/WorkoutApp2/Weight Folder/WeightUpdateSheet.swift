@@ -32,6 +32,27 @@ struct WeightUpdateSheet: View {
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
+    
+    //Toast Stuff
+    //Toast Stuff
+    @State private var showWeightToast = false
+    @State private var toastMessage = ""
+    @State private var toastIsPositive = true
+    @AppStorage("showWeightUpdateToast") private var weightUpdateToastEnabled: Bool = true
+
+    private let celebratoryMessages = [
+        "🎉 Nice! You're getting closer to your goal.",
+        "💪 Great progress toward your target!",
+        "🔥 You're on the right track — keep it up!",
+        "⭐️ Awesome, that's a step closer to your goal!"
+    ]
+
+    private let encouragingMessages = [
+        "Every journey has ups and downs — keep going!",
+        "Stay consistent, progress isn't always a straight line.",
+        "You've got this — refocus and keep pushing!",
+        "One entry doesn't define your journey. Keep at it!"
+    ]
 
     private var bodyWeightEntries: [WorkoutEntry] {
         entries
@@ -52,6 +73,30 @@ struct WeightUpdateSheet: View {
 
     private var newWeight: String {
         newWeightInput.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    private var weightToast: some View {
+        HStack(spacing: 8) {
+            Image(systemName: toastIsPositive ? "checkmark.circle.fill" : "heart.fill")
+            Text(toastMessage)
+                .font(.subheadline.bold())
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            (toastIsPositive ? Color.green : Color.orange).opacity(0.95),
+            in: Capsule()
+        )
+        .padding(.top, 8)
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                withAnimation(.spring()) {
+                    showWeightToast = false
+                }
+            }
+        }
     }
 
     var body: some View {
@@ -234,18 +279,22 @@ struct WeightUpdateSheet: View {
 
                             let trimmed = newWeight
 
-                            guard !trimmed.isEmpty,
-                                  Double(trimmed) != nil else {
-                                return
-                            }
+                           guard !trimmed.isEmpty,
+                                 let newVal = Double(trimmed) else {
+                               return
+                           }
 
-                            onSave(trimmed)
+                           let previousValue = Double(currentWeight)
 
-                            currentWeight = trimmed
+                           onSave(trimmed)
+                           currentWeight = trimmed
+                           hitGoal()
 
-                            hitGoal()
-                            
-                            dismiss()
+                           showWeightUpdateToast(previous: previousValue, new: newVal)
+//
+//                           DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+//                               dismiss()
+//                           }
 
                         } label: {
 
@@ -263,6 +312,16 @@ struct WeightUpdateSheet: View {
             }
             .onTapGesture {
                 isWeightFieldFocused = false
+            }
+        }
+        .onAppear {
+            if newWeightInput.isEmpty {
+                newWeightInput = currentWeight
+            }
+        }
+        .overlay(alignment: .top) {
+            if showWeightToast {
+                weightToast
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -363,6 +422,36 @@ struct WeightUpdateSheet: View {
         }
 
         return String(format: "%.1f", value)
+    }
+    
+    private func showWeightUpdateToast(previous: Double?, new: Double) {
+
+        guard weightUpdateToastEnabled else { return }
+
+        guard let previous,
+              let target = Double(UserDefaults.standard.string(forKey: "userTargetWeight") ?? "")
+        else {
+            toastMessage = "Weight updated!"
+            toastIsPositive = true
+            withAnimation(.spring()) { showWeightToast = true }
+            return
+        }
+
+        let distanceBefore = abs(previous - target)
+        let distanceAfter = abs(new - target)
+
+        if distanceAfter == distanceBefore {
+            toastMessage = "Weight updated — right on track!"
+            toastIsPositive = true
+        } else if distanceAfter < distanceBefore {
+            toastMessage = celebratoryMessages.randomElement() ?? "Great progress!"
+            toastIsPositive = true
+        } else {
+            toastMessage = encouragingMessages.randomElement() ?? "Keep going, you've got this!"
+            toastIsPositive = false
+        }
+
+        withAnimation(.spring()) { showWeightToast = true }
     }
 }
 
