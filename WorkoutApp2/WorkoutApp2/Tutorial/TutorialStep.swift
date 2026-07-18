@@ -10,10 +10,16 @@ import SwiftUI
 
 // MARK: - Model
 
+enum TutorialTooltipPlacement {
+    case adjacent   // current behavior: above or below the highlight
+    case onHighlight // tooltip centers directly over the highlighted area
+}
+
 struct TutorialStep: Identifiable {
     let id: String  // matches the .tutorialHighlight(id:) tag
     let title: String
     let description: String
+    var placement: TutorialTooltipPlacement = .adjacent
 }
 
 // MARK: - Anchor Preference Plumbing
@@ -68,8 +74,8 @@ struct TutorialOverlayView: View {
                 ? CGRect(x: containerSize.width / 2, y: containerSize.height / 2, width: 0, height: 0)
                 : rawRect.intersection(visibleBounds)
             let highlightRect = clampedRect.insetBy(dx: -8, dy: -8)
-
             ZStack {
+                
                 Color.black.opacity(0.78)
                     .reverseMask {
                         RoundedRectangle(cornerRadius: 18)
@@ -89,6 +95,26 @@ struct TutorialOverlayView: View {
         }
         .ignoresSafeArea()
     }
+    
+    private func clampedTooltipY(
+        for step: TutorialStep,
+        rect: CGRect,
+        containerSize: CGSize,
+        topInset: CGFloat,
+        bottomInset: CGFloat
+    ) -> CGFloat {
+        let minY = topInset + 90
+        let maxY = containerSize.height - bottomInset - 90
+
+        switch step.placement {
+        case .adjacent:
+            let placeBelow = rect.midY < containerSize.height / 2
+            let idealY = placeBelow ? rect.maxY + 110 : rect.minY - 110
+            return min(max(idealY, minY), maxY)
+        case .onHighlight:
+            return min(max(rect.midY, minY), maxY)
+        }
+    }
 
     @ViewBuilder
     private func tooltip(
@@ -98,13 +124,14 @@ struct TutorialOverlayView: View {
         topInset: CGFloat,
         bottomInset: CGFloat
     ) -> some View {
-        let placeBelow = rect.midY < containerSize.height / 2
         let cardWidth = min(containerSize.width - 40, 340)
-        let idealY = placeBelow ? rect.maxY + 110 : rect.minY - 110
-
-        let minY = topInset + 90
-        let maxY = containerSize.height - bottomInset - 90
-        let clampedY = min(max(idealY, minY), maxY)
+        let clampedY = clampedTooltipY(
+            for: step,
+            rect: rect,
+            containerSize: containerSize,
+            topInset: topInset,
+            bottomInset: bottomInset
+        )
 
         VStack(alignment: .leading, spacing: 14) {
             Text(step.title)
@@ -141,7 +168,7 @@ struct TutorialOverlayView: View {
         }
         .padding(18)
         .frame(width: cardWidth)
-        .background(RoundedRectangle(cornerRadius: 20).fill(Color.white))
+        .background(RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(step.placement == .onHighlight ? 0.97 : 1)))
         .position(x: containerSize.width / 2, y: clampedY)
     }
 }

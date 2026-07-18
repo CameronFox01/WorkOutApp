@@ -39,6 +39,8 @@ enum ImageNames: String, CaseIterable {
     }
 }
 
+
+
 struct AllImportedWorkoutsView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: WorkoutCategory? = nil
@@ -72,7 +74,8 @@ struct AllImportedWorkoutsView: View {
             TutorialStep(
                 id: "workoutList",
                 title: "Your Workout History",
-                description: "Every logged workout, grouped by day. Tap any entry to view or edit it."
+                description: "Every logged workout, grouped by day. Tap any entry to view or edit it.",
+                placement: .onHighlight
             )
         ]
     }
@@ -156,6 +159,13 @@ struct AllImportedWorkoutsView: View {
                 }
             }
         }
+        .tutorialOverlay(
+            isPresented: $showAllImportedTutorial,
+            steps: allImportedTutorialSteps,
+            onFinish: {
+                hasSeenAllImportedTutorial = true
+            }
+        )
         .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
@@ -173,13 +183,6 @@ struct AllImportedWorkoutsView: View {
                 }
             }
         }
-        .tutorialOverlay(
-            isPresented: $showAllImportedTutorial,
-            steps: allImportedTutorialSteps,
-            onFinish: {
-                hasSeenAllImportedTutorial = true
-            }
-        )
     }
 
 
