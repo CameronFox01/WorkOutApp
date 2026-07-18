@@ -11,6 +11,9 @@ import WidgetKit
 struct EditWorkoutView: View {
     @EnvironmentObject var workoutData: WorkoutData
     @Environment(\.dismiss) private var dismiss
+    
+    @AppStorage("hasSeenEditWorkoutTutorial") private var hasSeenEditWorkoutTutorial: Bool = false
+    @State private var showEditWorkoutTutorial = false
 
     @State var entry: WorkoutEntry
 
@@ -29,6 +32,31 @@ struct EditWorkoutView: View {
 
     private enum Field: Hashable {
         case weight, reps, sets, notes
+    }
+    
+    private var editWorkoutTutorialSteps: [TutorialStep] {
+        [
+            TutorialStep(
+                id: "workoutCard",
+                title: "Workout Details",
+                description: "Change the category, exercise, or date/time — useful if you're backfilling a workout you forgot to log on the actual day."
+            ),
+            TutorialStep(
+                id: "detailsCard",
+                title: "Weight, Reps & Sets",
+                description: "Adjust the numbers for this entry."
+            ),
+            TutorialStep(
+                id: "notesCard",
+                title: "Notes",
+                description: "Update how it felt or any details worth remembering."
+            ),
+            TutorialStep(
+                id: "deleteButton",
+                title: "Delete",
+                description: "Remove this entry entirely if it was logged by mistake."
+            )
+        ]
     }
 
     @State private var selectedCategory: WorkoutCategory = .push
@@ -185,6 +213,7 @@ struct EditWorkoutView: View {
                         }
 
                     }
+                    .tutorialHighlight("workoutCard")
 
                     // MARK: - Details Card
                     sectionCard {
@@ -196,6 +225,7 @@ struct EditWorkoutView: View {
                             frostedField(label: "Sets", placeholder: "0", text: $sets, keyboard: .numberPad, field: .sets, next: nil)
                         }
                     }
+                    .tutorialHighlight("detailsCard")
 
                     // MARK: - Notes Card
                     sectionCard {
@@ -222,6 +252,7 @@ struct EditWorkoutView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
+                    .tutorialHighlight("notesCard")
 
                     // MARK: - Delete Button
                     Button {
@@ -237,12 +268,20 @@ struct EditWorkoutView: View {
                     }
                     .buttonStyle(.plain)
                     .padding(.top, 4)
+                    .tutorialHighlight("deleteButton")
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
             }
             .scrollDismissesKeyboard(.interactively)
         }
+        .tutorialOverlay(
+            isPresented: $showEditWorkoutTutorial,
+            steps: editWorkoutTutorialSteps,
+            onFinish: {
+                hasSeenEditWorkoutTutorial = true
+            }
+        )
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.blue, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
@@ -268,6 +307,13 @@ struct EditWorkoutView: View {
         .onChange(of: selectedCategory) { _, newCategory in
             if !newCategory.workouts().contains(workoutType) {
                 workoutType = newCategory.workouts().first ?? workoutType
+            }
+        }
+        .onAppear {
+            if !hasSeenEditWorkoutTutorial {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    showEditWorkoutTutorial = true
+                }
             }
         }
         .confirmationDialog(

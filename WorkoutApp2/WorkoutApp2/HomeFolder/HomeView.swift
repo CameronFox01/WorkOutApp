@@ -107,10 +107,10 @@ struct HomeView: View {
                                     onTap: { isPresentingWeightSheet = true; newWeightInput = weight }
                                 )
                                 .environmentObject(gradientSettings)
-                                .tutorialHighlight("weightCalories")
 
                                 CaloriesCard()
                             }
+                            .tutorialHighlight("weightCalories")
                         } else if showWeightCard && !showCalorieCard {
                             WeightCard(
                                 weightUnit: weightUnit,
@@ -757,9 +757,9 @@ struct HomeView: View {
             TutorialStep(id: "weightCalories", title: "Weight & Calories", description: "Track today's weight progress and calories burned at a glance."),
             TutorialStep(id: "timer", title: "Timer", description: "Built-in stopwatch and countdown timer for your workouts."),
             TutorialStep(id: "stepsCalendar", title: "Steps & Calendar", description: "See today's steps and jump into your workout history."),
-            TutorialStep(id: "recentWorkouts", title: "Recent Workouts", description: "Quickly revisit exercises you've logged recently. You can personalize which cards show here anytime in Settings."),
+            TutorialStep(id: "WeeklyRecap", title: "Weekly Recap", description: "See how you are doing throughout the week."),
             TutorialStep(id: "Planner", title: "Daily Planner", description: "Quickly see your plan for the day and insert your workouts for the day."),
-            TutorialStep(id: "WeeklyRecap", title: "Weekly Recap", description: "See how you are doing throughout the week.")
+            TutorialStep(id: "recentWorkouts", title: "Recent Workouts", description: "Quickly revisit exercises you've logged recently. You can personalize which cards show here anytime in Settings.")
         ]
     }
     

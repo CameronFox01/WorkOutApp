@@ -43,7 +43,9 @@ struct AllImportedWorkoutsView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: WorkoutCategory? = nil
     
-    //Color Gradiant
+    @AppStorage("hasSeenAllImportedTutorial") private var hasSeenAllImportedTutorial: Bool = false
+    @State private var showAllImportedTutorial = false
+    
     @EnvironmentObject var gradientSettings: GradientSettings
     
     var scrollToID: UUID?
@@ -54,10 +56,29 @@ struct AllImportedWorkoutsView: View {
     private var weightUnit: String {
         UnitSystem(rawValue: unitSystemRaw) == .imperial ? "lbs" : "kg"
     }
+    
+    private var allImportedTutorialSteps: [TutorialStep] {
+        [
+            TutorialStep(
+                id: "search",
+                title: "Search",
+                description: "Quickly find a past workout by name or note."
+            ),
+            TutorialStep(
+                id: "filters",
+                title: "Filter by Category",
+                description: "Tap a category to narrow the list down to just that type of workout."
+            ),
+            TutorialStep(
+                id: "workoutList",
+                title: "Your Workout History",
+                description: "Every logged workout, grouped by day. Tap any entry to view or edit it."
+            )
+        ]
+    }
 
     var body: some View {
         ZStack {
-            // Same gradient as TimeViewBig
             LinearGradient(
                 colors: gradientSettings.darkGradientColors,
                 startPoint: .topLeading,
@@ -73,11 +94,13 @@ struct AllImportedWorkoutsView: View {
                         .background(.white.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .foregroundStyle(.white)
+                        .tutorialHighlight("search")
 
                     filterScrollView
                 }
                 .padding(.horizontal)
                 .padding(.top)
+
                 ScrollView {
                     LazyVStack(spacing: 14) {
 
@@ -125,6 +148,7 @@ struct AllImportedWorkoutsView: View {
                     }
                     .padding(.vertical)
                 }
+                .tutorialHighlight("workoutList")
                 .onAppear {
                     if let id = scrollToID {
                         proxy.scrollTo(id, anchor: .top)
@@ -142,7 +166,22 @@ struct AllImportedWorkoutsView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if !hasSeenAllImportedTutorial {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    showAllImportedTutorial = true
+                }
+            }
+        }
+        .tutorialOverlay(
+            isPresented: $showAllImportedTutorial,
+            steps: allImportedTutorialSteps,
+            onFinish: {
+                hasSeenAllImportedTutorial = true
+            }
+        )
     }
+
 
     let workoutCategoryLookup: [String: WorkoutCategory] = {
         var lookup: [String: WorkoutCategory] = [:]
@@ -217,6 +256,7 @@ struct AllImportedWorkoutsView: View {
                     }
                 }
             }
+            .tutorialHighlight("filters")
         }
     }
     

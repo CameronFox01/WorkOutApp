@@ -35,6 +35,29 @@ struct PhotoView: View {
     
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
+    
+    @AppStorage("hasSeenPhotoTutorial") private var hasSeenPhotoTutorial: Bool = false
+    @State private var showPhotoTutorial = false
+
+    private var photoTutorialSteps: [TutorialStep] {
+        [
+            TutorialStep(
+                id: "comparisonCard",
+                title: "Before & After",
+                description: "Tap Camera under either photo to snap a new comparison shot, or tap the X on an existing photo to clear it."
+            ),
+            TutorialStep(
+                id: "actionsCard",
+                title: "Choose Photos",
+                description: "Pick photos from your library, or reuse one you've already saved in the app."
+            ),
+            TutorialStep(
+                id: "savedPhotosLink",
+                title: "Saved Photos",
+                description: "Browse every progress photo you've saved so far."
+            )
+        ]
+    }
 
     var body: some View {
         NavigationStack {
@@ -84,6 +107,7 @@ struct PhotoView: View {
                         .padding()
                         .cardStyle()
                         .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
+                        .tutorialHighlight("comparisonCard")
 
                         // 2. Actions Card
                         VStack(spacing: 12) {
@@ -122,6 +146,7 @@ struct PhotoView: View {
                         .padding()
                         .cardStyle()
                         .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
+                        .tutorialHighlight("actionsCard")
                         
                         Spacer()
                         NavigationLink(destination: ViewPhotosInApp()) {
@@ -131,6 +156,7 @@ struct PhotoView: View {
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                         .tint(gradientSettings.selectedPreset.textColor)
+                        .tutorialHighlight("savedPhotosLink")
                     }
                     .padding()
                 }
@@ -171,6 +197,13 @@ struct PhotoView: View {
                     rightPhotoFileName: rightPhotoFileName
                 )
             }
+            .tutorialOverlay(
+                isPresented: $showPhotoTutorial,
+                steps: photoTutorialSteps,
+                onFinish: {
+                    hasSeenPhotoTutorial = true
+                }
+            )
             .confirmationDialog(
                 "Use Photo",
                 isPresented: $showingSidePicker,
@@ -192,9 +225,15 @@ struct PhotoView: View {
 
                 Button("Cancel", role: .cancel) { }
             }
-            .onAppear{
+            .onAppear {
                 loadSavedPhotos()
                 loadPersistentImages()
+
+                if !hasSeenPhotoTutorial {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        showPhotoTutorial = true
+                    }
+                }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)

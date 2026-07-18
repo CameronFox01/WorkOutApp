@@ -319,6 +319,9 @@ struct ImportView: View {
         
         @Environment(\.dismiss) private var dismiss
         @Environment(\.colorScheme) private var colorScheme
+        
+        @AppStorage("hasSeenCategoryDetailTutorial") private var hasSeenCategoryDetailTutorial: Bool = false
+        @State private var showCategoryDetailTutorial = false
 
         let save: () -> Void
         let increment: (inout [WorkoutCategory: String], Double) -> Void
@@ -422,6 +425,7 @@ struct ImportView: View {
                             Label("Add Custom Workout", systemImage: "plus")
                                 .foregroundStyle(gradientSettings.selectedPreset.textColor)
                         }
+                        .tutorialHighlight("addCustomWorkout")
                     }
                     .padding(.horizontal)
                     .padding(.top, 10)
@@ -456,6 +460,13 @@ struct ImportView: View {
                 }
                 .environmentObject(gradientSettings)
             }
+            .tutorialOverlay(
+                isPresented: $showCategoryDetailTutorial,
+                steps: categoryDetailTutorialSteps,
+                onFinish: {
+                    hasSeenCategoryDetailTutorial = true
+                }
+            )
             .onAppear {
                 //resetParent()
                 let currentWorkout = selections[category] ?? category.workouts().first ?? ""
@@ -465,6 +476,12 @@ struct ImportView: View {
                     if !saved["sets", default: ""].isEmpty { sets[category] = saved["sets"] }
                     if !saved["distance", default: ""].isEmpty { distances[category] = saved["distance"] }
                     if !saved["time", default: ""].isEmpty { times[category] = saved["time"] }
+                }
+                
+                if !hasSeenCategoryDetailTutorial {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        showCategoryDetailTutorial = true
+                    }
                 }
             }
             .onChange(of: selectionBinding.wrappedValue) { _, newWorkout in
@@ -529,6 +546,7 @@ struct ImportView: View {
             .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
             .shadow(color: colorScheme == .dark ? .clear : .black.opacity(0.05),
                     radius: 8, x: 0, y: 4)
+            .tutorialHighlight("workoutPicker")
         }
 
         private var statsCard: some View {
@@ -597,6 +615,7 @@ struct ImportView: View {
             .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
             .shadow(color: colorScheme == .dark ? .clear : .black.opacity(0.05),
                     radius: 8, x: 0, y: 4)
+            .tutorialHighlight("statsCard")
         }
 
         private var notesCard: some View {
@@ -614,6 +633,7 @@ struct ImportView: View {
             .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
             .shadow(color: colorScheme == .dark ? .clear : .black.opacity(0.05),
                     radius: 8, x: 0, y: 4)
+            .tutorialHighlight("notesCard")
         }
 
         private var saveButton: some View {
@@ -629,6 +649,7 @@ struct ImportView: View {
             .buttonStyle(.borderedProminent)
             //.tint(.accentColor)
             .tint(gradientSettings.selectedPreset.textColor)
+            .tutorialHighlight("saveButton")
         }
 
         // MARK: - Row Builder
@@ -680,6 +701,36 @@ struct ImportView: View {
                         }
                     }
                 }
+        }
+        
+        private var categoryDetailTutorialSteps: [TutorialStep] {
+            [
+                TutorialStep(
+                    id: "workoutPicker",
+                    title: "Choose Your Workout",
+                    description: "Pick the specific exercise you're logging within this category."
+                ),
+                TutorialStep(
+                    id: "statsCard",
+                    title: "Log Your Stats",
+                    description: "Enter weight, reps, sets, distance, or time depending on the workout. Tap the plate icon next to Weight to use the plate calculator."
+                ),
+                TutorialStep(
+                    id: "notesCard",
+                    title: "Add Notes",
+                    description: "Jot down how it felt, form cues, or anything worth remembering next time."
+                ),
+                TutorialStep(
+                    id: "saveButton",
+                    title: "Save",
+                    description: "Save this entry to your workout history."
+                ),
+                TutorialStep(
+                    id: "addCustomWorkout",
+                    title: "Add Custom Workout",
+                    description: "Don't see your exercise? Add your own custom workout to this category."
+                )
+            ]
         }
     }
     

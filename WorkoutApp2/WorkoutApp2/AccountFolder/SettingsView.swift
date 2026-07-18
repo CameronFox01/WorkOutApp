@@ -34,6 +34,30 @@ struct SettingsView: View {
     @AppStorage("showAllImported") private var showAllImported: Bool = true
     
     @AppStorage("showCalculatorImporting") private var showCalculatorImporting: Bool = true
+    
+    //Section for tutorials stuff
+    
+    @State private var showTutorialResetToast = false
+    @AppStorage("hasSeenCategoryDetailTutorial") private var hasSeenCategoryDetailTutorial: Bool = false
+    @State private var showCategoryDetailTutorial = false
+    
+    @AppStorage("hasSeenCalendarTutorial") private var hasSeenCalendarTutorial: Bool = false
+    @State private var showCalendarTutorial = false
+    
+    @AppStorage("hasSeenHomeTutorial") private var hasSeenHomeTutorial: Bool = false
+    @State private var showHomeTutorial = false
+    
+    @AppStorage("hasSeenAllImportedTutorial") private var hasSeenAllImportedTutorial: Bool = false
+    @State private var showAllImportedTutorial = false
+    
+    @AppStorage("hasSeenEditWorkoutTutorial") private var hasSeenEditWorkoutTutorial: Bool = false
+    @State private var showEditWorkoutTutorial = false
+    
+    @AppStorage("hasSeenPhotoTutorial") private var hasSeenPhotoTutorial: Bool = false
+    @State private var showPhotoTutorial = false
+    
+    @AppStorage("hasSeenGoalTutorial") private var hasSeenGoalTutorial: Bool = false
+    @State private var showGoalTutorial = false
     // Unit system Section
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @State private var showUnitChangeConfirmation = false
@@ -713,6 +737,87 @@ struct SettingsView: View {
                         }
                         
                         CollapsibleSettingsSection(
+                            title: "Tutorials",
+                            icon: "graduationcap.fill",
+                            iconColor: .indigo
+                        ) {
+                            SettingsRow(icon: "house.fill", title: "Home Screen Tutorial") {
+                                Button("Redo") {
+                                    hasSeenHomeTutorial = false
+                                    showTutorialResetToast = true
+                                }
+                                .font(.subheadline.bold())
+                            }
+                            Divider()
+                            SettingsRow(icon: "calendar", title: "Workout Calendar Tutorial") {
+                                Button("Redo") {
+                                    hasSeenCalendarTutorial = false
+                                    showTutorialResetToast = true
+                                }
+                                .font(.subheadline.bold())
+                            }
+                            Divider()
+                            SettingsRow(icon: "dumbbell.fill", title: "Workout Logging Tutorial") {
+                                Button("Redo") {
+                                    hasSeenCategoryDetailTutorial = false
+                                    showTutorialResetToast = true
+                                }
+                                .font(.subheadline.bold())
+                            }
+                            Divider()
+                            SettingsRow(icon: "list.bullet", title: "All Workouts Tutorial") {
+                                Button("Redo") {
+                                    hasSeenAllImportedTutorial = false
+                                    showTutorialResetToast = true
+                                }
+                                .font(.subheadline.bold())
+                            }
+                            Divider()
+                            SettingsRow(icon: "square.and.pencil", title: "Edit Workout Tutorial") {
+                                Button("Redo") {
+                                    hasSeenEditWorkoutTutorial = false
+                                    showTutorialResetToast = true
+                                }
+                                .font(.subheadline.bold())
+                            }
+                            Divider()
+                            SettingsRow(icon: "photo.on.rectangle", title: "Compare Photos Tutorial") {
+                                Button("Redo") {
+                                    hasSeenPhotoTutorial = false
+                                    showTutorialResetToast = true
+                                }
+                                .font(.subheadline.bold())
+                            }
+                            Divider()
+                            SettingsRow(icon: "target", title: "Set Goals Tutorial") {
+                                Button("Redo") {
+                                    hasSeenGoalTutorial = false
+                                    showTutorialResetToast = true
+                                }
+                                .font(.subheadline.bold())
+                            }
+                            
+                            Divider()
+                            Button {
+                                hasSeenHomeTutorial = false
+                                hasSeenCalendarTutorial = false
+                                hasSeenCategoryDetailTutorial = false
+                                hasSeenAllImportedTutorial = false
+                                hasSeenEditWorkoutTutorial = false
+                                hasSeenGoalTutorial = false
+                                hasSeenPhotoTutorial = false
+                                showTutorialResetToast = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "arrow.counterclockwise")
+                                    Text("Redo All Tutorials")
+                                    Spacer()
+                                }
+                                .foregroundStyle(.indigo)
+                            }
+                        }
+                        
+                        CollapsibleSettingsSection(
                             title: "Data",
                             icon: "externaldrive.fill",
                             iconColor: .gray
@@ -820,6 +925,24 @@ struct SettingsView: View {
                     .padding(.top, 10)
                     .padding(.bottom, 30)
 
+                }
+            }
+            .overlay(alignment: .top) {
+                if showTutorialResetToast {
+                    Text("Tutorial will show next time you visit that screen")
+                        .font(.subheadline.bold())
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .padding(.top, 8)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+                                withAnimation(.spring()) {
+                                    showTutorialResetToast = false
+                                }
+                            }
+                        }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)

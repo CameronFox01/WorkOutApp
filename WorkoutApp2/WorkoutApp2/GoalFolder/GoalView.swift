@@ -38,6 +38,34 @@ struct GoalView: View {
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
     
+    @AppStorage("hasSeenGoalTutorial") private var hasSeenGoalTutorial: Bool = false
+    @State private var showGoalTutorial = false
+
+    private var goalTutorialSteps: [TutorialStep] {
+        [
+            TutorialStep(
+                id: "generalGoals",
+                title: "General Goals",
+                description: "Set your target body weight and how many days a week you want to work out."
+            ),
+            TutorialStep(
+                id: "workoutGoals",
+                title: "Workout Goals",
+                description: "Tap any category to set a target weight, distance, or time for a specific exercise."
+            ),
+            TutorialStep(
+                id: "achievedGoals",
+                title: "Achieved Goals",
+                description: "Down below see every goal you've already hit."
+            ),
+            TutorialStep(
+                id: "milestones",
+                title: "Milestones",
+                description: "down below track bigger accomplishments, like workout streaks and totals."
+            )
+        ]
+    }
+    
     private var unitSystem: UnitSystem {
         UnitSystem(rawValue: unitSystemRaw) ?? .metric
     }
@@ -66,7 +94,9 @@ struct GoalView: View {
                     generalGoalsCard
                         .padding(.bottom, 20)
                         .padding(.top, 10)
+                        .tutorialHighlight("generalGoals")
                     workoutGoalsSection
+                        .tutorialHighlight("workoutGoals")
                     NavigationLink {
                         
                         AchievedGoalsView(
@@ -108,6 +138,7 @@ struct GoalView: View {
                         
                     }
                     .buttonStyle(.plain)
+                    .tutorialHighlight("achievedGoals")
                     NavigationLink {
                         MilestonesView(
                             milestones: workoutData.achievedMilestones,
@@ -135,6 +166,7 @@ struct GoalView: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .tutorialHighlight("milestones")
                     .scrollDismissesKeyboard(.interactively)
                 }
                 .onTapGesture {
@@ -160,7 +192,20 @@ struct GoalView: View {
                    }
                 
                 UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(targetDaysOfWorkout, forKey: "userTargetDaysOfWorkout")
+                
+                if !hasSeenGoalTutorial {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        showGoalTutorial = true
+                    }
+                }
             }
+            .tutorialOverlay(
+                isPresented: $showGoalTutorial,
+                steps: goalTutorialSteps,
+                onFinish: {
+                    hasSeenGoalTutorial = true
+                }
+            )
             .onChange(of: targetDaysOfWorkout) { _, newValue in
                 UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(newValue, forKey: "userTargetDaysOfWorkout")
                 WidgetCenter.shared.reloadAllTimelines()
@@ -218,6 +263,7 @@ struct GoalView: View {
                             Text("Lose Weight").tag("lose")
                             Text("Gain Weight").tag("gain")
                         }
+                        .font(.headline)
                         .pickerStyle(.segmented)
                         .frame(width: isIPad() ? 300 : 220)
                     }

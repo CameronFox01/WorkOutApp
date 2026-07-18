@@ -537,13 +537,6 @@ struct WorkoutCalendarView: View {
                 AddWorkoutForDateView(date: selectedDate)
                     .environmentObject(workoutData)
             }
-            .tutorialOverlay(
-                isPresented: $showCalendarTutorial,
-                steps: calendarTutorialSteps,
-                onFinish: {
-                    hasSeenCalendarTutorial = true
-                }
-            )
             .onAppear {
                 loadHealthData(for: selectedDate)
                 
@@ -592,6 +585,13 @@ struct WorkoutCalendarView: View {
                 }
             }
         }
+        .tutorialOverlay(
+            isPresented: $showCalendarTutorial,
+            steps: calendarTutorialSteps,
+            onFinish: {
+                hasSeenCalendarTutorial = true
+            }
+        )
     }
     
     private var calendarTutorialSteps: [TutorialStep] {

@@ -57,8 +57,17 @@ struct TutorialOverlayView: View {
         GeometryReader { geo in
             let step = steps[currentIndex]
             let rawRect = anchors[step.id].map { geo[$0] } ?? .zero
-            let highlightRect = rawRect.insetBy(dx: -8, dy: -8)
             let containerSize = geo.size
+
+            // How much space the top bar/title/status bar actually occupies
+            let topInset = geo.safeAreaInsets.top + 60
+            let bottomInset = geo.safeAreaInsets.bottom + 40
+
+            let visibleBounds = CGRect(origin: .zero, size: containerSize)
+            let clampedRect = rawRect.intersection(visibleBounds).isNull
+                ? CGRect(x: containerSize.width / 2, y: containerSize.height / 2, width: 0, height: 0)
+                : rawRect.intersection(visibleBounds)
+            let highlightRect = clampedRect.insetBy(dx: -8, dy: -8)
 
             ZStack {
                 Color.black.opacity(0.78)
@@ -74,7 +83,7 @@ struct TutorialOverlayView: View {
                     .position(x: highlightRect.midX, y: highlightRect.midY)
                     .shadow(color: .white.opacity(0.5), radius: 8)
 
-                tooltip(for: step, near: highlightRect, in: containerSize)
+                tooltip(for: step, near: highlightRect, in: containerSize, topInset: topInset, bottomInset: bottomInset)
             }
             .animation(.spring(response: 0.4, dampingFraction: 0.85), value: currentIndex)
         }
@@ -82,29 +91,40 @@ struct TutorialOverlayView: View {
     }
 
     @ViewBuilder
-    private func tooltip(for step: TutorialStep, near rect: CGRect, in containerSize: CGSize) -> some View {
+    private func tooltip(
+        for step: TutorialStep,
+        near rect: CGRect,
+        in containerSize: CGSize,
+        topInset: CGFloat,
+        bottomInset: CGFloat
+    ) -> some View {
         let placeBelow = rect.midY < containerSize.height / 2
         let cardWidth = min(containerSize.width - 40, 340)
+        let idealY = placeBelow ? rect.maxY + 110 : rect.minY - 110
+
+        let minY = topInset + 90
+        let maxY = containerSize.height - bottomInset - 90
+        let clampedY = min(max(idealY, minY), maxY)
 
         VStack(alignment: .leading, spacing: 14) {
             Text(step.title)
                 .font(.headline)
-                .foregroundStyle(.black)
+                .foregroundStyle(Color.black)
 
             Text(step.description)
                 .font(.subheadline)
-                .foregroundStyle(.black.opacity(0.8))
+                .foregroundStyle(Color.black.opacity(0.75))
 
             HStack {
                 Button("Skip") { onFinish() }
                     .font(.subheadline)
-                    .foregroundStyle(.black.opacity(0.6))
+                    .foregroundStyle(Color.black.opacity(0.5))
 
                 Spacer()
 
                 Text("\(currentIndex + 1) of \(steps.count)")
                     .font(.caption)
-                    .foregroundStyle(.black.opacity(0.5))
+                    .foregroundStyle(Color.black.opacity(0.5))
 
                 Spacer()
 
@@ -116,18 +136,13 @@ struct TutorialOverlayView: View {
                     }
                 }
                 .fontWeight(.semibold)
-                .foregroundStyle(.green)
+                .foregroundStyle(Color(red: 0.05, green: 0.55, blue: 0.25))
             }
         }
         .padding(18)
         .frame(width: cardWidth)
-        .background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemGray6).opacity(0.98)))
-        .position(
-            x: containerSize.width / 2,
-            y: placeBelow
-                ? min(rect.maxY + 110, containerSize.height - 100)
-                : max(rect.minY - 110, 100)
-        )
+        .background(RoundedRectangle(cornerRadius: 20).fill(Color.white))
+        .position(x: containerSize.width / 2, y: clampedY)
     }
 }
 
