@@ -542,7 +542,7 @@ struct ImportView: View {
                     .font(.title2.bold())
                     .foregroundStyle(textColor)
 
-                Text("Log your \(category.title.lowercased()) workout")
+                Text("Log your \(category.title.lowercased()) workout \(date.formatted(date: .long, time: .omitted))")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
