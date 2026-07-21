@@ -138,11 +138,18 @@ struct AllImportedWorkoutsView: View {
                                         let iconName =
                                             workoutCategoryLookup[entry.workoutType]?.icon
                                             ?? "dumbbell.fill"
+                                        let category =
+                                                workoutCategoryLookup[entry.workoutType]
+                                                ?? .bodyweight
 
                                         WorkoutEntryCard(
                                             entry: entry,
                                             iconName: iconName,
-                                            weightUnit: weightUnit
+                                            weightUnit: weightUnit,
+                                            category: category,
+                                            allEntriesForWorkout: workoutData.entries.filter {
+                                                        $0.workoutType == entry.workoutType
+                                                    }
                                         )
                                     }
                                 }
@@ -305,9 +312,17 @@ private struct WorkoutEntryCard: View {
     let entry: WorkoutEntry
     let iconName: String
     let weightUnit: String
+    let category: WorkoutCategory
+    let allEntriesForWorkout: [WorkoutEntry]
 
     var body: some View {
-        NavigationLink(destination: EditWorkoutView(entry: entry)) {
+        NavigationLink(
+            destination: WorkoutChartView(
+                workoutName: entry.workoutType,
+                entries: allEntriesForWorkout,
+                category: category,
+                workout: entry.workoutType
+            )) {
             VStack(alignment: .leading, spacing: 12) {
 
                 // Header
@@ -354,6 +369,17 @@ private struct WorkoutEntryCard: View {
                         .font(.subheadline)
                         .foregroundStyle(.white.opacity(0.65))
                         .lineLimit(2)
+                }
+                
+                NavigationLink(destination: EditWorkoutView(entry: entry)) {
+                    HStack {
+                        Image(systemName: "pencil")
+                        Text("Edit Workout")
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
             }
             .padding(18)
