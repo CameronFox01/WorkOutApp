@@ -58,7 +58,7 @@ struct WorkoutTypeCardView: View {
                         systemImage: "timer"
                     )
 
-                } else if isSports {
+                } else if isSports || isRecovery{
                     Label(
                         "\(entry.reps) min",
                         systemImage: "timer"
@@ -137,7 +137,17 @@ struct WorkoutTypeCardView: View {
             return "figure.yoga"
         }
         
+        if isRecovery{
+            return "figure.mind.and.body"
+        }
+        
         return "dumbbell.fill"
+    }
+    
+    private var isRecovery: Bool {
+        RecoveryWorkout.allCases
+            .map(\.rawValue)
+            .contains(entry.workoutType)
     }
     
     private var isPush: Bool {

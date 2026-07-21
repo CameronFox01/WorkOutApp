@@ -51,6 +51,12 @@ struct WorkoutProgressChart: View {
             .contains(workoutName)
     }
     
+    private var isRecovery: Bool {
+        RecoveryWorkout.allCases
+            .map(\.rawValue)
+            .contains(workoutName)
+    }
+    
     private var isBodyWeightScale: Bool {
         workoutName == "Body Weight"
     }
@@ -68,7 +74,7 @@ struct WorkoutProgressChart: View {
             return ""
         } else if isDistanceCardio {
             return UnitSystem(rawValue: unitSystemRaw) == .imperial ? "mi" : "km"
-        } else if isTimeCardio {
+        } else if isTimeCardio || isRecovery {
             return "min"
         } else if isBodyWeightScale || isWeightWorkout {
             return UnitSystem(rawValue: unitSystemRaw) == .imperial ? "lbs" : "kg"

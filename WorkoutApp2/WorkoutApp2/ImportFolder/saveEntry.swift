@@ -34,7 +34,7 @@ func saveEntry(
     }
 
     let rep: String
-    if category == .timeCardio || category == .sports {
+    if category == .timeCardio || category == .sports || category == .recovery{
         rep = times[category] ?? ""
     } else {
         rep = reps[category] ?? ""
@@ -46,7 +46,7 @@ func saveEntry(
     let setsVal: String
     if category == .distanceCardio {
         setsVal = times[category] ?? ""
-    } else if category == .sports {
+    } else if category == .sports || category == .recovery {
         setsVal = ""
     } else {
         setsVal = sets[category] ?? ""

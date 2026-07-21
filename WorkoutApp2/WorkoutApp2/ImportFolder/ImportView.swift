@@ -18,7 +18,7 @@ struct WorkoutEntry: Identifiable, Codable {
 }
 // Enums for each workout type
 enum WorkoutCategory: String, CaseIterable, Identifiable {
-    case bodyweight, push, pull, leg, glute, bicep, tricep, abs, distanceCardio, timeCardio, sports, stretch
+    case bodyweight, push, pull, leg, glute, bicep, tricep, abs, distanceCardio, timeCardio, sports, stretch, recovery
 
     var id: String { rawValue }
 
@@ -37,6 +37,7 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
         case .timeCardio: return "Time Cardio"
         case .sports: return "Sports"
         case .stretch: return "Stretch"
+        case .recovery: return "Recovery"
         }
     }
 
@@ -79,6 +80,9 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
 
         case .stretch:
             builtIn = StretchRoutine.allCases.map(\.rawValue)
+            
+        case .recovery:
+            builtIn = RecoveryWorkout.allCases.map(\.rawValue)
         }
 
         let custom = loadCustomWorkouts(for: self)
@@ -89,7 +93,7 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
     // Categories where weight is typically not entered
     var usesWeight: Bool {
         switch self {
-        case .bodyweight, .abs, .stretch, .sports, .distanceCardio, .timeCardio: return false
+        case .bodyweight, .abs, .stretch, .sports, .distanceCardio, .timeCardio, .recovery: return false
         default: return true
         }
     }
@@ -131,6 +135,9 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
 
         case .stretch:
             return "figure.yoga"
+        
+        case .recovery:
+            return "figure.mind.and.body"
      
         }
     }
@@ -316,6 +323,7 @@ struct ImportView: View {
         case .timeCardio: return "figure.dance"
         case .sports: return "sportscourt"
         case .stretch: return "figure.yoga"
+        case .recovery: return "figure.mind.and.body"
         }
     }
 
@@ -576,7 +584,7 @@ struct ImportView: View {
         private var statsCard: some View {
             VStack(spacing: 12) {
                 if showCalculatorImporting {
-                    if category.usesWeight && category != .distanceCardio && category != .timeCardio {
+                    if category.usesWeight && category != .distanceCardio && category != .timeCardio && category != .recovery {
                         statRow("scalemass", "Weight (\(weightUnit))", weightBinding, calculatorAction: {
                             showingPlateCalculator = true
                         }) {
@@ -586,7 +594,7 @@ struct ImportView: View {
                         }
                     }
                 } else {
-                    if category.usesWeight && category != .distanceCardio && category != .timeCardio {
+                    if category.usesWeight && category != .distanceCardio && category != .timeCardio && category != .recovery {
                         statRow("scalemass", "Weight (\(weightUnit))", weightBinding) {
                             increment(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
                         } dec: {
@@ -610,7 +618,7 @@ struct ImportView: View {
                     }
                 }
 
-                if category == .timeCardio || category == .sports {
+                if category == .timeCardio || category == .sports  || category == .recovery{
                     statRow("timer", "Time (min)", timeBinding) {
                         increment(&times, 1)
                     } dec: {
@@ -619,7 +627,7 @@ struct ImportView: View {
                 }
 
                 // Only show reps and sets for non-sports, non-cardio categories
-                 if category != .distanceCardio && category != .timeCardio && category != .sports {
+                 if category != .distanceCardio && category != .timeCardio && category != .sports && category != .recovery {
                      statRow("number", "Reps", repsBinding) {
                          increment(&reps, 1)
                      } dec: {

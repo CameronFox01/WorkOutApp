@@ -346,3 +346,48 @@ enum StretchRoutine: String, CaseIterable, Identifiable, Hashable {
     
     var id: String { self.rawValue }
 }
+
+// Recovery-focused workouts and mobility
+enum RecoveryWorkout: String, CaseIterable, Identifiable, Hashable {
+    case activeRecoveryWalk = "Active Recovery Walk"
+    case assistedStretching = "Assisted Stretching"
+    case compressionBoots = "Compression Boots"
+    case contrastShower = "Contrast Shower"
+    case cuppingTherapy = "Cupping Therapy"
+    case deepBreathing = "Deep Breathing"
+    case dynamicMobility = "Dynamic Mobility"
+    case epsomSaltBath = "Epsom Salt Bath"
+    case foamRollingCalves = "Foam Rolling - Calves"
+    case foamRollingGlutes = "Foam Rolling - Glutes"
+    case foamRollingITBand = "Foam Rolling - IT Band"
+    case foamRollingLats = "Foam Rolling - Lats"
+    case foamRollingQuads = "Foam Rolling - Quads"
+    case foamRollingUpperBack = "Foam Rolling - Upper Back"
+    case fullBodyStretch = "Full Body Stretch"
+    case hydrotherapy = "Hydrotherapy"
+    case iceBath = "Ice Bath"
+    case infraredSauna = "Infrared Sauna"
+    case jointMobilityDrills = "Joint Mobility Drills"
+    case lacrosseBallFootRoll = "Lacrosse Ball Foot Roll"
+    case lightSwimming = "Light Swimming"
+    case lymphaticDrainage = "Lymphatic Drainage"
+    case massageGunSession = "Massage Gun Session"
+    case message = "Massage"
+    case meditation = "Meditation"
+    case myofascialRelease = "Myofascial Release"
+    case passiveRest = "Passive Rest"
+    case percussiveTherapy = "Percussive Therapy"
+    case physicalTherapyExercises = "Physical Therapy Exercises"
+    case pilatesRecovery = "Pilates Recovery"
+    case pneumaticCompression = "Pneumatic Compression (Normatec)"
+    case proprioceptiveNeuromuscularFacilitation = "PNF Stretching"
+    case restorativeYoga = "Restorative Yoga"
+    case saunaSession = "Sauna Session"
+    case selfMyofascialRelease = "Self-Myofascial Release"
+    case sleepAndNap = "Sleep / Nap"
+    case staticStretching = "Static Stretching"
+    case steamRoom = "Steam Room"
+    case yogaFlow = "Yoga Flow"
+
+    var id: String { self.rawValue }
+}
