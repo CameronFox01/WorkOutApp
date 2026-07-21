@@ -48,7 +48,7 @@ struct ContentView: View {
                             }
                             .tag(AppRouter.Tab.home)
                         
-                        ImportView()
+                        ImportView(selectedDate: Date(), comingFromCalendar: false)
                             .tabItem {
                                 Label("Import", systemImage: "dumbbell")
                             }

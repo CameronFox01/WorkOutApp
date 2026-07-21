@@ -19,6 +19,7 @@ func saveEntry(
     distances: [WorkoutCategory: String],
     times: [WorkoutCategory: String],
     notes: [WorkoutCategory: String],
+    date: Date = Date(),
     workoutData: WorkoutData,
     onSuccess: () -> Void,
     onError: () -> Void
@@ -61,7 +62,7 @@ func saveEntry(
         weight: weightString,
         reps: rep,
         sets: setsVal,
-        date: Date(),
+        date: date,
         note: notes[category] ?? ""
     )
 

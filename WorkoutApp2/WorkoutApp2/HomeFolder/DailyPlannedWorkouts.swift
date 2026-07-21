@@ -221,6 +221,7 @@ struct PlannedWorkoutRow: View {
         NavigationLink {
             ImportView.CategoryDetailView(
                 category: category,
+                date: Date(),
                 unitSystemRaw: $unitSystemRawLocal,
                 selections: $selections,
                 weights: $weights,

@@ -534,7 +534,7 @@ struct WorkoutCalendarView: View {
                 }
             }
             .fullScreenCover(isPresented: $showingAddWorkout) {
-                AddWorkoutForDateView(date: selectedDate)
+                ImportView(selectedDate: selectedDate, comingFromCalendar: true)
                     .environmentObject(workoutData)
             }
             .onAppear {
@@ -795,6 +795,7 @@ struct WorkoutCalendarView: View {
 
                 ImportView.CategoryDetailView(
                     category: category,
+                    date: Date(), //THis one needs to match the day given in the calendar
                     unitSystemRaw: $unitSystemRawLocal,
                     selections: $selections,
                     weights: $weights,

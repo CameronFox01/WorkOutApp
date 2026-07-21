@@ -164,6 +164,13 @@ struct ImportView: View {
     
     @State private var notes: [WorkoutCategory: String] = [:]
     
+    //Date Being passed in
+    let selectedDate: Date?
+    
+    //Coming from Previous day
+    let comingFromCalendar: Bool
+    @Environment(\.dismiss) private var dismiss
+    
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
     
@@ -182,12 +189,21 @@ struct ImportView: View {
         UnitSystem(rawValue: unitSystemRaw) ?? .metric
     }
     
+    // Wherever you need an actual Date to save with:
+    private var effectiveDate: Date {
+        selectedDate ?? Date()
+    }
+    
     init(
         preselectedCategory: WorkoutCategory? = nil,
-        preselectedWorkout: String? = nil
+        preselectedWorkout: String? = nil,
+        selectedDate: Date? = nil,
+        comingFromCalendar: Bool = false
     ) {
         self.preselectedCategory = preselectedCategory
         self.preselectedWorkout = preselectedWorkout
+        self.selectedDate = selectedDate
+        self.comingFromCalendar = comingFromCalendar
     }
 
     // The view of the list of all workouts
@@ -206,6 +222,7 @@ struct ImportView: View {
                         ForEach(WorkoutCategory.allCases) { category in
                             NavigationLink(destination: CategoryDetailView(
                                 category: category,
+                                date: effectiveDate,
                                 unitSystemRaw: $unitSystemRaw,
                                 selections: $selections,
                                 weights: $weights,
@@ -274,6 +291,12 @@ struct ImportView: View {
                         .font(.largeTitle).bold()
                         .foregroundStyle(.white)
                 }
+                if comingFromCalendar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Cancel") { dismiss() }
+                            .foregroundStyle(.white)
+                    }
+                }
             }
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -298,6 +321,7 @@ struct ImportView: View {
 
     struct CategoryDetailView: View {
         let category: WorkoutCategory
+        let date: Date
         @Binding var unitSystemRaw: String
         @Binding var selections: [WorkoutCategory: String]
         @Binding var weights: [WorkoutCategory: String]
@@ -757,6 +781,7 @@ struct ImportView: View {
             distances: distances,
             times: times,
             notes: notes,
+            date: effectiveDate,
             workoutData: workoutData,
             onSuccess: { feedbackSuccess() },
             onError: { feedbackError() }
@@ -820,7 +845,7 @@ struct ImportView: View {
 }
 
 #Preview {
-    ImportView()
+    ImportView(selectedDate: Date(), comingFromCalendar: false)
         .environmentObject(GradientSettings())
 }
 

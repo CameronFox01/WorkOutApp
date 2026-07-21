@@ -67,6 +67,7 @@ struct WorkoutChartView: View {
                 NavigationLink(
                     destination: ImportView.CategoryDetailView(
                     category: category,
+                    date: Date(),
                     unitSystemRaw: $unitSystemRawLocal,
                     selections: $selections,
                     weights: $weights,
