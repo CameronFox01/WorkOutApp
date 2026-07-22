@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 //The view for the big Screen
 struct TimeViewBig: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var audioPlayer: AVAudioPlayer?
 
     // Countdown
     @Binding var totalSeconds: Int
@@ -326,13 +328,14 @@ struct TimeViewBig: View {
                 }
             }
             .onReceive(timer) { _ in
-
                 guard isTimerRunning else { return }
 
-                if remainingSeconds > 0 {
+                if remainingSeconds > 1 {
                     remainingSeconds -= 1
                 } else {
+                    remainingSeconds = 0
                     isTimerRunning = false
+                    playTimerCompleteSound()
                 }
             }
             .onReceive(stopWatch) { _ in
@@ -360,6 +363,24 @@ struct TimeViewBig: View {
            let str = String(data: data, encoding: .utf8) {
             lapsData = str
         }
+    }
+    
+    private func playTimerCompleteSound() {
+        // Play through the phone's speaker even if the ringer is silenced
+        guard let url = Bundle.main.url(
+                forResource: "timerCompleteSound",
+                withExtension: "mp3"
+            ) else {
+                print("Sound file not found")
+                return
+            }
+
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.play()
+            } catch {
+                print("Could not play sound: \(error)")
+            }
     }
 
     private func clearLaps() {
