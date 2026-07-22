@@ -10,8 +10,11 @@
 // 4. For the small view make it where there is a setting in the big screen that will allow the user to pick which one is used in the small one or not.
 
 import SwiftUI
+import AVFoundation
 
 struct TimerView: View {
+    @State private var audioPlayer: AVAudioPlayer?
+    
     // Storage for the Stop Watch
     @AppStorage("isStopWatchRunning")
     private var isStopWatchRunning: Bool = false
@@ -300,6 +303,7 @@ struct TimerView: View {
                 if remainingSeconds > 0 { remainingSeconds -= 1 }
                 else { isCountdownRunning = false
                     let generator = UINotificationFeedbackGenerator()
+                    playTimerCompleteSound()
                     generator.notificationOccurred(.success)
                 }
             }
@@ -321,6 +325,24 @@ struct TimerView: View {
                 UIApplication.shared.isIdleTimerDisabled = false
             }
         }
+    }
+    
+    private func playTimerCompleteSound() {
+        // Play through the phone's speaker even if the ringer is silenced
+        guard let url = Bundle.main.url(
+                forResource: "timerCompleteSound",
+                withExtension: "mp3"
+            ) else {
+                print("Sound file not found")
+                return
+            }
+
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.play()
+            } catch {
+                print("Could not play sound: \(error)")
+            }
     }
 
     // MARK: - Helpers
