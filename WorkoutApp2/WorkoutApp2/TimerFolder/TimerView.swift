@@ -32,6 +32,7 @@ struct TimerView: View {
     @AppStorage("totalSeconds") private var totalSeconds: Int = 60
     @AppStorage("remainingSeconds") private var remainingSeconds: Int = 60
     @AppStorage("isCountdownRunning") private var isCountdownRunning: Bool = false
+    @AppStorage("playSoundAtEndOfTimer") private var playSoundAtEndOfTimer: Bool = true
     
     @AppStorage("accumulatedElapsed") private var accumulatedElapsed: Double = 0
 
@@ -303,7 +304,9 @@ struct TimerView: View {
                 if remainingSeconds > 0 { remainingSeconds -= 1 }
                 else { isCountdownRunning = false
                     let generator = UINotificationFeedbackGenerator()
-                    playTimerCompleteSound()
+                    if playSoundAtEndOfTimer{
+                        playTimerCompleteSound()
+                    }
                     generator.notificationOccurred(.success)
                 }
             }

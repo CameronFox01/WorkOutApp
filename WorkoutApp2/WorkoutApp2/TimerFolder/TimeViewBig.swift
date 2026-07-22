@@ -17,6 +17,7 @@ struct TimeViewBig: View {
     @Binding var totalSeconds: Int
     @Binding var remainingSeconds: Int
     @Binding var isTimerRunning: Bool
+    @AppStorage("playSoundAtEndOfTimer") private var playSoundAtEndOfTimer: Bool = true
 
     // Stopwatch
     @Binding var isStopWatchRunning: Bool
@@ -335,7 +336,9 @@ struct TimeViewBig: View {
                 } else {
                     remainingSeconds = 0
                     isTimerRunning = false
-                    playTimerCompleteSound()
+                    if playSoundAtEndOfTimer{
+                        playTimerCompleteSound()
+                    }
                 }
             }
             .onReceive(stopWatch) { _ in

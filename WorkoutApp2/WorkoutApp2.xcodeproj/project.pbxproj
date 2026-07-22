@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7E50E52F2DF16B720097DFF4 /* ReadMe.md in Resources */ = {isa = PBXBuildFile; fileRef = 7E50E52E2DF16B6C0097DFF4 /* ReadMe.md */; };
+		BA7C6A6F30106ED200E1955C /* timerCompleteSound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = BA7C6A6E30106ED200E1955C /* timerCompleteSound.mp3 */; };
 		BAE389DE2FD1F34F0047196D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE389DD2FD1F34F0047196D /* WidgetKit.framework */; };
 		BAE389E02FD1F34F0047196D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE389DF2FD1F34F0047196D /* SwiftUI.framework */; };
 		BAE389F12FD1F3500047196D /* IronFoxWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BAE389DB2FD1F34F0047196D /* IronFoxWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -56,6 +57,7 @@
 		7E85E7F12DF0B7FC008E1909 /* WorkoutApp2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutApp2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E85E7FE2DF0B803008E1909 /* WorkoutApp2Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutApp2Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E85E8082DF0B803008E1909 /* WorkoutApp2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutApp2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA7C6A6E30106ED200E1955C /* timerCompleteSound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = timerCompleteSound.mp3; sourceTree = "<group>"; };
 		BAE389DB2FD1F34F0047196D /* IronFoxWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = IronFoxWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAE389DD2FD1F34F0047196D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		BAE389DF2FD1F34F0047196D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -168,6 +170,7 @@
 				BAE38A012FD22F850047196D /* IronFoxWidget */,
 				BAE389DC2FD1F34F0047196D /* Frameworks */,
 				7E85E7F22DF0B7FC008E1909 /* Products */,
+				BA7C6A6E30106ED200E1955C /* timerCompleteSound.mp3 */,
 			);
 			sourceTree = "<group>";
 		};
@@ -339,6 +342,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA7C6A6F30106ED200E1955C /* timerCompleteSound.mp3 in Resources */,
 				7E50E52F2DF16B720097DFF4 /* ReadMe.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

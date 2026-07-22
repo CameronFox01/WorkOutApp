@@ -18,6 +18,7 @@ struct SettingsView: View {
     @AppStorage("hasCompletedSetup") private var hasCompletedSetup = true
     @AppStorage("SaveToPhotosApp") private var saveToPhoto: Bool = true
     @AppStorage("showStopWatch") private var showStopWatch: Bool = true
+    @AppStorage("playSoundAtEndOfTimer") private var playSoundAtEndOfTimer: Bool = true
     @AppStorage("numberOfWorkoutsToShow") private var numberOfWorkoutsToShow: Int = 12
     @AppStorage("workoutChallengeReminder") private var workoutChallengeReminder: Bool = true
     @AppStorage("weightGoalDirection") private var weightGoalDirection: String = "lose"
@@ -189,6 +190,14 @@ struct SettingsView: View {
                                     Text("Stopwatch").tag(true)
                                     Text("Timer").tag(false)
                                 }
+                            }
+                            Divider()
+                            SettingsRow(
+                                icon: playSoundAtEndOfTimer ? "speaker.wave.2.fill" : "speaker.slash.fill",
+                                title: "Timer Sound"
+                            ) {
+                                Toggle("", isOn: $playSoundAtEndOfTimer)
+                                    .labelsHidden()
                             }
                             Divider()
                             SettingsRow(icon: "flame.fill", title: "Energy Units") {
