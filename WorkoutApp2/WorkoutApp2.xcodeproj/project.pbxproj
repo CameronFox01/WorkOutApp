@@ -704,7 +704,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.90.1;
+				MARKETING_VERSION = 0.90.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2.IronFoxWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -738,7 +738,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.90.1;
+				MARKETING_VERSION = 0.90.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2.IronFoxWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

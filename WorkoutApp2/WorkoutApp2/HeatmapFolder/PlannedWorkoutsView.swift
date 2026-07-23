@@ -13,8 +13,6 @@ struct PlannedWorkoutsView: View {
 
     // MARK: - Environment
     @Environment(\.dismiss) private var dismiss
-    
-    @State
 
     // MARK: - Toolbar Button Sizes
     @State private var buttonHeight: CGFloat = 10
@@ -142,6 +140,14 @@ struct PlannedWorkoutsView: View {
                     }
                 }
             }
+            ToolbarItemGroup(placement: .keyboard) {
+
+                Spacer()
+
+                Button("Done") {
+                    isEditing = false
+                }
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
         
@@ -233,6 +239,7 @@ struct PlannedWorkoutsView: View {
                 .foregroundStyle(.white)
 
             TextField("e.g. Leg Day", text: $dayTitle)
+                .focused($isEditing)
                 .padding(12)
                 .background(.white.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
