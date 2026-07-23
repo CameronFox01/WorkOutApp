@@ -141,9 +141,7 @@ struct PlannedWorkoutsView: View {
                 }
             }
             ToolbarItemGroup(placement: .keyboard) {
-
                 Spacer()
-
                 Button("Done") {
                     isEditing = false
                 }

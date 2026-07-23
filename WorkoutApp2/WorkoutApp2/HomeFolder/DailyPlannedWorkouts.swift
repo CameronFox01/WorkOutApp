@@ -329,20 +329,16 @@ struct PlannedWorkoutRow: View {
 }
 
 struct DailyPlannedWorkoutsCard: View {
-    @State private var showSchedule = false
     @EnvironmentObject var gradientSettings: GradientSettings
 
     var body: some View {
-        Button {
-            showSchedule = true
+        NavigationLink {
+            PlannedWorkoutsView(comingFromCard: false)
+                .environmentObject(gradientSettings)
         } label: {
             DailyPlannedWorkouts()
         }
         .buttonStyle(.plain)
-        .fullScreenCover(isPresented: $showSchedule) {
-            PlannedWorkoutsView(comingFromCard: true)
-                .environmentObject(gradientSettings)
-        }
     }
 }
 
