@@ -333,7 +333,7 @@ struct DailyPlannedWorkoutsCard: View {
 
     var body: some View {
         NavigationLink {
-            PlannedWorkoutsView(comingFromCard: false)
+            PlannedWorkoutsView()
                 .environmentObject(gradientSettings)
         } label: {
             DailyPlannedWorkouts()

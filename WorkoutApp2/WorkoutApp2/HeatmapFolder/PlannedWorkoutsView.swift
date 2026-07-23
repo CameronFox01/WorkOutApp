@@ -79,9 +79,6 @@ struct PlannedWorkoutsView: View {
 
             ScrollView {
                 VStack(spacing: 24) {
-                    if comingFromCard{
-                        topButtons
-                    }
                     daySelector
                     titleCard
                     plannedCountCard
@@ -130,16 +127,6 @@ struct PlannedWorkoutsView: View {
                         .foregroundStyle(.white)
                 }
             }
-            if comingFromCard {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundStyle(.white)
-                    }
-                }
-            }
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") {
@@ -153,49 +140,6 @@ struct PlannedWorkoutsView: View {
             loadForDay(selectedDay)
         }
         
-    }
-    
-    // MARK: -  Top Section
-    private var topButtons: some View {
-        HStack(spacing: 6){
-            // Return Button
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 20)
-                    .frame(height: 60)
-                    .background(.white.opacity(0.15))
-                    .clipShape(Capsule())
-            }
-            
-            Spacer()
-            
-            // Main Text
-            Text("Schedule")
-                .font(.largeTitle)
-                .foregroundStyle(.white)
-            
-            Spacer()
-            
-            // Save Button
-            Button {
-                saveForDay(selectedDay)
-                withAnimation(.spring()) {
-                   showSavedToast = true
-               }
-            } label: {
-                Text("Save")
-                    .font(.title3.weight(.bold))
-                    .padding(.horizontal, 20)
-                    .foregroundStyle(.white)
-                    .frame(height: 60)
-                    .background(.white.opacity(0.15))
-                    .clipShape(Capsule())
-            }
-        }
     }
 
     // MARK: - Day Selector
@@ -224,8 +168,6 @@ struct PlannedWorkoutsView: View {
             }
         }
     }
-    
-    var comingFromCard: Bool = false
 
     // MARK: - Title Card
 
@@ -588,6 +530,6 @@ struct PlannedWorkoutsView: View {
 }
 
 #Preview {
-    PlannedWorkoutsView(comingFromCard: true)
+    PlannedWorkoutsView()
         .environmentObject(GradientSettings())
 }
