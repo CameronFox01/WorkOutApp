@@ -599,7 +599,7 @@ struct WorkoutCalendarView: View {
             TutorialStep(
                 id: "heatmap",
                 title: "Activity Heatmap",
-                description: "Darker days mean more workouts logged. Tap any day to see what you did."
+                description: "Lighter days mean more workouts logged. Tap any day to see what you did."
             ),
             TutorialStep(
                 id: "addWorkout",
