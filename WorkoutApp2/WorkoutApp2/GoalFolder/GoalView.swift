@@ -169,15 +169,6 @@ struct GoalView: View {
                     .tutorialHighlight("milestones")
                     .scrollDismissesKeyboard(.interactively)
                 }
-                .onTapGesture {
-                    isEditing = false
-                }
-                .toolbar{
-                    ToolbarItemGroup(placement: .keyboard) {
-                        Spacer()
-                        Button("Done") { isEditing = false }
-                    }
-                }
             }
             .onAppear {
                 loadWorkoutGoals()
@@ -234,6 +225,10 @@ struct GoalView: View {
                     Text("Set Goals")
                         .font(.largeTitle).bold()
                         .foregroundStyle(.white)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isEditing = false }
                 }
             }
         }
