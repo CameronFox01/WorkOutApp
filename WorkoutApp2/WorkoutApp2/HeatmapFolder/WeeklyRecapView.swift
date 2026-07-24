@@ -135,25 +135,29 @@ struct WeeklyRecapView: View {
             statCard(
                 icon: "flame.fill",
                 title: "Streak",
-                value: "\(recap.streak) days"
+                value: "\(recap.streak) days",
+                isNumber: false
             )
 
             statCard(
                 icon: "dumbbell.fill",
                 title: "Volume",
-                value: "\(Int(recap.totalVolume))"
+                value: "\(Int(recap.totalVolume))",
+                isNumber: false
             )
 
             statCard(
                 icon: "photo",
                 title: "Photos",
-                value: "\(recap.photosAdded)"
+                value: "\(recap.photosAdded)",
+                isNumber: false
             )
 
             statCard(
                 icon: "arrow.up.circle.fill",
                 title: "Improvement",
-                value: "\(recap.improvementPercent)%"
+                value: "\(recap.improvementPercent)",
+                isNumber: true
             )
         }
     }
@@ -203,7 +207,8 @@ struct WeeklyRecapView: View {
     private func statCard(
         icon: String,
         title: String,
-        value: String
+        value: String,
+        isNumber: Bool
     ) -> some View {
 
         VStack(spacing: 10) {
@@ -211,8 +216,18 @@ struct WeeklyRecapView: View {
             Image(systemName: icon)
                 .font(.title2)
 
-            Text(value)
-                .font(.headline.bold())
+            if isNumber{
+                Text(value)
+                    .font(.headline.bold())
+                    .foregroundStyle(
+                        (Double(value) ?? 0) < 0 ? .red :
+                        (Double(value) ?? 0) > 0 ? .green :
+                        .blue
+                    )
+            } else {
+                Text(value)
+                    .font(.headline.bold())
+            }
 
             Text(title)
                 .font(.caption)
@@ -258,7 +273,7 @@ struct WeeklyRecapView: View {
             totalVolume: 18500,
             streak: 12,
             strongestExercise: "Bench Press",
-            improvementPercent: 14,
+            improvementPercent: 33,
             photosAdded: 2
         )
     )
