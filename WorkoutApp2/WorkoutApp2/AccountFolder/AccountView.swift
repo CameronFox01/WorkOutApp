@@ -12,6 +12,7 @@ import PhotosUI
 struct AccountView: View {
 
     @EnvironmentObject var workoutData: WorkoutData
+    @AppStorage("bestStreak") private var bestStreak: Int = 0
 
     @AppStorage("userName")
     private var name: String = ""
@@ -200,10 +201,10 @@ extension AccountView {
 
                 progressCard(
                     value:
-                    "\(currentStreak)",
+                    "\(bestStreakFunc)",
 
                     label:
-                    "Streak"
+                    "Best Streak"
                 )
 
                 progressCard(
@@ -435,7 +436,7 @@ extension AccountView {
         return "\(feet)'\(remaining)\""
     }
 
-    private var currentStreak: Int {
+    private var bestStreakFunc: Int {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
@@ -445,22 +446,29 @@ extension AccountView {
             }
         )
 
-        var streak = 0
+        var currentStreak = 0
 
         // If they've already worked out today, count it
         if workoutDays.contains(today) {
-            streak += 1
+            currentStreak += 1
         }
 
         // Walk backwards from yesterday
         var day = calendar.date(byAdding: .day, value: -1, to: today)!
 
         while workoutDays.contains(day) {
-            streak += 1
+            currentStreak += 1
             day = calendar.date(byAdding: .day, value: -1, to: day)!
         }
 
-        return streak
+        // Update best streak if this one is higher
+        if currentStreak > bestStreak {
+            DispatchQueue.main.async {
+                bestStreak = currentStreak
+            }
+        }
+
+        return bestStreak
     }
 
     private var photoCount:Int {
