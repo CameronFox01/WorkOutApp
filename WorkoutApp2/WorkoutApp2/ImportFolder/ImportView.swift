@@ -149,6 +149,9 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
 
 struct ImportView: View {
     @EnvironmentObject var workoutData: WorkoutData
+    
+    // MARK: - Focus
+    @FocusState private var isEditing: Bool
 
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
 
@@ -346,6 +349,9 @@ struct ImportView: View {
         
         @AppStorage("showCalculatorImporting") private var showCalculatorImporting: Bool = true
         
+        // MARK: - Focus
+        @FocusState private var isEditing: Bool
+        
         //Color Gradiant
         @EnvironmentObject var gradientSettings: GradientSettings
         
@@ -532,6 +538,14 @@ struct ImportView: View {
                     times[category] = ""
                 }
             }
+            .toolbar{
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        isEditing = false
+                    }
+                }
+            }
         }
         
         private func formattedNumber(_ value: Double) -> String {
@@ -549,6 +563,7 @@ struct ImportView: View {
                 Text(category.title)
                     .font(.title2.bold())
                     .foregroundStyle(textColor)
+                    
 
                 Text("Log your \(category.title.lowercased()) workout \(date.formatted(date: .long, time: .omitted))")
                     .font(.subheadline)
@@ -658,7 +673,7 @@ struct ImportView: View {
 
                 TextEditor(text: noteBinding)
                     .frame(minHeight: 90)
-                    //.padding(10)
+                    .focused($isEditing)
                     .background(secondaryCardColor, in: RoundedRectangle(cornerRadius: 12))
             }
             .padding(16)
@@ -699,6 +714,7 @@ struct ImportView: View {
 
                 TextField(title, text: binding)
                     .keyboardType(.decimalPad)
+                    .focused($isEditing)
 
                 Spacer()
 
