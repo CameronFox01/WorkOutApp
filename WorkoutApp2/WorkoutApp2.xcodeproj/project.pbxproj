@@ -570,7 +570,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.90.11;
+				MARKETING_VERSION = 0.90.16;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -608,7 +608,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.90.11;
+				MARKETING_VERSION = 0.90.16;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -704,7 +704,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.90.11;
+				MARKETING_VERSION = 0.90.16;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2.IronFoxWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -738,7 +738,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.90.11;
+				MARKETING_VERSION = 0.90.16;
 				PRODUCT_BUNDLE_IDENTIFIER = "Fox-Studios.WorkoutApp2.IronFoxWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

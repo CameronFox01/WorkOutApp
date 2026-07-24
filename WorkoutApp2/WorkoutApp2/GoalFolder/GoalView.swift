@@ -226,11 +226,23 @@ struct GoalView: View {
                         .font(.largeTitle).bold()
                         .foregroundStyle(.white)
                 }
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") { isEditing = false }
+
+                if isEditing {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            isEditing = false
+                        } label: {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                                .font(.headline.bold())
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                        }
+                        .transition(.scale.combined(with: .opacity))
+                    }
                 }
             }
+            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isEditing)
         }
     }
         
@@ -576,277 +588,200 @@ struct GoalView: View {
             achievedMilestones = results.sorted { $0.title < $1.title }
         }
         
-        // ✅ Updated WorkoutSection — reacts to unit changes via binding
-        struct WorkoutSection<Workout: RawRepresentable & CaseIterable & Identifiable & Hashable>: View where Workout.RawValue == String {
-            var title: String
-            @Binding var selection: Workout
-            var allCases: [Workout]
-            @Binding var targetWeights: [String: String]
-            @Binding var unitSystemRaw: String  // ✅ Binding instead of plain String
-            var usesWeight: Bool                // ✅ Bool instead of optional String
-            
-            // ✅ Computed reactively from the binding
-            private var unitSystem: UnitSystem {
-                UnitSystem(rawValue: unitSystemRaw) ?? .metric
-            }
-            
-            private var weightUnit: String {
-                unitSystem == .metric ? "kg" : "lbs"
-            }
-            
-            var body: some View {
-                Section(header: Text(title)) {
-                    ZStack {
-                        HStack {
-                            Text(selection.rawValue)
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            Image(systemName: "chevron.down")
-                                .foregroundStyle(.secondary)
+    struct CollapsibleGoalCard<Workout: RawRepresentable & CaseIterable & Identifiable & Hashable>: View where Workout.RawValue == String {
+        let title: String
+        let systemImage: String
+        @Binding var selection: Workout
+        let allCases: [Workout]
+        let unitSystem: UnitSystem
+        @Binding var unitSystemRaw: String
+        @Binding var targetWeights: [String: String]
+        let usesWeight: Bool
+        var isDistanceCardio: Bool = false
+        var isTimeCardio: Bool = false
+        let symbolColor: Color // ✅ now a parameter
+        let focus: FocusState<Bool>.Binding
+        
+        
+        @State private var isExpanded: Bool = false
+        
+        private var weightUnit: String { unitSystem == .metric ? "kg" : "lbs" }
+        private var distanceUnit: String { unitSystem == .imperial ? "mi" : "km" }
+        
+        @EnvironmentObject var gradientSettings: GradientSettings
+        
+        var body: some View {
+            VStack(alignment: .leading, spacing: 12) {
+                Button {
+                    withAnimation(.spring()) {
+                        isExpanded.toggle() } } label: {
+                            HStack {
+                                Image(systemName: systemImage)
+                                    .foregroundStyle(gradientSettings.selectedPreset.textColor)// 👈 only icon
+                                Text(title)
+                                    .font(.headline)
+                                    .foregroundColor(.primary) // keep text color normal
+                                Spacer()
+                                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                                    .foregroundColor(.secondary)
+                            }
+                            .contentShape(Rectangle())
                         }
-                        .padding(12)
-                        .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 12))
-                        
+                        .buttonStyle(.plain)
+                
+                if isExpanded {
+                    VStack(alignment: .leading, spacing: 12) {
                         Picker(title, selection: $selection) {
                             ForEach(allCases) { w in
                                 Text(w.rawValue).tag(w)
                             }
                         }
-                        .pickerStyle(.menu)
-                        .labelsHidden()
-                        .opacity(0.01) // 👈 invisible but tappable
-                    }
-                    .pickerStyle(WheelPickerStyle())
-                    .frame(height: 100)
-                    
-                    // ✅ Only show weight field if this workout uses weight
-                    if usesWeight {
-                        TextField(
-                            "Target Weight for \(selection.rawValue) (\(weightUnit))",
-                            text: bindingForWorkout(selection)
-                        )
-                        .keyboardType(.decimalPad)
-                    } else {
-                        TextField(
-                            "Target for \(selection.rawValue)",
-                            text: bindingForWorkout(selection)
-                        )
-                        .keyboardType(.decimalPad)
-                    }
-                    
-                    Button("Save Goal for \(selection.rawValue)") {
-                        saveWorkoutGoal(for: selection)
-                    }
-                }
-            }
-            
-            func bindingForWorkout(_ workout: Workout) -> Binding<String> {
-                return Binding<String>(
-                    get: { targetWeights[workout.rawValue] ?? "" },
-                    set: { newValue in targetWeights[workout.rawValue] = newValue }
-                )
-            }
-            
-            func saveWorkoutGoal(for workout: Workout) {
-                let key = "goal_\(workout.rawValue)"
-                UserDefaults.standard.set(targetWeights[workout.rawValue], forKey: key)
-            }
-        }
-        
-        struct CollapsibleGoalCard<Workout: RawRepresentable & CaseIterable & Identifiable & Hashable>: View where Workout.RawValue == String {
-            let title: String
-            let systemImage: String
-            @Binding var selection: Workout
-            let allCases: [Workout]
-            let unitSystem: UnitSystem
-            @Binding var unitSystemRaw: String
-            @Binding var targetWeights: [String: String]
-            let usesWeight: Bool
-            var isDistanceCardio: Bool = false
-            var isTimeCardio: Bool = false
-            let symbolColor: Color // ✅ now a parameter
-            let focus: FocusState<Bool>.Binding
-            
-            
-            @State private var isExpanded: Bool = false
-            
-            private var weightUnit: String { unitSystem == .metric ? "kg" : "lbs" }
-            private var distanceUnit: String { unitSystem == .imperial ? "mi" : "km" }
-            
-            @EnvironmentObject var gradientSettings: GradientSettings
-            
-            var body: some View {
-                VStack(alignment: .leading, spacing: 12) {
-                    Button {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle() } } label: {
-                                HStack {
-                                    Image(systemName: systemImage)
-                                        .foregroundStyle(gradientSettings.selectedPreset.textColor)// 👈 only icon
-                                    Text(title)
-                                        .font(.headline)
-                                        .foregroundColor(.primary) // keep text color normal
-                                    Spacer()
-                                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                                        .foregroundColor(.secondary)
-                                }
-                                .contentShape(Rectangle())
+                        .pickerStyle(MenuPickerStyle())
+                        .tint(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                        
+                        // ✅ When selection changes, load any previously saved goal for it
+                        .onChange(of: selection) { _, newSelection in
+                            let key = "goal_\(newSelection.rawValue)"
+                            if let saved = UserDefaults.standard.string(forKey: key) {
+                                targetWeights[newSelection.rawValue] = saved
                             }
-                            .buttonStyle(.plain)
-                    
-                    if isExpanded {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Picker(title, selection: $selection) {
-                                ForEach(allCases) { w in
-                                    Text(w.rawValue).tag(w)
-                                }
+                        }
+                        
+                        HStack {
+                            if isDistanceCardio {
+                                pillField(text: Binding<String>(
+                                    get: { targetWeights[selection.rawValue] ?? "" },
+                                    set: { targetWeights[selection.rawValue] = $0 }
+                                ), placeholder: unitSystem == .imperial ? "3" : "5",
+                                          suffix: distanceUnit,
+                                          focus: focus
+                                )
+                                
+                            } else if usesWeight {
+                                pillField(text: Binding<String>(
+                                    get: { targetWeights[selection.rawValue] ?? "" },
+                                    set: { targetWeights[selection.rawValue] = $0 }
+                                ), placeholder: unitSystem == .metric ? "50" : "110",
+                                          suffix: weightUnit,
+                                          focus: focus
+                                )
+                            } else if isTimeCardio {
+                                pillField(text: Binding<String>(
+                                    get: { targetWeights[selection.rawValue] ?? "" },
+                                    set: { targetWeights[selection.rawValue] = $0 }
+                                ), placeholder: "30",
+                                          suffix: "min",
+                                          focus: focus
+                                )
+                            }else {
+                                pillField(text: Binding<String>(
+                                    get: { targetWeights[selection.rawValue] ?? "" },
+                                    set: { targetWeights[selection.rawValue] = $0 }
+                                ), placeholder: "10",
+                                          suffix: "",
+                                          focus: focus
+                                )
                             }
-                            .pickerStyle(MenuPickerStyle())
-                            .tint(gradientSettings.selectedPreset.textColor)
-                            // ✅ When selection changes, load any previously saved goal for it
-                            .onChange(of: selection) { _, newSelection in
-                                let key = "goal_\(newSelection.rawValue)"
-                                if let saved = UserDefaults.standard.string(forKey: key) {
-                                    targetWeights[newSelection.rawValue] = saved
-                                }
-                            }
-                            
-                            HStack {
-                                if isDistanceCardio {
-                                    pillField(text: Binding<String>(
-                                        get: { targetWeights[selection.rawValue] ?? "" },
-                                        set: { targetWeights[selection.rawValue] = $0 }
-                                    ), placeholder: unitSystem == .imperial ? "3" : "5",
-                                              suffix: distanceUnit,
-                                              focus: focus
-                                    )
-                                    
-                                } else if usesWeight {
-                                    pillField(text: Binding<String>(
-                                        get: { targetWeights[selection.rawValue] ?? "" },
-                                        set: { targetWeights[selection.rawValue] = $0 }
-                                    ), placeholder: unitSystem == .metric ? "50" : "110",
-                                              suffix: weightUnit,
-                                              focus: focus
-                                    )
-                                } else if isTimeCardio {
-                                    pillField(text: Binding<String>(
-                                        get: { targetWeights[selection.rawValue] ?? "" },
-                                        set: { targetWeights[selection.rawValue] = $0 }
-                                    ), placeholder: "30",
-                                              suffix: "min",
-                                              focus: focus
-                                    )
-                                }else {
-                                    pillField(text: Binding<String>(
-                                        get: { targetWeights[selection.rawValue] ?? "" },
-                                        set: { targetWeights[selection.rawValue] = $0 }
-                                    ), placeholder: "10",
-                                              suffix: "",
-                                              focus: focus
-                                    )
-                                }
-                                Spacer(minLength: 0)
-                            }
-                            
-                            gradientButton(title: "Save Goal", systemImage: "checkmark.circle.fill") {
-                                let key = "goal_\(selection.rawValue)"
-                                UserDefaults.standard.set(targetWeights[selection.rawValue] ?? "", forKey: key)
-                                UserDefaults.standard.set(false, forKey: "goalReached_\(selection.rawValue)")
-                                let generator = UINotificationFeedbackGenerator()
-                                generator.notificationOccurred(.success)
-                            }
+                            Spacer(minLength: 0)
+                        }
+                        
+                        gradientButton(title: "Save Goal", systemImage: "checkmark.circle.fill") {
+                            let key = "goal_\(selection.rawValue)"
+                            UserDefaults.standard.set(targetWeights[selection.rawValue] ?? "", forKey: key)
+                            UserDefaults.standard.set(false, forKey: "goalReached_\(selection.rawValue)")
+                            let generator = UINotificationFeedbackGenerator()
+                            generator.notificationOccurred(.success)
                         }
                     }
                 }
-                .padding(16)
-                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 3)
-                .shadow(color: Color.white.opacity(0.03), radius: 1, x: 0, y: 0)
-                // ✅ Load saved value for initial selection when card first expands
-                .onAppear {
-                    let key = "goal_\(selection.rawValue)"
-                    if let saved = UserDefaults.standard.string(forKey: key) {
-                        targetWeights[selection.rawValue] = saved
-                    }
+            }
+            .padding(16)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 3)
+            .shadow(color: Color.white.opacity(0.03), radius: 1, x: 0, y: 0)
+            // ✅ Load saved value for initial selection when card first expands
+            .onAppear {
+                let key = "goal_\(selection.rawValue)"
+                if let saved = UserDefaults.standard.string(forKey: key) {
+                    targetWeights[selection.rawValue] = saved
                 }
             }
         }
     }
-    
-    //Color Helper
-    fileprivate extension Color {
-        init(hex: String) {
-            var hexString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-            if hexString.hasPrefix("#") { hexString.removeFirst() }
-            var int: UInt64 = 0
-            Scanner(string: hexString).scanHexInt64(&int)
-            let r, g, b: Double
-            switch hexString.count {
-            case 6:
-                r = Double((int >> 16) & 0xFF) / 255.0
-                g = Double((int >> 8) & 0xFF) / 255.0
-                b = Double(int & 0xFF) / 255.0
-            default:
-                r = 0; g = 0; b = 0
-            }
-            self = Color(red: r, green: g, blue: b)
+}
+
+//Color Helper
+fileprivate extension Color {
+    init(hex: String) {
+        var hexString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        if hexString.hasPrefix("#") { hexString.removeFirst() }
+        var int: UInt64 = 0
+        Scanner(string: hexString).scanHexInt64(&int)
+        let r, g, b: Double
+        switch hexString.count {
+        case 6:
+            r = Double((int >> 16) & 0xFF) / 255.0
+            g = Double((int >> 8) & 0xFF) / 255.0
+            b = Double(int & 0xFF) / 255.0
+        default:
+            r = 0; g = 0; b = 0
+        }
+        self = Color(red: r, green: g, blue: b)
+    }
+}
+@ViewBuilder
+func pillField(
+    text: Binding<String>,
+    placeholder: String,
+    suffix: String? = nil,
+    focus: FocusState<Bool>.Binding
+) -> some View {
+    HStack(spacing: 8) {
+        TextField(placeholder, text: text)
+            .focused(focus) // Keep this
+            .keyboardType(.decimalPad)
+            .submitLabel(.done)
+            .padding(.vertical, 10)
+            .padding(.leading, 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        
+        if let suffix {
+            Text(suffix)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.trailing, 12)
         }
     }
-    @ViewBuilder
-    func pillField(
-        text: Binding<String>,
-        placeholder: String,
-        suffix: String? = nil,
-        focus: FocusState<Bool>.Binding
-    ) -> some View {
-        HStack(spacing: 8) {
-            TextField(placeholder, text: text)
-                .focused(focus) // Keep this
-                .keyboardType(.decimalPad)
-                .submitLabel(.done)
-                .padding(.vertical, 10)
-                .padding(.leading, 14)
-                .padding(.trailing, suffix == nil ? 14 : 4)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            if let suffix {
-                Text(suffix)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.trailing, 12)
-            }
+    // REMOVE .submitScope() from here and in the calling code
+    .background(Color(.secondarySystemFill), in: Capsule())
+    .contentShape(Capsule())
+}
+
+func gradientButton(
+    title: String,
+    systemImage: String,
+    action: @escaping () -> Void
+) -> some View {
+    Button(action: action) {
+        HStack {
+            Image(systemName: systemImage)
+            Text(title).fontWeight(.semibold)
         }
-        // REMOVE .submitScope() from here and in the calling code
-        .background(Color(.secondarySystemFill), in: Capsule())
-        .contentShape(Capsule())
+        .foregroundColor(.white)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(
+            LinearGradient(
+                colors: [Color(hex: "#14B8A6"), Color(hex: "#84CC16")],
+                startPoint: .leading,
+                endPoint: .trailing
+            ),
+            in: RoundedRectangle(cornerRadius: 14)
+        )
     }
-    
-    func gradientButton(
-        title: String,
-        systemImage: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: systemImage)
-                Text(title).fontWeight(.semibold)
-            }
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(
-                LinearGradient(
-                    colors: [Color(hex: "#14B8A6"), Color(hex: "#84CC16")],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                ),
-                in: RoundedRectangle(cornerRadius: 14)
-            )
-        }
-        .buttonStyle(.plain)
-        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
-    }
+    .buttonStyle(.plain)
+    .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
+}
 
 #Preview {
     NavigationStack {

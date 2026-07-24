@@ -291,11 +291,6 @@ struct WeightUpdateSheet: View {
                            hitGoal()
 
                            showWeightUpdateToast(previous: previousValue, new: newVal)
-//
-//                           DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
-//                               dismiss()
-//                           }
-
                         } label: {
 
                             Label(
