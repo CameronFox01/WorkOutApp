@@ -42,6 +42,9 @@ enum ImageNames: String, CaseIterable {
 
 
 struct AllImportedWorkoutsView: View {
+    // MARK: - Focus
+    @FocusState private var isEditing: Bool
+    
     @State private var searchText: String = ""
     @State private var selectedCategory: WorkoutCategory? = nil
     
@@ -94,6 +97,7 @@ struct AllImportedWorkoutsView: View {
 
                     TextField("Search workouts...", text: $searchText)
                         .padding(12)
+                        .focused($isEditing)
                         .background(.white.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .foregroundStyle(.white)
@@ -180,6 +184,12 @@ struct AllImportedWorkoutsView: View {
                 Text("All Workouts")
                     .font(.largeTitle).bold()
                     .foregroundStyle(.white)
+            }
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    isEditing = false
+                }
             }
         }
         .navigationBarTitleDisplayMode(.inline)

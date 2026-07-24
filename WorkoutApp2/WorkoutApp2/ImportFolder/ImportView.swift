@@ -487,7 +487,7 @@ struct ImportView: View {
                     }
                 }
             }
-            .navigationTitle(category.title)
+            //.navigationTitle(category.title)
             .navigationBarTitleDisplayMode(.inline)
             .overlay(alignment: .top) {
                 if showSavedToast { savedToast }
@@ -544,6 +544,11 @@ struct ImportView: View {
                     Button("Done") {
                         isEditing = false
                     }
+                }
+                ToolbarItem(placement: .principal) {
+                    Text(category.title)
+                        .font(.largeTitle).bold()
+                        .foregroundStyle(.white)
                 }
             }
         }
