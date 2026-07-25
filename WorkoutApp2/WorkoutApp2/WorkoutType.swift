@@ -366,6 +366,7 @@ enum RecoveryWorkout: String, CaseIterable, Identifiable, Hashable {
     case fullBodyStretch = "Full Body Stretch"
     case hotTub = "Hot Tub"
     case hydrotherapy = "Hydrotherapy"
+    case icing = "Icing"
     case iceBath = "Ice Bath"
     case infraredSauna = "Infrared Sauna"
     case jointMobilityDrills = "Joint Mobility Drills"

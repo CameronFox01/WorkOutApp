@@ -91,7 +91,7 @@ struct PlateCalculatorView: View {
                                     .multilineTextAlignment(.center)
                                     .keyboardType(.decimalPad)
                                     .frame(width: 90)
-                                    .focused($isBarWeightFocused)
+                                    .focused($isBarWeightFocused)                                    
 
                                 Spacer()
 
