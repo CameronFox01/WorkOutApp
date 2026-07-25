@@ -539,10 +539,12 @@ struct ImportView: View {
                 }
             }
             .toolbar{
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        isEditing = false
+                if !showingAddWorkout{
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Done") {
+                            isEditing = false
+                        }
                     }
                 }
                 ToolbarItem(placement: .principal) {
