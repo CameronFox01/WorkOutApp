@@ -49,11 +49,14 @@ struct SettingsView: View {
                 .padding()
 
                 VStack(spacing: 6) {
-                    Text("IronFox").font(.headline)
+                    Text("IronFox")
+                        .font(.headline)
+                        .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                     Link("Visit Webpage", destination: URL(string: "http://cameronfox.me/publishedapps/ironfox")!)
+                        .foregroundStyle(gradientSettings.selectedPreset.linkColor)
                     Text("Version \(appVersion)")
                         .font(.footnote)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(gradientSettings.selectedPreset.subTextOnDarkBackground)
                 }
                 .padding(.top, 10)
                 .padding(.bottom, 30)

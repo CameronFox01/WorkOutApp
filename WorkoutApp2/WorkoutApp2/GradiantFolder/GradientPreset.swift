@@ -116,6 +116,15 @@ extension GradientPreset {
         }
         return Color(red: 34/255, green: 139/255, blue: 34/255)
     }
+    
+    /// The color used for links and other interactive text.
+    var linkColor: Color {
+        if mainColor.isDark {
+            return .cyan
+        } else {
+            return .blue
+        }
+    }
 }
 
 extension Color {
