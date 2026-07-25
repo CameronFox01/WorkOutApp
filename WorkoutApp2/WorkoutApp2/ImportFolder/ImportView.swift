@@ -492,7 +492,7 @@ struct ImportView: View {
             .overlay(alignment: .top) {
                 if showSavedToast { savedToast }
             }
-            .fullScreenCover(isPresented: $showingPlateCalculator) {
+            .navigationDestination(isPresented: $showingPlateCalculator) {
                 PlateCalculatorView(weightUnit: weightUnit) { total in
                     weights[category] = formattedNumber(total)
                 }

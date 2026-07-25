@@ -186,14 +186,6 @@ struct PlateCalculatorView: View {
                         .font(.title2.bold())
                         .foregroundStyle(.white)
                 }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundStyle(.white)
-                    }
-                }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button("Done") {
