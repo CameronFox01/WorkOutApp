@@ -472,10 +472,7 @@ extension AccountView {
     }
 
     private var photoCount:Int {
-
-        profileImageData == nil
-        ? 0
-        : 1
+        PhotoOrganizer.loadPhotos().count
     }
 }
 
