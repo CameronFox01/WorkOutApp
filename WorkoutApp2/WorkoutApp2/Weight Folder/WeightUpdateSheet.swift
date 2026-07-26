@@ -150,7 +150,8 @@ struct WeightUpdateSheet: View {
                     WorkoutProgressChart(
                         workoutName: "Body Weight",
                         entries: entries,
-                        unitSystemRaw: unitSystemRaw
+                        unitSystemRaw: unitSystemRaw,
+                        category: .bodyweight
                     )
                     .frame(height: 220)
                     Spacer()

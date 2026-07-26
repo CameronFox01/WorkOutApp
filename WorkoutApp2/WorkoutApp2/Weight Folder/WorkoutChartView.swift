@@ -45,7 +45,8 @@ struct WorkoutChartView: View {
                     WorkoutProgressChart(
                         workoutName: workoutName,
                         entries: entriesForWorkout,
-                        unitSystemRaw: unitSystemRaw
+                        unitSystemRaw: unitSystemRaw,
+                        category: category
                     )
 
                     detailsSection
@@ -340,29 +341,10 @@ struct WorkoutChartView: View {
         }
     }
 
-    private var isDistanceCardio: Bool {
-        DistanceCardioWorkout.allCases
-            .map(\.rawValue)
-            .contains(workoutName)
-    }
-
-    private var isTimeCardio: Bool {
-        TimeCardioWorkout.allCases
-            .map(\.rawValue)
-            .contains(workoutName)
-    }
-    
-    private var isSports: Bool {
-        SportsWorkout.allCases
-            .map(\.rawValue)
-            .contains(workoutName)
-    }
-    
-    private var isRecovery: Bool {
-        RecoveryWorkout.allCases
-            .map(\.rawValue)
-            .contains(workoutName)
-    }
+    private var isDistanceCardio: Bool { category == .distanceCardio }
+    private var isTimeCardio: Bool { category == .timeCardio }
+    private var isSports: Bool { category == .sports }
+    private var isRecovery: Bool { category == .recovery }
     
     private func bestDistance() -> String? {
         entriesForWorkout

@@ -13,6 +13,7 @@ struct WorkoutProgressChart: View {
     var workoutName: String
     var entries: [WorkoutEntry] // expects entries across all workouts
     var unitSystemRaw: String // to decide weight units label if needed
+    var category: WorkoutCategory
 
     // Goal lookup from UserDefaults (as saved in GoalView with key "goal_<workoutName>")
     private var goalValue: Double? {
@@ -35,27 +36,10 @@ struct WorkoutProgressChart: View {
         return displayValue
     }
     
-    private var isDistanceCardio: Bool {
-        DistanceCardioWorkout.allCases
-            .map(\.rawValue)
-            .contains(workoutName)
-    }
-    
-    private var isSportsWorkout: Bool {
-        SportsWorkout.allCases.map(\.rawValue).contains(workoutName)
-    }
-
-    private var isTimeCardio: Bool {
-        TimeCardioWorkout.allCases
-            .map(\.rawValue)
-            .contains(workoutName)
-    }
-    
-    private var isRecovery: Bool {
-        RecoveryWorkout.allCases
-            .map(\.rawValue)
-            .contains(workoutName)
-    }
+    private var isDistanceCardio: Bool { category == .distanceCardio }
+    private var isSportsWorkout: Bool { category == .sports }
+    private var isTimeCardio: Bool { category == .timeCardio }
+    private var isRecovery: Bool { category == .recovery }
     
     private var isBodyWeightScale: Bool {
         workoutName == "Body Weight"
@@ -66,12 +50,13 @@ struct WorkoutProgressChart: View {
         !isTimeCardio &&
         !isBodyWeightScale &&
         !isSportsWorkout &&
-        !BodyweightWorkout.allCases.map(\.rawValue).contains(workoutName)
+        !isRecovery &&
+        category != .bodyweight
     }
 
     private var unitLabel: String {
         if isSportsWorkout {
-            return ""
+            return "min"
         } else if isDistanceCardio {
             return UnitSystem(rawValue: unitSystemRaw) == .imperial ? "mi" : "km"
         } else if isTimeCardio || isRecovery {
