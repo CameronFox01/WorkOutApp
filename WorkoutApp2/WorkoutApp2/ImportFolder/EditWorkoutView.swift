@@ -220,9 +220,19 @@ struct EditWorkoutView: View {
                         VStack(alignment: .leading, spacing: 14) {
                             sectionLabel("Details", icon: "list.number")
 
-                            frostedField(label: "Weight", placeholder: "0", text: $weight, keyboard: .decimalPad, field: .weight, next: .reps)
-                            frostedField(label: "Reps", placeholder: "0", text: $reps, keyboard: .numberPad, field: .reps, next: .sets)
-                            frostedField(label: "Sets", placeholder: "0", text: $sets, keyboard: .numberPad, field: .sets, next: nil)
+                            if selectedCategory == .distanceCardio {
+                                frostedField(label: "Distance", placeholder: "0", text: $weight, keyboard: .decimalPad, field: .weight, next: .reps)
+                                frostedField(label: "Time (min)", placeholder: "0", text: $reps, keyboard: .decimalPad, field: .reps, next: nil)
+                            } else if selectedCategory == .timeCardio || selectedCategory == .sports || selectedCategory == .recovery {
+                                frostedField(label: "Time (min)", placeholder: "0", text: $reps, keyboard: .decimalPad, field: .reps, next: nil)
+                            } else if selectedCategory.usesWeight {
+                                frostedField(label: "Weight", placeholder: "0", text: $weight, keyboard: .decimalPad, field: .weight, next: .reps)
+                                frostedField(label: "Reps", placeholder: "0", text: $reps, keyboard: .numberPad, field: .reps, next: .sets)
+                                frostedField(label: "Sets", placeholder: "0", text: $sets, keyboard: .numberPad, field: .sets, next: nil)
+                            } else {
+                                frostedField(label: "Reps", placeholder: "0", text: $reps, keyboard: .numberPad, field: .reps, next: .sets)
+                                frostedField(label: "Sets", placeholder: "0", text: $sets, keyboard: .numberPad, field: .sets, next: nil)
+                            }
                         }
                     }
                     .tutorialHighlight("detailsCard")
@@ -308,6 +318,9 @@ struct EditWorkoutView: View {
             if !newCategory.workouts().contains(workoutType) {
                 workoutType = newCategory.workouts().first ?? workoutType
             }
+            weight = ""
+            reps = ""
+            sets = ""
         }
         .onAppear {
             if !hasSeenEditWorkoutTutorial {
