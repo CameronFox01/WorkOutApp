@@ -44,8 +44,15 @@ class MeasurementStore: ObservableObject {
         persist()
     }
 
-    func delete(at offsets: IndexSet) {
-        entries.remove(atOffsets: offsets)
+    func update(_ entry: MeasurementEntry) {
+        if let index = entries.firstIndex(where: { $0.id == entry.id }) {
+            entries[index] = entry
+            persist()
+        }
+    }
+
+    func delete(id: UUID) {
+        entries.removeAll { $0.id == id }
         persist()
     }
 
@@ -63,17 +70,16 @@ class MeasurementStore: ObservableObject {
         entries = decoded
     }
 }
-
 // MARK: - Sheet View
 
 struct MeasurementInputSheet: View {
+    // MARK: - Focus
+    @FocusState private var isEditing: Bool
     @Environment(\.dismiss) private var dismiss
     @StateObject private var store = MeasurementStore()
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
-    //Color Gradiant
-    @StateObject private var gradientSettings = GradientSettings()
+    @EnvironmentObject var gradientSettings: GradientSettings
 
-    // Input fields
     @State private var chest:     String = ""
     @State private var shoulders: String = ""
     @State private var waist:     String = ""
@@ -83,7 +89,10 @@ struct MeasurementInputSheet: View {
     @State private var neck:      String = ""
     @State private var calves:    String = ""
 
+    @State private var editingEntryID: UUID?
     @State private var savedSuccessfully = false
+    @State private var showDeleteConfirm = false
+    @State private var pendingDeleteID: UUID?
 
     private var unitSystem: UnitSystem { UnitSystem(rawValue: unitSystemRaw) ?? .metric }
     private var unitLabel: String { unitSystem == .imperial ? "in" : "cm" }
@@ -101,36 +110,48 @@ struct MeasurementInputSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    if store.latest != nil {
-                        changesSinceLastCard
-                    }
-                    inputCard
-                    if !store.entries.isEmpty {
-                        historyCard
-                    }
-                }
-                .padding(20)
-            }
-            .background(
+            ZStack {
                 LinearGradient(
                     colors: gradientSettings.darkGradientColors,
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
-            )
+
+                ScrollView {
+                    VStack(spacing: 20) {
+                        if editingEntryID != nil {
+                            editingBanner
+                        }
+                        if store.latest != nil && editingEntryID == nil {
+                            changesSinceLastCard
+                        }
+                        inputCard
+                        if !store.entries.isEmpty {
+                            historyCard
+                        }
+                    }
+                    .padding(20)
+                }
+            }
             .navigationTitle("Body Measurements")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        isEditing = false
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") { saveEntry() }
-                        .fontWeight(.semibold)
-                        .disabled(allFieldsEmpty)
+                    Button(editingEntryID == nil ? "Save" : "Update") {
+                        saveEntry()
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .disabled(allFieldsEmpty)
                 }
             }
         }
@@ -139,6 +160,38 @@ struct MeasurementInputSheet: View {
                 savedToast
             }
         }
+        .confirmationDialog(
+            "Delete this entry?",
+            isPresented: $showDeleteConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let id = pendingDeleteID {
+                    store.delete(id: id)
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+    }
+
+    // MARK: - Editing Banner
+
+    private var editingBanner: some View {
+        HStack {
+            Image(systemName: "pencil.circle.fill")
+                .foregroundStyle(.orange)
+            Text("Editing entry")
+                .font(.subheadline.bold())
+                .foregroundStyle(.white)
+            Spacer()
+            Button("Cancel") {
+                cancelEditing()
+            }
+            .font(.subheadline.bold())
+            .foregroundStyle(.white.opacity(0.75))
+        }
+        .padding(14)
+        .background(.orange.opacity(0.18), in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Changes Since Last Entry
@@ -146,14 +199,13 @@ struct MeasurementInputSheet: View {
     private var changesSinceLastCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Label("Changes since last entry", systemImage: "arrow.up.arrow.down")
-                .font(.title2)
-                .foregroundStyle(.black)
+                .font(.headline.bold())
+                .foregroundStyle(.white)
 
             if let last = store.latest {
-                let date = last.date.formatted(date: .abbreviated, time: .omitted)
-                Text("Last logged \(date)")
-                    .font(.headline)
-                    .foregroundStyle(.black)
+                Text("Last logged \(last.date.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.7))
 
                 LazyVGrid(
                     columns: [GridItem(.flexible()), GridItem(.flexible())],
@@ -173,10 +225,11 @@ struct MeasurementInputSheet: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 28)
-                .fill(.white.opacity(0.30))
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.white.opacity(0.10))
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
         )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private func changeBadge(label: String, current: Double?) -> some View {
@@ -201,39 +254,38 @@ struct MeasurementInputSheet: View {
         }()
 
         return HStack(spacing: 10) {
-//            RoundedRectangle(cornerRadius: 3)
-//                .fill(color.opacity(0.5))
-//                .frame(width: 4)
+            RoundedRectangle(cornerRadius: 3)
+                .fill(color)
+                .frame(width: 4)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
-                    .font(.title3)
-                    .foregroundStyle(.white)
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.75))
 
                 if let d = diff {
                     HStack(spacing: 3) {
                         Image(systemName: d > 0 ? "arrow.up" : d < 0 ? "arrow.down" : "minus")
-                            .font(.headline)
+                            .font(.caption.bold())
                         Text(String(format: "%.1f \(unitLabel)", abs(d)))
-                            .font(.headline.bold())
-                            .foregroundStyle(.white)
+                            .font(.subheadline.bold())
                     }
-                    .foregroundStyle(d == 0 ? .secondary : d < 0 ? .green : Color.orange)
+                    .foregroundStyle(d == 0 ? .white.opacity(0.6) : d < 0 ? .green : .orange)
                 } else if let c = current {
                     Text(String(format: "%.1f \(unitLabel)", c))
-                        .font(.headline.bold())
+                        .font(.subheadline.bold())
                         .foregroundStyle(.white)
                 } else {
                     Text("--")
-                        .font(.headline.bold())
-                        .foregroundStyle(.white)
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.white.opacity(0.4))
                 }
             }
 
             Spacer()
         }
         .padding(10)
-        .background(color)
+        .background(color.opacity(0.20))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
@@ -242,8 +294,8 @@ struct MeasurementInputSheet: View {
     private var inputCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Label("Enter measurements", systemImage: "pencil")
-                .font(.title2)
-                .foregroundStyle(.black)
+                .font(.headline.bold())
+                .foregroundStyle(.white)
 
             ForEach(measurements, id: \.label) { item in
                 let color = MeasurementAppearance.color(for: item.label)
@@ -251,7 +303,7 @@ struct MeasurementInputSheet: View {
                 HStack {
                     Label(item.label, systemImage: item.icon)
                         .font(.subheadline)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.white.opacity(0.85))
                         .frame(width: 130, alignment: .leading)
 
                     Spacer()
@@ -259,33 +311,33 @@ struct MeasurementInputSheet: View {
                     HStack(spacing: 4) {
                         TextField("",
                                   text: item.binding,
-                                  prompt: Text("0.0").foregroundStyle(.white.opacity(0.6))
+                                  prompt: Text("0.0").foregroundStyle(.white.opacity(0.4))
                         )
                         .keyboardType(.decimalPad)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 60)
                         .foregroundStyle(.white)
-                        .font(.title3)
+                        .font(.subheadline.bold())
+                        .focused($isEditing)
 
                         Text(unitLabel)
-                            .font(.subheadline)
-                            .frame(width: 24, alignment: .leading)
-                            .foregroundStyle(.white.opacity(0.8))
-                            .font(.title3)
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(color.opacity(0.75))
+                .background(color.opacity(0.20))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 28)
-                .fill(.white.opacity(0.30))
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.white.opacity(0.10))
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
         )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - History Card
@@ -293,54 +345,83 @@ struct MeasurementInputSheet: View {
     private var historyCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Label("Previous entries", systemImage: "clock")
-                .font(.title)
-                .foregroundStyle(.black)
+                .font(.headline.bold())
+                .foregroundStyle(.white)
+
+            Text("Tap to edit \u{00B7} Swipe to delete")
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.5))
 
             ForEach(store.entries.reversed()) { entry in
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(entry.date.formatted(date: .abbreviated, time: .shortened))
-                        .font(.headline)
-                        .foregroundStyle(.black)
+                Button {
+                    startEditing(entry)
+                } label: {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(entry.date.formatted(date: .abbreviated, time: .shortened))
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.white)
+                            Spacer()
+                            if editingEntryID == entry.id {
+                                Text("Editing")
+                                    .font(.caption.bold())
+                                    .foregroundStyle(.orange)
+                            } else {
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.4))
+                            }
+                        }
 
-                    LazyVGrid(
-                        columns: [GridItem(.flexible()), GridItem(.flexible())],
-                        spacing: 6
-                    ) {
-                        historyCell(label: "Chest",     value: entry.chest)
-                        historyCell(label: "Shoulders", value: entry.shoulders)
-                        historyCell(label: "Waist",     value: entry.waist)
-                        historyCell(label: "Hips",      value: entry.hips)
-                        historyCell(label: "Biceps",    value: entry.biceps)
-                        historyCell(label: "Thighs",    value: entry.thighs)
-                        historyCell(label: "Neck",      value: entry.neck)
-                        historyCell(label: "Calves",    value: entry.calves)
+                        LazyVGrid(
+                            columns: [GridItem(.flexible()), GridItem(.flexible())],
+                            spacing: 6
+                        ) {
+                            historyCell(label: "Chest",     value: entry.chest)
+                            historyCell(label: "Shoulders", value: entry.shoulders)
+                            historyCell(label: "Waist",     value: entry.waist)
+                            historyCell(label: "Hips",      value: entry.hips)
+                            historyCell(label: "Biceps",    value: entry.biceps)
+                            historyCell(label: "Thighs",    value: entry.thighs)
+                            historyCell(label: "Neck",      value: entry.neck)
+                            historyCell(label: "Calves",    value: entry.calves)
+                        }
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(editingEntryID == entry.id ? .orange.opacity(0.15) : .white.opacity(0.08))
+                    )
+                }
+                .buttonStyle(.plain)
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        pendingDeleteID = entry.id
+                        showDeleteConfirm = true
+                    } label: {
+                        Label("Delete", systemImage: "trash")
                     }
                 }
-                .padding(12)
-                .background(
-                    RoundedRectangle(cornerRadius: 28)
-                        .fill(.white.opacity(0.30))
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 28)
-                .fill(.white.opacity(0.30))
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.white.opacity(0.10))
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
         )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private func historyCell(label: String, value: Double?) -> some View {
         HStack {
             Text(label)
-                .font(.title2)
+                .font(.caption)
                 .foregroundStyle(MeasurementAppearance.color(for: label))
             Spacer()
             Text(value.map { String(format: "%.1f \(unitLabel)", $0) } ?? "--")
-                .font(.title2.bold())
-                .foregroundStyle(MeasurementAppearance.color(for: label))
+                .font(.caption.bold())
+                .foregroundStyle(.white)
         }
     }
 
@@ -352,7 +433,7 @@ struct MeasurementInputSheet: View {
             HStack(spacing: 8) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
-                Text("Measurements saved")
+                Text(editingEntryID == nil ? "Measurements saved" : "Entry updated")
                     .font(.subheadline.bold())
             }
             .padding(.horizontal, 20)
@@ -372,38 +453,87 @@ struct MeasurementInputSheet: View {
             .allSatisfy { $0.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 
-    private func saveEntry() {
-        let entry = MeasurementEntry(
-            date:      Date(),
-            chest:     Double(chest),
-            shoulders: Double(shoulders),
-            waist:     Double(waist),
-            hips:      Double(hips),
-            biceps:    Double(biceps),
-            thighs:    Double(thighs),
-            neck:      Double(neck),
-            calves:    Double(calves)
-        )
-        store.save(entry)
+    private func startEditing(_ entry: MeasurementEntry) {
+        editingEntryID = entry.id
+        chest     = entry.chest.map { format($0) } ?? ""
+        shoulders = entry.shoulders.map { format($0) } ?? ""
+        waist     = entry.waist.map { format($0) } ?? ""
+        hips      = entry.hips.map { format($0) } ?? ""
+        biceps    = entry.biceps.map { format($0) } ?? ""
+        thighs    = entry.thighs.map { format($0) } ?? ""
+        neck      = entry.neck.map { format($0) } ?? ""
+        calves    = entry.calves.map { format($0) } ?? ""
+    }
 
-        // Also update AppStorage so MeasurementRecapView stays in sync
-        UserDefaults.standard.set(chest,     forKey: "measureChest")
-        UserDefaults.standard.set(shoulders, forKey: "measureShoulders")
-        UserDefaults.standard.set(waist,     forKey: "measureWaist")
-        UserDefaults.standard.set(hips,      forKey: "measureHips")
-        UserDefaults.standard.set(biceps,    forKey: "measureBiceps")
-        UserDefaults.standard.set(thighs,    forKey: "measureThighs")
-        UserDefaults.standard.set(neck,      forKey: "measureNeck")
-        UserDefaults.standard.set(calves,    forKey: "measureCalves")
+    private func cancelEditing() {
+        editingEntryID = nil
+        clearFields()
+    }
+
+    private func format(_ value: Double) -> String {
+        value.truncatingRemainder(dividingBy: 1) == 0
+            ? String(Int(value))
+            : String(format: "%.1f", value)
+    }
+
+    private func clearFields() {
+        chest = ""; shoulders = ""; waist = ""
+        hips = ""; biceps = ""; thighs = ""
+        neck = ""; calves = ""
+    }
+
+    private func saveEntry() {
+        if let editingID = editingEntryID,
+           let original = store.entries.first(where: { $0.id == editingID }) {
+
+            let updated = MeasurementEntry(
+                id: original.id,
+                date: original.date,
+                chest:     Double(chest),
+                shoulders: Double(shoulders),
+                waist:     Double(waist),
+                hips:      Double(hips),
+                biceps:    Double(biceps),
+                thighs:    Double(thighs),
+                neck:      Double(neck),
+                calves:    Double(calves)
+            )
+            store.update(updated)
+            editingEntryID = nil
+
+        } else {
+            let entry = MeasurementEntry(
+                date:      Date(),
+                chest:     Double(chest),
+                shoulders: Double(shoulders),
+                waist:     Double(waist),
+                hips:      Double(hips),
+                biceps:    Double(biceps),
+                thighs:    Double(thighs),
+                neck:      Double(neck),
+                calves:    Double(calves)
+            )
+            store.save(entry)
+        }
+
+        // Sync AppStorage so MeasurementRecapView reflects the latest values
+        if let last = store.entries.last {
+            UserDefaults.standard.set(last.chest.map { format($0) } ?? "",     forKey: "measureChest")
+            UserDefaults.standard.set(last.shoulders.map { format($0) } ?? "", forKey: "measureShoulders")
+            UserDefaults.standard.set(last.waist.map { format($0) } ?? "",     forKey: "measureWaist")
+            UserDefaults.standard.set(last.hips.map { format($0) } ?? "",      forKey: "measureHips")
+            UserDefaults.standard.set(last.biceps.map { format($0) } ?? "",    forKey: "measureBiceps")
+            UserDefaults.standard.set(last.thighs.map { format($0) } ?? "",    forKey: "measureThighs")
+            UserDefaults.standard.set(last.neck.map { format($0) } ?? "",      forKey: "measureNeck")
+            UserDefaults.standard.set(last.calves.map { format($0) } ?? "",    forKey: "measureCalves")
+        }
 
         withAnimation(.spring()) { savedSuccessfully = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             withAnimation { savedSuccessfully = false }
         }
 
-        chest = ""; shoulders = ""; waist = ""
-        hips = ""; biceps = ""; thighs = ""
-        neck = ""; calves = ""
+        clearFields()
     }
 }
 
@@ -419,6 +549,7 @@ struct MeasurementInputSheet: View {
         .ignoresSafeArea()
 
         MeasurementInputSheet()
+            .environmentObject(GradientSettings())
             .onAppear {
                 // Seed a previous entry so all three cards show
                 let store = MeasurementStore()

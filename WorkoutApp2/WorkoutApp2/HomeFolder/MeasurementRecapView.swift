@@ -9,10 +9,8 @@ import SwiftUI
 import Foundation
 
 struct MeasurementRecapView: View {
-    @StateObject private var gradientSettings = GradientSettings()
-    @State private var showSheet = false
+    @EnvironmentObject var gradientSettings: GradientSettings
 
-    // AppStorage for each measurement
     @AppStorage("measureChest")     private var chest: String = ""
     @AppStorage("measureWaist")     private var waist: String = ""
     @AppStorage("measureHips")      private var hips: String = ""
@@ -22,7 +20,7 @@ struct MeasurementRecapView: View {
     @AppStorage("measureCalves")    private var calves: String = ""
     @AppStorage("measureShoulders") private var shoulders: String = ""
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
-    
+
     private var unitSystem: UnitSystem { UnitSystem(rawValue: unitSystemRaw) ?? .metric }
     private var unit: String { unitSystem == .imperial ? "in" : "cm" }
 
@@ -40,57 +38,53 @@ struct MeasurementRecapView: View {
     }
 
     var body: some View {
-        Button {
-            showSheet = true
+        NavigationLink {
+            MeasurementInputSheet()
+                .environmentObject(gradientSettings)
         } label: {
             VStack(alignment: .leading, spacing: 14) {
                 headerRow
+
                 Divider()
-                    .overlay(gradientSettings.selectedPreset.textOnDarkBackground.opacity(0.3))
+                    .overlay(.white.opacity(0.2))
+
                 measurementGrid
             }
-            .padding(24)
+            .padding(20)
             .background(
                 RoundedRectangle(cornerRadius: 28)
-                    .fill(.white.opacity(0.30))
+                    .fill(.white.opacity(0.10))
+                    .background(.ultraThinMaterial)
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: 28)
+                    )
             )
         }
         .buttonStyle(.plain)
-        .fullScreenCover(isPresented: $showSheet) {
-            MeasurementInputSheet()
-        }
     }
-
-    // MARK: - Header
 
     private var headerRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Measurements")
                     .font(.headline)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                 Text("All in \(unit == "in" ? "inches" : "centimeters")")
                     .font(.caption)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(gradientSettings.selectedPreset.subTextOnDarkBackground)
             }
             Spacer()
             ZStack {
                 Circle()
-                    .fill(
-                        gradientSettings.selectedPreset.textColor
-                    )
+                    .fill(gradientSettings.selectedPreset.textColor)
                     .frame(width: 44, height: 44)
 
                 Image(systemName: "figure.stand")
-                    .font(.largeTitle)
-                    .foregroundStyle(
-                        gradientSettings.selectedPreset.caloriesAccentColor
-                    )
+                    .font(.title3)
+                    .foregroundStyle(.white)
             }
         }
     }
-
-    // MARK: - Grid
 
     private var measurementGrid: some View {
         LazyVGrid(
@@ -103,13 +97,10 @@ struct MeasurementRecapView: View {
         }
     }
 
-    // MARK: - Cell
-
     private func measurementCell(label: String, value: String) -> some View {
         let color = MeasurementAppearance.color(for: label)
 
         return HStack(spacing: 10) {
-            // Colored left border stripe
             RoundedRectangle(cornerRadius: 3)
                 .fill(color)
                 .frame(width: 4)
@@ -117,17 +108,17 @@ struct MeasurementRecapView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.caption)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white.opacity(0.75))
 
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text(value.isEmpty ? "--" : value)
                         .font(.title3.bold())
-                        .foregroundStyle(value.isEmpty ? .black.opacity(0.4) : color)
+                        .foregroundStyle(value.isEmpty ? .white.opacity(0.4) : .white)
 
                     if !value.isEmpty {
                         Text(unit)
                             .font(.caption)
-                            .foregroundStyle(color.opacity(0.7))
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                 }
             }
@@ -135,7 +126,7 @@ struct MeasurementRecapView: View {
             Spacer()
         }
         .padding(12)
-        .background(color.opacity(0.25))
+        .background(color.opacity(0.20))
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
@@ -151,5 +142,6 @@ struct MeasurementRecapView: View {
 
         MeasurementRecapView()
             .padding()
+            .environmentObject(GradientSettings())
     }
 }
