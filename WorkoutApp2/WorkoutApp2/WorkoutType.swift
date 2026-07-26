@@ -19,7 +19,7 @@ func saveCustomWorkout(_ workout: String, for category: WorkoutCategory) {
 
     workouts.append(workout)
     workouts.sort()
-
+    print("workout add is \(workout) in category \(category)")
     UserDefaults.standard.set(workouts, forKey: category.customKey)
 }
 

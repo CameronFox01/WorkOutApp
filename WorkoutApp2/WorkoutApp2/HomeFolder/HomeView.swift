@@ -237,7 +237,7 @@ struct HomeView: View {
                                                 workout: workoutName
                                             )
                                         ) {
-                                            WorkoutTypeCardView(entry: entry, weightUnit: weightUnit)
+                                            WorkoutTypeCardView(entry: entry, weightUnit: weightUnit, category: category)
                                         }
                                         .buttonStyle(.plain)
                                     }

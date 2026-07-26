@@ -12,7 +12,8 @@ struct WorkoutTypeCardView: View {
     
     let entry: WorkoutEntry
     let weightUnit: String
-
+    let category: WorkoutCategory
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
 
@@ -22,6 +23,7 @@ struct WorkoutTypeCardView: View {
                     Text(entry.workoutType)
                         .font(.headline.bold())
                         .foregroundStyle(.white)
+                    
 
                     Text(entry.date.formatted(date: .abbreviated, time: .omitted))
                         .font(.caption)
@@ -44,37 +46,30 @@ struct WorkoutTypeCardView: View {
 
             VStack(alignment: .leading, spacing: 6) {
 
-                if isDistanceCardio {
+                switch category {
+                  case .distanceCardio:
+                      Label(
+                          "\(entry.weight) \(distanceUnit)",
+                          systemImage: "figure.walk"
+                      )
 
-                    Label(
-                        "\(entry.weight) \(distanceUnit)",
-                        systemImage: "figure.walk"
-                    )
+                  case .timeCardio, .sports, .recovery:
+                      Label(
+                          "\(entry.reps) min",
+                          systemImage: "timer"
+                      )
 
-                } else if isTimeCardio {
+                  default:
+                      Label(
+                          "\(entry.reps) reps",
+                          systemImage: "figure.strengthtraining.traditional"
+                      )
 
-                    Label(
-                        "\(entry.reps) min",
-                        systemImage: "timer"
-                    )
-
-                } else if isSports || isRecovery{
-                    Label(
-                        "\(entry.reps) min",
-                        systemImage: "timer"
-                    )
-                } else {
-
-                    Label(
-                        "\(entry.reps) reps",
-                        systemImage: "figure.strengthtraining.traditional"
-                    )
-
-                    Label(
-                        "\(entry.weight) \(weightUnit)",
-                        systemImage: "scalemass.fill"
-                    )
-                }
+                      Label(
+                          "\(entry.weight) \(weightUnit)",
+                          systemImage: "scalemass.fill"
+                      )
+                  }
             }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(.white.opacity(0.92))
@@ -93,127 +88,7 @@ struct WorkoutTypeCardView: View {
     }
     
     private var cardIcon: String {
-        if isDistanceCardio {
-            return "figure.run"
-        }
-
-        if isTimeCardio {
-            return "timer"
-        }
-        
-        if isSports {
-            return "sportscourt.fill"
-        }
-        
-        if isABs {
-            return "figure.core.training"
-        }
-        
-        if isLeg {
-            return "figure.strengthtraining.functional"
-        }
-        
-        if isPull {
-            return "arrow.down.backward.circle"
-        }
-        
-        if isPush {
-            return "arrow.up.forward.circle"
-        }
-        
-        if isGlute {
-            return "figure.strengthtraining.traditional"
-        }
-        
-        if isBicep {
-            return "dumbbell"
-        }
-        
-        if isTricep {
-            return "bolt.circle"
-        }
-        
-        if isStretch {
-            return "figure.yoga"
-        }
-        
-        if isRecovery{
-            return "figure.mind.and.body"
-        }
-        
-        return "dumbbell.fill"
-    }
-    
-    private var isRecovery: Bool {
-        RecoveryWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isPush: Bool {
-        PushWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isPull: Bool {
-        PullWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isLeg: Bool {
-        LegWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isGlute: Bool {
-        GluteWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isBicep: Bool {
-        BicepWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isTricep: Bool {
-        TricepWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isStretch: Bool {
-        StretchRoutine.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isABs: Bool {
-        AbsWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isDistanceCardio: Bool {
-        DistanceCardioWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-
-    private var isTimeCardio: Bool {
-        TimeCardioWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
-    }
-    
-    private var isSports: Bool {
-        SportsWorkout.allCases
-            .map(\.rawValue)
-            .contains(entry.workoutType)
+        category.icon
     }
 
     private var distanceUnit: String {
