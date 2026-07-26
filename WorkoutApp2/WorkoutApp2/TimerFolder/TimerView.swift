@@ -49,7 +49,7 @@ struct TimerView: View {
 
     var body: some View {
 
-        if showStopWatch {
+        if effectiveShowStopWatch {
             VStack {
                 HStack(spacing: 16) {
                     
@@ -402,6 +402,19 @@ struct TimerView: View {
                 startStopWatch = newValue.timeIntervalSince1970
             }
         )
+    }
+    
+    private var effectiveShowStopWatch: Bool {
+        // If the countdown timer is actively running, show it — even if stopwatch is the preset
+        if isCountdownRunning {
+            return false
+        }
+        // If the stopwatch is actively running, show it — even if countdown is the preset
+        if isStopWatchRunning {
+            return true
+        }
+        // Nothing is running — fall back to whatever the user set as their preset
+        return showStopWatch
     }
 }
 
