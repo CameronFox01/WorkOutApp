@@ -5,7 +5,6 @@
 //  Created by Cameron Fox on 6/6/25.
 //
 
-// TODO: I need to get this not to say weight instead maybe say amount. 
 import SwiftUI
 import WidgetKit
 

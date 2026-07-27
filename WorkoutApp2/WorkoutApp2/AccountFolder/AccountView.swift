@@ -4,8 +4,6 @@
 //
 //  Created by Cameron Fox on 6/4/25.
 //
-
-// TODO: This needs to be have a design that is nice to see. This is ugly/boring.
 import SwiftUI
 import PhotosUI
 

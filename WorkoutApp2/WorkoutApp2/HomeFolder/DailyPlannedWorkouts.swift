@@ -39,7 +39,6 @@ struct DailyPlannedWorkouts: View {
     private func loadTodayWorkouts() {
         let key = "planned_workouts_items_\(todayWeekday)"
         let result = sharedDefaults?.stringArray(forKey: key) ?? []
-        print("🗓 Loading workouts for \(todayWeekday), key: \(key), found: \(result)")
         todayWorkouts = result
         dayTitle = sharedDefaults?.string(forKey: "planned_workouts_title_\(todayWeekday)") ?? ""
     }

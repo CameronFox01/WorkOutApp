@@ -156,7 +156,6 @@ class WorkoutData: ObservableObject {
                 identifier: "goalReached_\(entry.workoutType)"
             )
             loadAchievedGoals() 
-            print("Goal reached for \(entry.workoutType)!")
         }
     }
 

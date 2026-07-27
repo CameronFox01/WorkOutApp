@@ -216,14 +216,12 @@ struct PlateCalculatorView: View {
 
 #Preview {
     PlateCalculatorView(weightUnit: "lbs") { total in
-        print("Selected total weight: \(total)")
     }
     .environmentObject(GradientSettings())
 }
 
 #Preview("Kilograms") {
     PlateCalculatorView(weightUnit: "kg") { total in
-        print("Selected total weight: \(total)")
     }
     .environmentObject(GradientSettings())
 }

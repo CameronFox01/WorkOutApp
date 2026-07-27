@@ -78,7 +78,6 @@ struct HomeView: View {
     init() {
         if let data = UserDefaults.standard.data(forKey: "workoutLog"),
            let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
-            print("Loaded workoutLog:")
             for entry in decoded {
                 print("\(entry.workoutType) - \(entry.reps) reps - \(entry.weight) weight - \(entry.date)")
             }
