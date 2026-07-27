@@ -38,6 +38,19 @@ struct GoalView: View {
     //Color Gradiant
     @EnvironmentObject var gradientSettings: GradientSettings
     
+    @AppStorage("hasSeenKeyboardDismissTutorial") private var hasSeenKeyboardDismissTutorial: Bool = false
+    @State private var showKeyboardDismissTutorial = false
+
+    private var keyboardDismissTutorialSteps: [TutorialStep] {
+        [
+            TutorialStep(
+                id: "keyboard",
+                title: "Dismiss the Keyboard",
+                description: "Tap here anytime to close the keyboard and see the rest of the screen."
+            )
+        ]
+    }
+    
     @AppStorage("hasSeenGoalTutorial") private var hasSeenGoalTutorial: Bool = false
     @State private var showGoalTutorial = false
 
@@ -61,8 +74,8 @@ struct GoalView: View {
             TutorialStep(
                 id: "milestones",
                 title: "Milestones",
-                description: "down below track bigger accomplishments, like workout streaks and totals."
-            )
+                description: "Down below track bigger accomplishments, like workout streaks and totals."
+            ),
         ]
     }
     
@@ -197,6 +210,13 @@ struct GoalView: View {
                     hasSeenGoalTutorial = true
                 }
             )
+            .tutorialOverlay(
+                isPresented: $showKeyboardDismissTutorial,
+                steps: keyboardDismissTutorialSteps,
+                onFinish: {
+                    hasSeenKeyboardDismissTutorial = true
+                }
+            )
             .onChange(of: targetDaysOfWorkout) { _, newValue in
                 UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(newValue, forKey: "userTargetDaysOfWorkout")
                 WidgetCenter.shared.reloadAllTimelines()
@@ -207,6 +227,13 @@ struct GoalView: View {
                 if let goal = Int(newValue), goal > 0,
                    challengeEnabled, notifsEnabled {
                     NotificationHandler.shared.scheduleWeeklyWorkoutChallengeNotifications(goalDays: goal)
+                }
+            }
+            .onChange(of: isEditing) { _, newValue in
+                if newValue && !hasSeenKeyboardDismissTutorial {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showKeyboardDismissTutorial = true
+                    }
                 }
             }
             .onChange(of: targetWeight) { _, newValue in
@@ -239,6 +266,7 @@ struct GoalView: View {
                                 .padding(.vertical, 8)
                         }
                         .transition(.scale.combined(with: .opacity))
+                        .tutorialHighlight("keyboard")
                     }
                 }
             }
