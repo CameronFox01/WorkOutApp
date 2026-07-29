@@ -346,6 +346,7 @@ struct ImportView: View {
         @State private var showingAddWorkout = false
         @State private var newWorkoutName = ""
         @State private var showingPlateCalculator = false
+        @State private var hasLoadedInitialValues = false
         
         @AppStorage("showCalculatorImporting") private var showCalculatorImporting: Bool = true
         
@@ -507,6 +508,9 @@ struct ImportView: View {
             )
             .onAppear {
                 //resetParent()
+                guard !hasLoadedInitialValues else { return }
+                hasLoadedInitialValues = true
+
                 let currentWorkout = selections[category] ?? category.workouts().first ?? ""
                 if let saved = loadLastWorkoutValues(for: currentWorkout) {
                     if !saved["weight", default: ""].isEmpty { weights[category] = saved["weight"] }
@@ -515,7 +519,7 @@ struct ImportView: View {
                     if !saved["distance", default: ""].isEmpty { distances[category] = saved["distance"] }
                     if !saved["time", default: ""].isEmpty { times[category] = saved["time"] }
                 }
-                
+
                 if !hasSeenCategoryDetailTutorial {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                         showCategoryDetailTutorial = true
