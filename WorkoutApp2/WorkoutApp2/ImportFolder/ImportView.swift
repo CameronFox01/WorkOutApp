@@ -174,6 +174,40 @@ struct ImportView: View {
     
     @State private var notes: [WorkoutCategory: String] = [:]
     
+    @State private var showingAddFromSearch = false
+    @State private var newSearchWorkoutName = ""
+    @State private var newSearchWorkoutCategory: WorkoutCategory = .push
+    @State private var navigateToNewSearchWorkout = false
+    
+    @State private var searchText: String = ""
+
+    private var allWorkoutsFlattened: [(workout: String, category: WorkoutCategory)] {
+        WorkoutCategory.allCases.flatMap { category in
+            category.workouts().map { (workout: $0, category: category) }
+        }
+    }
+
+    private var filteredWorkouts: [(workout: String, category: WorkoutCategory)] {
+        guard !searchText.trimmingCharacters(in: .whitespaces).isEmpty else { return [] }
+        return allWorkoutsFlattened.filter {
+            $0.workout.localizedCaseInsensitiveContains(searchText)
+        }
+        .sorted { $0.workout < $1.workout }
+    }
+    
+    @AppStorage("hasSeenKeyboardDismissTutorial") private var hasSeenKeyboardDismissTutorial: Bool = false
+    @State private var showKeyboardDismissTutorial = false
+
+    private var keyboardDismissTutorialSteps: [TutorialStep] {
+        [
+            TutorialStep(
+                id: "keyboard",
+                title: "Dismiss the Keyboard",
+                description: "Tap here anytime to close the keyboard and see the rest of the screen."
+            )
+        ]
+    }
+    
     //Date Being passed in
     let selectedDate: Date?
     
@@ -226,57 +260,269 @@ struct ImportView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                List {
-                    // All of the Types of workouts
-                    Section() {
-                        ForEach(WorkoutCategory.allCases) { category in
-                            NavigationLink(destination: CategoryDetailView(
-                                category: category,
-                                date: effectiveDate,
-                                unitSystemRaw: $unitSystemRaw,
-                                selections: $selections,
-                                weights: $weights,
-                                reps: $reps,
-                                sets: $setsDict,
-                                distances: $distances,
-                                times: $times,
-                                entries: $entries,
-                                notes: $notes,
-                                save: { saveEntry(for: category) },
-                                increment: { dict, step in self.increment(&dict, for: category, by: step) },
-                                decrement: { dict, step in self.decrement(&dict, for: category, by: step) },
-                                weightUnitProvider: { self.weightUnit },
-                                goHomeAfterSave: GoToHomeScreenWhenSaved,
-                                showSavedToast: $showSavedToast,
-                                resetParent: { resetImportView() }
-                            )) {
-                                HStack(spacing: 12) {
-                                    Image(systemName: icon(for: category))
-                                        .foregroundStyle(gradientSettings.selectedPreset.textColor)
-                                    VStack(alignment: .leading) {
-                                        Text(category.title)
-                                        Text("Tap to log")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
+
+                VStack(spacing: 0) {
+
+                    // MARK: - Search Bar
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(gradientSettings.selectedPreset.textColor)
+
+                        TextField("Search all workouts...", text: $searchText)
+                            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                            .textInputAutocapitalization(.words)
+                            .autocorrectionDisabled()
+                            .focused($isEditing)
+
+                        if !searchText.isEmpty {
+                            Button {
+                                searchText = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                            }
+                        }
+                    }
+                    .padding(12)
+                    .background(.white.opacity(0.67), in: RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+
+                    if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+
+                        // MARK: - Search Results
+                        List {
+                            if filteredWorkouts.isEmpty {
+                                VStack(spacing: 14) {
+                                       Text("No workouts found for \"\(searchText)\"")
+                                        .foregroundStyle(gradientSettings.selectedPreset.subTextOnDarkBackground)
+                                           .multilineTextAlignment(.center)
+
+                                       Button {
+                                           newSearchWorkoutName = searchText.trimmingCharacters(in: .whitespaces)
+                                           showingAddFromSearch = true
+                                       } label: {
+                                           Label("Add \"\(searchText)\" as a new workout", systemImage: "plus.circle.fill")
+                                               .font(.headline.bold())
+                                               .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                                       }
+                                       .buttonStyle(.borderedProminent)
+                                       .tint(.white)
+                                   }
+                                   .frame(maxWidth: .infinity)
+                                   .padding(.vertical, 30)
+                                   .listRowBackground(Color.clear)
+                            } else {
+                                ForEach(filteredWorkouts, id: \.workout) { item in
+                                    NavigationLink(destination: CategoryDetailView(
+                                        category: item.category,
+                                        date: effectiveDate,
+                                        unitSystemRaw: $unitSystemRaw,
+                                        selections: $selections,
+                                        weights: $weights,
+                                        reps: $reps,
+                                        sets: $setsDict,
+                                        distances: $distances,
+                                        times: $times,
+                                        entries: $entries,
+                                        notes: $notes,
+                                        save: { saveEntry(for: item.category) },
+                                        increment: { dict, step in self.increment(&dict, for: item.category, by: step) },
+                                        decrement: { dict, step in self.decrement(&dict, for: item.category, by: step) },
+                                        weightUnitProvider: { self.weightUnit },
+                                        goHomeAfterSave: GoToHomeScreenWhenSaved,
+                                        showSavedToast: $showSavedToast,
+                                        resetParent: { resetImportView() }
+                                    )
+                                    .onAppear {
+                                        // Pre-select the tapped workout for this category
+                                        selections[item.category] = item.workout
+                                    }
+                                    ) {
+                                        HStack(spacing: 12) {
+                                            Image(systemName: item.category.icon)
+                                                .foregroundStyle(gradientSettings.selectedPreset.textColor)
+                                            VStack(alignment: .leading) {
+                                                Text(item.workout)
+                                                Text(item.category.title)
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                        }
                                     }
                                 }
                             }
-                            //.listRowBackground(Color.white.opacity(0.80))
                         }
+                        .listRowSpacing(12)
+                        .scrollContentBackground(.hidden)
+                        .background(Color.clear)
+
+                    } else {
+
+                        // MARK: - Category List (existing content, unchanged)
+                        List {
+                            Section() {
+                                ForEach(WorkoutCategory.allCases) { category in
+                                    NavigationLink(destination: CategoryDetailView(
+                                        category: category,
+                                        date: effectiveDate,
+                                        unitSystemRaw: $unitSystemRaw,
+                                        selections: $selections,
+                                        weights: $weights,
+                                        reps: $reps,
+                                        sets: $setsDict,
+                                        distances: $distances,
+                                        times: $times,
+                                        entries: $entries,
+                                        notes: $notes,
+                                        save: { saveEntry(for: category) },
+                                        increment: { dict, step in self.increment(&dict, for: category, by: step) },
+                                        decrement: { dict, step in self.decrement(&dict, for: category, by: step) },
+                                        weightUnitProvider: { self.weightUnit },
+                                        goHomeAfterSave: GoToHomeScreenWhenSaved,
+                                        showSavedToast: $showSavedToast,
+                                        resetParent: { resetImportView() }
+                                    )) {
+                                        HStack(spacing: 12) {
+                                            Image(systemName: icon(for: category))
+                                                .foregroundStyle(gradientSettings.selectedPreset.textColor)
+                                            VStack(alignment: .leading) {
+                                                Text(category.title)
+                                                Text("Tap to log")
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            NavigationLink{
+                                AllImportedWorkoutsView()
+                            } label:{
+                                HStack{
+                                    Image(systemName: "list.bullet")
+                                    Text("See all imported workouts")
+                                }
+                            }
+                        }
+                        .listRowSpacing(12)
+                        .scrollContentBackground(.hidden)
+                        .background(Color.clear)
                     }
-                    // Seeing all workouts that have been entered
-                    NavigationLink{
-                        AllImportedWorkoutsView()
-                    } label:{
-                        HStack{
-                            Image(systemName: "list.bullet")
-                            Text("See all imported workouts")
+                }
+            }
+            .sheet(isPresented: $showingAddFromSearch) {
+                NavigationStack {
+                    ZStack {
+                        // MARK: - Background
+                        LinearGradient(
+                            colors: gradientSettings.darkGradientColors,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .ignoresSafeArea()
+                        Form {
+                            Section("Workout Name") {
+                                TextField("Workout name", text: $newSearchWorkoutName)
+                                    .textInputAutocapitalization(.words)
+                                    .autocorrectionDisabled()
+                                    .foregroundStyle(.black)
+                                    .focused($isEditing)
+                                    
+                            }
+                            .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                            
+                            Section("Category") {
+                                Picker("Category", selection: $newSearchWorkoutCategory) {
+                                    ForEach(WorkoutCategory.allCases) { category in
+                                        Label {
+                                            Text(category.title)
+                                                .foregroundStyle(
+                                                    .black
+                                                )
+                                        } icon: {
+                                            Image(systemName: category.icon)
+                                                .foregroundStyle(
+                                                    gradientSettings.selectedPreset.textColor
+                                                )
+                                        }
+                                        .tag(category)
+                                    }
+                                }
+                                .pickerStyle(.inline)
+                                .labelsHidden()
+                            }
+                            .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                        }// End of Form
+                        .scrollContentBackground(.hidden)
+                    }
+                    .navigationTitle("Add Workout")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer()
+                            Button("Done") {
+                                isEditing = false
+                            }
+                        }
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button("Cancel") {
+                                showingAddFromSearch = false
+                            }
+                        }
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Add") {
+                                let trimmed = newSearchWorkoutName.trimmingCharacters(in: .whitespacesAndNewlines)
+                                guard !trimmed.isEmpty else { return }
+
+                                saveCustomWorkout(trimmed, for: newSearchWorkoutCategory)
+                                selections[newSearchWorkoutCategory] = trimmed
+
+                                showingAddFromSearch = false
+                                searchText = ""
+                                navigateToNewSearchWorkout = true
+                            }
+                            .fontWeight(.semibold)
+                            .disabled(newSearchWorkoutName.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
                     }
                 }
-                .listRowSpacing(12)
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
+            }
+            .tutorialOverlay(
+                isPresented: $showKeyboardDismissTutorial,
+                steps: keyboardDismissTutorialSteps,
+                onFinish: {
+                    hasSeenKeyboardDismissTutorial = true
+                }
+            )
+            .onChange(of: isEditing) { _, newValue in
+                if newValue && !hasSeenKeyboardDismissTutorial {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showKeyboardDismissTutorial = true
+                    }
+                }
+            }
+            .navigationDestination(isPresented: $navigateToNewSearchWorkout) {
+                CategoryDetailView(
+                    category: newSearchWorkoutCategory,
+                    date: effectiveDate,
+                    unitSystemRaw: $unitSystemRaw,
+                    selections: $selections,
+                    weights: $weights,
+                    reps: $reps,
+                    sets: $setsDict,
+                    distances: $distances,
+                    times: $times,
+                    entries: $entries,
+                    notes: $notes,
+                    save: { saveEntry(for: newSearchWorkoutCategory) },
+                    increment: { dict, step in self.increment(&dict, for: newSearchWorkoutCategory, by: step) },
+                    decrement: { dict, step in self.decrement(&dict, for: newSearchWorkoutCategory, by: step) },
+                    weightUnitProvider: { self.weightUnit },
+                    goHomeAfterSave: GoToHomeScreenWhenSaved,
+                    showSavedToast: $showSavedToast,
+                    resetParent: { resetImportView() }
+                )
             }
             .onAppear {
                   for category in WorkoutCategory.allCases {
@@ -284,18 +530,30 @@ struct ImportView: View {
                           selections[category] = category.workouts().first ?? ""
                       }
                   }
-
-                  // PRESELECT WORKOUT
                   if let category = preselectedCategory,
                      let workout = preselectedWorkout {
                       selections[category] = workout
                   }
-
                   loadEntries()
             }
             .toolbarBackground(gradientSettings.selectedPreset.topColor, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
+                if isEditing {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            isEditing = false
+                        } label: {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                                .font(.headline.bold())
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                        }
+                        .transition(.scale.combined(with: .opacity))
+                        .tutorialHighlight("keyboard")
+                    }
+                }
                 ToolbarItem(placement: .principal) {
                     Text("Import Workout")
                         .font(.largeTitle).bold()
@@ -308,6 +566,7 @@ struct ImportView: View {
                     }
                 }
             }
+            .animation(.easeInOut(duration: 0.2), value: isEditing)
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -507,7 +766,6 @@ struct ImportView: View {
                 }
             )
             .onAppear {
-                //resetParent()
                 guard !hasLoadedInitialValues else { return }
                 hasLoadedInitialValues = true
 
