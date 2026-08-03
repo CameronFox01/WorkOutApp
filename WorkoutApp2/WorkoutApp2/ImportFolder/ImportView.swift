@@ -483,7 +483,6 @@ struct ImportView: View {
                                 navigateToNewSearchWorkout = true
                             }
                             .fontWeight(.semibold)
-                          //  .disabled(newSearchWorkoutName.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
                     }
                 }

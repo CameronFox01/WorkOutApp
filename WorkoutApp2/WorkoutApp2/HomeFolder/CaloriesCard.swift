@@ -90,10 +90,10 @@ struct CaloriesCard: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Calories")
                             .font(.title2.bold())
-                            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                            .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                         Text("Today")
                             .font(.caption)
-                            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground.opacity(0.7))
+                            .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground.opacity(0.7))
                     }
                     .padding(.leading, 20)
 
@@ -102,16 +102,16 @@ struct CaloriesCard: View {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text("\(todayCalories)")
                             .font(.system(size: 44, weight: .bold))
-                            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                            .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                         Text(energyLabel)
                             .font(.title3)
-                            .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                            .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
                     }
                     .padding(.trailing, 10)
                 }
 
                 Divider()
-                    .overlay(gradientSettings.selectedPreset.textOnDarkBackground.opacity(0.3))
+                    .overlay(gradientSettings.selectedPreset.bigTextOnDarkBackground.opacity(0.3))
 
                 // Stat row
                 HStack(spacing: 0) {
@@ -123,7 +123,7 @@ struct CaloriesCard: View {
 
                     Divider()
                         .frame(height: 36)
-                        .overlay(gradientSettings.selectedPreset.textOnDarkBackground.opacity(0.3))
+                        .overlay(gradientSettings.selectedPreset.bigTextOnDarkBackground.opacity(0.3))
 
                     statBlock(
                         icon: "figure.walk",
@@ -133,7 +133,7 @@ struct CaloriesCard: View {
 
                     Divider()
                         .frame(height: 36)
-                        .overlay(gradientSettings.selectedPreset.textOnDarkBackground.opacity(0.3))
+                        .overlay(gradientSettings.selectedPreset.bigTextOnDarkBackground.opacity(0.3))
 
                     statBlock(
                         icon: "arrow.up.arrow.down",
@@ -164,13 +164,13 @@ struct CaloriesCard: View {
         VStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.subheadline)
-                .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground.opacity(0.7))
+                .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground.opacity(0.7))
             Text(value)
                 .font(.subheadline.bold())
-                .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground)
+                .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
             Text(label)
                 .font(.caption2)
-                .foregroundStyle(gradientSettings.selectedPreset.textOnDarkBackground.opacity(0.7))
+                .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground.opacity(0.7))
         }
         .frame(maxWidth: .infinity)
     }
