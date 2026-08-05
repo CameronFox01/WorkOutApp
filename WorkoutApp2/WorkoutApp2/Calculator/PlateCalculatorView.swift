@@ -22,6 +22,26 @@ struct PlateCalculatorView: View {
 
     @State private var barWeight: Double
     @State private var plateCounts: [Double: Int] = [:]
+    
+    @AppStorage("hasSeenCalculatorTutorial") private var hasSeenCalculatorTutorial: Bool = false
+    
+    @AppStorage("hasSeenPhotoTutorial") private var hasSeenPhotoTutorial: Bool = false
+    @State private var showCalculatorTutorial = false
+
+    private var calculatorTutorialSteps: [TutorialStep] {
+        [
+            TutorialStep(
+                id: "barWeightSection",
+                title: "Setting Your Starting Weight",
+                description: "Adjust the bar or machine's starting weight using the − / + buttons, or tap the number to enter it manually."
+            ),
+            TutorialStep(
+                id: "platesSection",
+                title: "Add Plates to Each Side",
+                description: "Choose how many of each plate to put on one side of the bar. The calculator automatically adds the same plates to the other side."
+            )
+        ]
+    }
 
     private var availablePlates: [Double] {
         isImperial
@@ -109,6 +129,7 @@ struct PlateCalculatorView: View {
                             RoundedRectangle(cornerRadius: 18)
                                 .fill(.white.opacity(0.12))
                         )
+                        .tutorialHighlight("barWeightSection")
 
                         // MARK: - Plates Per Side
                         VStack(alignment: .leading, spacing: 14) {
@@ -152,6 +173,7 @@ struct PlateCalculatorView: View {
                             RoundedRectangle(cornerRadius: 18)
                                 .fill(.white.opacity(0.12))
                         )
+                        .tutorialHighlight("platesSection")
 
                         Button(role: .destructive) {
                             plateCounts.removeAll()
@@ -179,7 +201,21 @@ struct PlateCalculatorView: View {
                     .padding()
                 }
             }
+            .tutorialOverlay(
+                isPresented: $showCalculatorTutorial,
+                steps: calculatorTutorialSteps,
+                onFinish: {
+                    hasSeenCalculatorTutorial = true
+                }
+            )
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear{
+                if !hasSeenCalculatorTutorial {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        showCalculatorTutorial = true
+                    }
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Plate Calculator")

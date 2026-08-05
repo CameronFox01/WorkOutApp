@@ -18,6 +18,7 @@ struct TutorialsSettingsSection: View {
     @AppStorage("hasSeenEditWorkoutTutorial") private var hasSeenEditWorkoutTutorial: Bool = false
     @AppStorage("hasSeenPhotoTutorial") private var hasSeenPhotoTutorial: Bool = false
     @AppStorage("hasSeenGoalTutorial") private var hasSeenGoalTutorial: Bool = false
+    @AppStorage("hasSeenCalculatorTutorial") private var hasSeenCalculatorTutorial: Bool = false
 
     var body: some View {
         CollapsibleSettingsSection(
@@ -38,6 +39,8 @@ struct TutorialsSettingsSection: View {
             row(icon: "photo.on.rectangle", title: "Compare Photos Tutorial") { hasSeenPhotoTutorial = false }
             Divider()
             row(icon: "target", title: "Set Goals Tutorial") { hasSeenGoalTutorial = false }
+            Divider()
+            row(icon: "plus.forwardslash.minus", title: "Calculator Tutorial"){hasSeenCalculatorTutorial = false}
 
             Divider()
             Button {
@@ -48,6 +51,7 @@ struct TutorialsSettingsSection: View {
                 hasSeenEditWorkoutTutorial = false
                 hasSeenGoalTutorial = false
                 hasSeenPhotoTutorial = false
+                hasSeenCalculatorTutorial = false
                 showTutorialResetToast = true
             } label: {
                 HStack {
