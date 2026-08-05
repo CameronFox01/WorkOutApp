@@ -212,9 +212,12 @@ struct PlannedWorkoutRow: View {
     @State private var notes: [WorkoutCategory: String] = [:]
     @State private var entriesLocal: [WorkoutEntry] = []
     @State private var showSavedToast: Bool = false
-    @State private var unitSystemRawLocal: String = UnitSystem.metric.rawValue
+    @AppStorage("unitSystem")
+    private var unitSystemRawLocal: String = UnitSystem.metric.rawValue
     private var GoToHomeScreenWhenSaved: Bool { false }
-    private var weightUnit: String { unitSystemRawLocal }
+    private var weightUnit: String {
+        UnitSystem(rawValue: unitSystemRawLocal) == .imperial ? "lbs" : "kg"
+    }
 
     var body: some View {
         NavigationLink {
