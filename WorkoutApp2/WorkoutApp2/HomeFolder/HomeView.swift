@@ -66,7 +66,7 @@ struct HomeView: View {
     let healthStore = HKHealthStore()
     
     @State private var workoutLog: [WorkoutEntry] = {
-        if let data = UserDefaults.standard.data(forKey: "workout_entries"),
+        if let data = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.data(forKey: "workout_entries"),
            let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
             return decoded
         }

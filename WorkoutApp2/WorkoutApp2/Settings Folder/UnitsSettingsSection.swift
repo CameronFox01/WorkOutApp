@@ -116,7 +116,8 @@ struct UnitsSettingsSection: View {
             }
         }
 
-        if let data = UserDefaults.standard.data(forKey: "workout_entries"),
+        let sharedDefaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
+        if let data = sharedDefaults?.data(forKey: "workout_entries"),
            var entries = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
             entries = entries.map { entry in
                 var e = entry
@@ -132,7 +133,7 @@ struct UnitsSettingsSection: View {
                 return e
             }
             if let encoded = try? JSONEncoder().encode(entries) {
-                UserDefaults.standard.set(encoded, forKey: "workout_entries")
+                sharedDefaults?.set(encoded, forKey: "workout_entries")
             }
             workoutData.reload()
         }

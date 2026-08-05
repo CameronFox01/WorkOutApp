@@ -28,13 +28,20 @@ class WorkoutData: ObservableObject {
         load()
     }
     
+//    func reload() {
+//        if let data = UserDefaults.standard.data(forKey: "workout_entries"),
+//           let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
+//            entries = decoded
+//        }
+//    }
+    
     func reload() {
-        if let data = UserDefaults.standard.data(forKey: "workout_entries"),
+        if let data = sharedDefaults?.data(forKey: "workout_entries"),
            let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
             entries = decoded
         }
     }
-
+    
     func load() {
         if let data = sharedDefaults?.data(forKey: "workout_entries"),
            let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {

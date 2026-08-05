@@ -79,13 +79,15 @@ struct WorkoutApp2App: App {
 }
 
 func migrateUserDefaultsToShared() {
+    let migrationKey = "hasMigratedToSharedDefaults"
+    guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
+
     let standard = UserDefaults.standard
     guard let shared = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2") else {
         print("FAILED TO GET SHARED DEFAULTS")
         return
     }
 
-    // Decode both stores
     let standardEntries: [WorkoutEntry] = {
         guard let data = standard.data(forKey: "workout_entries"),
               let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data)
@@ -100,10 +102,6 @@ func migrateUserDefaultsToShared() {
         return decoded
     }()
 
-    print("Standard entries: \(standardEntries.count)")
-    print("Shared entries: \(sharedEntries.count)")
-
-    // Merge by combining both and deduplicating by ID
     var merged = sharedEntries
     let existingIDs = Set(sharedEntries.map { $0.id })
     for entry in standardEntries {
@@ -112,15 +110,15 @@ func migrateUserDefaultsToShared() {
         }
     }
 
-    // Sort by date
     merged.sort { $0.date < $1.date }
-
-    print("Merged entries: \(merged.count)")
 
     if let encoded = try? JSONEncoder().encode(merged) {
         shared.set(encoded, forKey: "workout_entries")
-        standard.set(encoded, forKey: "workout_entries")  // keep standard in sync too
+        // DO NOT write back to standard — leave it alone / clear it
     }
+
+    standard.removeObject(forKey: "workout_entries")
+    UserDefaults.standard.set(true, forKey: migrationKey)
 }
 
 func debugStorage() {

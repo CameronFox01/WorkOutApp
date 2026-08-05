@@ -68,14 +68,18 @@ func saveEntry(
 
     workoutData.add(entry: newEntry)
 
-    if let data = UserDefaults.standard.data(forKey: "workout_entries"),
-       var existing = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
-        existing.append(newEntry)
-        if let encoded = try? JSONEncoder().encode(existing) {
-            UserDefaults.standard.set(encoded, forKey: "workout_entries")
-        }
-    }
-    
+//    let sharedDefaults = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")
+//     if let data = sharedDefaults?.data(forKey: "workout_entries"),
+//        var existing = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
+//         existing.append(newEntry)
+//         if let encoded = try? JSONEncoder().encode(existing) {
+//             sharedDefaults?.set(encoded, forKey: "workout_entries")
+//         }
+//     } else if let encoded = try? JSONEncoder().encode([newEntry]) {
+//         // Handle first-ever entry (no existing array yet)
+//         sharedDefaults?.set(encoded, forKey: "workout_entries")
+//     }
+//    
     // ← Save last used values for this specific workout
        saveLastWorkoutValues(
            workoutName: workout,

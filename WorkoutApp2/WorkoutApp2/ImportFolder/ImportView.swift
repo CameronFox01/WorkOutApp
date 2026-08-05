@@ -1082,12 +1082,12 @@ struct ImportView: View {
     
     func saveEntriesToStorage() {
         if let encoded = try? JSONEncoder().encode(entries) {
-            UserDefaults.standard.set(encoded, forKey: "workout_entries")
-        } 
+            UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.set(encoded, forKey: "workout_entries")
+        }
     }
 
     func loadEntries() {
-        if let data = UserDefaults.standard.data(forKey: "workout_entries"),
+        if let data = UserDefaults(suiteName: "group.Fox-Studios.WorkoutApp2")?.data(forKey: "workout_entries"),
            let decoded = try? JSONDecoder().decode([WorkoutEntry].self, from: data) {
             entries = decoded
         }
