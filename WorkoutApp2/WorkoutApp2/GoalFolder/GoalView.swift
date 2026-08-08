@@ -524,6 +524,7 @@ struct GoalView: View {
                         unitSystemRaw: $unitSystemRaw,
                         targetWeights: $workoutTargetWeights,
                         usesWeight: false,
+                        isSports: true,
                         symbolColor: primaryBlue,
                         focus: $isEditing
                     )
@@ -538,6 +539,7 @@ struct GoalView: View {
                         unitSystemRaw: $unitSystemRaw,
                         targetWeights: $workoutTargetWeights,
                         usesWeight: false,
+                        isStretch: true,
                         symbolColor: primaryBlue,
                         focus: $isEditing
                     )
@@ -626,6 +628,8 @@ struct GoalView: View {
         let usesWeight: Bool
         var isDistanceCardio: Bool = false
         var isTimeCardio: Bool = false
+        var isSports: Bool = false
+        var isStretch: Bool = false
         let symbolColor: Color // ✅ now a parameter
         let focus: FocusState<Bool>.Binding
         
@@ -664,7 +668,7 @@ struct GoalView: View {
                             }
                         }
                         .pickerStyle(MenuPickerStyle())
-                        .tint(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         
                         // ✅ When selection changes, load any previously saved goal for it
                         .onChange(of: selection) { _, newSelection in
@@ -692,7 +696,7 @@ struct GoalView: View {
                                           suffix: weightUnit,
                                           focus: focus
                                 )
-                            } else if isTimeCardio {
+                            } else if isTimeCardio || isSports || isStretch {
                                 pillField(text: Binding<String>(
                                     get: { targetWeights[selection.rawValue] ?? "" },
                                     set: { targetWeights[selection.rawValue] = $0 }
@@ -700,7 +704,7 @@ struct GoalView: View {
                                           suffix: "min",
                                           focus: focus
                                 )
-                            }else {
+                            } else {
                                 pillField(text: Binding<String>(
                                     get: { targetWeights[selection.rawValue] ?? "" },
                                     set: { targetWeights[selection.rawValue] = $0 }
@@ -764,14 +768,22 @@ func pillField(
     focus: FocusState<Bool>.Binding
 ) -> some View {
     HStack(spacing: 8) {
-        TextField(placeholder, text: text)
-            .focused(focus) // Keep this
-            .keyboardType(.decimalPad)
-            .submitLabel(.done)
-            .padding(.vertical, 10)
-            .padding(.leading, 14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
+        
+        if text.wrappedValue == "min"{
+            TimeInputField(
+                timeKeyboard: true,
+                title: placeholder,
+                text: text,
+                field: .time
+            )
+        } else {
+            TimeInputField(
+                timeKeyboard: false,
+                title: placeholder,
+                text: text,
+                field: .reps
+            )
+        }
         
         if let suffix {
             Text(suffix)

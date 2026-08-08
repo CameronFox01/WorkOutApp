@@ -25,7 +25,7 @@ struct TimeInputField: View {
         } label: {
             HStack {
                 Text(text.isEmpty ? title : text)
-                    .foregroundStyle(gradientSettings.selectedPreset.bigTextOnDarkBackground)
+                    .foregroundStyle(text.isEmpty ? .gray.opacity(0.75) : gradientSettings.selectedPreset.bigTextOnDarkBackground)
 
                 Spacer()
             }
