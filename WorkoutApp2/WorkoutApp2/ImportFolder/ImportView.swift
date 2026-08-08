@@ -147,11 +147,21 @@ enum WorkoutCategory: String, CaseIterable, Identifiable {
     }
 }
 
+enum Field: Hashable {
+    case weight
+    case reps
+    case sets
+    case distance
+    case time
+    case notes
+}
+
 struct ImportView: View {
     @EnvironmentObject var workoutData: WorkoutData
     
     // MARK: - Focus
     @FocusState private var isEditing: Bool
+    @FocusState private var focusedField: Field?
 
     @AppStorage("unitSystem") private var unitSystemRaw: String = UnitSystem.metric.rawValue
 
@@ -679,6 +689,7 @@ struct ImportView: View {
         
         // MARK: - Focus
         @FocusState private var isEditing: Bool
+        @FocusState private var focusedField: Field?
         
         //Color Gradiant
         @EnvironmentObject var gradientSettings: GradientSettings
@@ -776,42 +787,51 @@ struct ImportView: View {
                 )
                 .ignoresSafeArea()
 
-                ScrollView {
-                    VStack(spacing: 18) {
-                        
-                        headerCard
-                        workoutCard
-                        statsCard
-                        notesCard
-                        saveButton
-                        
-                        Button {
-                            showingAddWorkout = true
-                        } label: {
-                            Label("Add Custom Workout", systemImage: "plus")
-                                .foregroundStyle(gradientSettings.selectedPreset.textColor)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 18) {
+                            
+                            headerCard
+                            workoutCard
+                            statsCard
+                            notesCard
+                            saveButton
+                            
+                            Button {
+                                showingAddWorkout = true
+                            } label: {
+                                Label("Add Custom Workout", systemImage: "plus")
+                                    .foregroundStyle(gradientSettings.selectedPreset.textColor)
+                            }
+                            .tutorialHighlight("addCustomWorkout")
                         }
-                        .tutorialHighlight("addCustomWorkout")
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 10)
-                    .padding(.bottom, 24)
-                    .alert("New Workout", isPresented: $showingAddWorkout) {
-                        TextField("Workout Name", text: $newWorkoutName)
-
-                        Button("Save") {
-                            let trimmed = newWorkoutName.trimmingCharacters(in: .whitespacesAndNewlines)
-
-                            guard !trimmed.isEmpty else { return }
-
-                            saveCustomWorkout(trimmed, for: category)
-
-                            selections[category] = trimmed
-
-                            newWorkoutName = ""
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+                        .padding(.bottom, 400)
+                        .alert("New Workout", isPresented: $showingAddWorkout) {
+                            TextField("Workout Name", text: $newWorkoutName)
+                            
+                            Button("Save") {
+                                let trimmed = newWorkoutName.trimmingCharacters(in: .whitespacesAndNewlines)
+                                
+                                guard !trimmed.isEmpty else { return }
+                                
+                                saveCustomWorkout(trimmed, for: category)
+                                
+                                selections[category] = trimmed
+                                
+                                newWorkoutName = ""
+                            }
+                            
+                            Button("Cancel", role: .cancel) {}
                         }
+                        .onChange(of: focusedField) { _, field in
+                            guard let field else { return }
 
-                        Button("Cancel", role: .cancel) {}
+                            withAnimation(.easeInOut) {
+                                proxy.scrollTo(field, anchor: .center)
+                            }
+                        }
                     }
                 }
             }
@@ -937,7 +957,7 @@ struct ImportView: View {
             VStack(spacing: 12) {
                 if showCalculatorImporting {
                     if category.usesWeight && category != .distanceCardio && category != .timeCardio && category != .recovery {
-                        statRow("scalemass", "Weight (\(weightUnit))", weightBinding, calculatorAction: {
+                        statRow("scalemass", "Weight (\(weightUnit))", weightBinding, field: .weight, inputType: .number, calculatorAction: {
                             showingPlateCalculator = true
                         }) {
                             increment(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
@@ -947,7 +967,7 @@ struct ImportView: View {
                     }
                 } else {
                     if category.usesWeight && category != .distanceCardio && category != .timeCardio && category != .recovery {
-                        statRow("scalemass", "Weight (\(weightUnit))", weightBinding) {
+                        statRow("scalemass", "Weight (\(weightUnit))", weightBinding, field: .weight, inputType: .number) {
                             increment(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
                         } dec: {
                             decrement(&weights, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 5 : 2.5)
@@ -957,13 +977,13 @@ struct ImportView: View {
 
                 if category == .distanceCardio {
 
-                    statRow("ruler", "Distance", distanceBinding) {
+                    statRow("ruler", "Distance", distanceBinding, field: .distance, inputType: .number) {
                         increment(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
                     } dec: {
                         decrement(&distances, UnitSystem(rawValue: unitSystemRaw) == .imperial ? 0.5 : 1)
                     }
 
-                    statRow("timer", "Time (min)", timeBinding) {
+                    statRow("timer", "Time (min)", timeBinding, field: .time, inputType: .time) {
                         increment(&times, 1)
                     } dec: {
                         decrement(&times, 1)
@@ -971,7 +991,7 @@ struct ImportView: View {
                 }
 
                 if category == .timeCardio || category == .sports  || category == .recovery{
-                    statRow("timer", "Time (min)", timeBinding) {
+                    statRow("timer", "Time (min)", timeBinding, field: .time, inputType: .time) {
                         increment(&times, 1)
                     } dec: {
                         decrement(&times, 1)
@@ -980,20 +1000,18 @@ struct ImportView: View {
 
                 // Only show reps and sets for non-sports, non-cardio categories
                  if category != .distanceCardio && category != .timeCardio && category != .sports && category != .recovery {
-                     statRow("number", "Reps", repsBinding) {
+                     statRow("number", "Reps", repsBinding, field: .reps, inputType: .number) {
                          increment(&reps, 1)
                      } dec: {
                          decrement(&reps, 1)
                      }
 
-                     statRow("square.grid.2x2", "Sets", setsBinding) {
+                     statRow("square.grid.2x2", "Sets", setsBinding, field: .sets, inputType: .number) {
                          increment(&sets, 1)
                      } dec: {
                          decrement(&sets, 1)
                      }
-                 } else {
-                     
-                 }
+                 } 
             }
             .padding(16)
             .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
@@ -1012,6 +1030,7 @@ struct ImportView: View {
                     .frame(minHeight: 90)
                     .focused($isEditing)
                     .background(secondaryCardColor, in: RoundedRectangle(cornerRadius: 12))
+                    .id(Field.notes)
             }
             .padding(16)
             .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
@@ -1037,10 +1056,17 @@ struct ImportView: View {
         }
 
         // MARK: - Row Builder
+        enum StatInputType {
+            case number
+            case time
+        }
+    
         private func statRow(
             _ icon: String,
             _ title: String,
             _ binding: Binding<String>,
+            field: Field,
+            inputType: StatInputType,
             calculatorAction: (() -> Void)? = nil,
             inc: @escaping () -> Void,
             dec: @escaping () -> Void
@@ -1049,9 +1075,23 @@ struct ImportView: View {
                 Image(systemName: icon)
                     .foregroundStyle(.secondary)
 
-                TextField(title, text: binding)
-                    .keyboardType(.decimalPad)
-                    .focused($isEditing)
+                if inputType == .time {
+                    TimeInputField(
+                        timeKeyboard: true,
+                        title: title,
+                        text: binding,
+                        field: .time
+                    )
+                    .id(field)
+                } else {
+                    TimeInputField(
+                        timeKeyboard: false,
+                        title: title,
+                        text: binding,
+                        field: .reps
+                    )
+                    .id(field)
+                }
 
                 Spacer()
 

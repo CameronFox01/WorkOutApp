@@ -771,6 +771,7 @@ func pillField(
             .padding(.vertical, 10)
             .padding(.leading, 14)
             .frame(maxWidth: .infinity, alignment: .leading)
+
         
         if let suffix {
             Text(suffix)

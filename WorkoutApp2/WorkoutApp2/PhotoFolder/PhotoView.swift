@@ -38,6 +38,11 @@ struct PhotoView: View {
     
     @AppStorage("hasSeenPhotoTutorial") private var hasSeenPhotoTutorial: Bool = false
     @State private var showPhotoTutorial = false
+    
+    enum StatInputType {
+        case number
+        case time
+    }
 
     private var photoTutorialSteps: [TutorialStep] {
         [
@@ -60,6 +65,7 @@ struct PhotoView: View {
     }
 
     var body: some View {
+        
         NavigationStack {
             ZStack {
                 // Consistent Gradient Background
